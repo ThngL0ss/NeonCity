@@ -1,0 +1,722 @@
+{
+ "arena_pillar.png": {
+  "h": 100,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 20
+ },
+ "arena_rune.png": {
+  "h": 24,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 256
+ },
+ "bg_far.png": {
+  "h": 96,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 256
+ },
+ "bg_mid.png": {
+  "h": 112,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 256
+ },
+ "bg_near.png": {
+  "h": 112,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 128
+ },
+ "bg_sky.png": {
+  "h": 270,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 480
+ },
+ "boss1_air.png": {
+  "h": 90,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 76
+ },
+ "boss1_crouch.png": {
+  "h": 90,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 76
+ },
+ "boss1_idle_0.png": {
+  "h": 90,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 76
+ },
+ "boss1_idle_1.png": {
+  "h": 90,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 76
+ },
+ "boss1_walk_0.png": {
+  "h": 90,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 76
+ },
+ "boss1_walk_1.png": {
+  "h": 90,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 76
+ },
+ "boss1_walk_2.png": {
+  "h": 90,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 76
+ },
+ "boss1_walk_3.png": {
+  "h": 90,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 76
+ },
+ "boss2_air.png": {
+  "h": 84,
+  "pivot": [
+   0.40625,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 64
+ },
+ "boss2_cast.png": {
+  "h": 84,
+  "pivot": [
+   0.40625,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 64
+ },
+ "boss2_idle_0.png": {
+  "h": 84,
+  "pivot": [
+   0.40625,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 64
+ },
+ "boss2_idle_1.png": {
+  "h": 84,
+  "pivot": [
+   0.40625,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 64
+ },
+ "boss2_slash.png": {
+  "h": 84,
+  "pivot": [
+   0.40625,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 64
+ },
+ "boss2_walk_0.png": {
+  "h": 84,
+  "pivot": [
+   0.40625,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 64
+ },
+ "boss2_walk_1.png": {
+  "h": 84,
+  "pivot": [
+   0.40625,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 64
+ },
+ "boss2_walk_2.png": {
+  "h": 84,
+  "pivot": [
+   0.40625,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 64
+ },
+ "boss2_walk_3.png": {
+  "h": 84,
+  "pivot": [
+   0.40625,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 64
+ },
+ "flyer_charge.png": {
+  "h": 26,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "flyer_fly_0.png": {
+  "h": 26,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "flyer_fly_1.png": {
+  "h": 26,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "fx_arc.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 32,
+  "tile": false,
+  "w": 32
+ },
+ "fx_circle.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "fx_diamond.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "fx_glow.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 32,
+  "tile": false,
+  "w": 32
+ },
+ "fx_ring.png": {
+  "h": 48,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 48,
+  "tile": false,
+  "w": 48
+ },
+ "fx_square.png": {
+  "h": 4,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 4,
+  "tile": false,
+  "w": 4
+ },
+ "fx_star.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "fx_triangle.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "gate_bar.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 6
+ },
+ "gate_post.png": {
+  "h": 56,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 20
+ },
+ "pickup_0.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "pickup_1.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "player_attack_0.png": {
+  "h": 32,
+  "pivot": [
+   0.375,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "player_attack_1.png": {
+  "h": 32,
+  "pivot": [
+   0.375,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "player_attack_2.png": {
+  "h": 32,
+  "pivot": [
+   0.375,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "player_dash.png": {
+  "h": 32,
+  "pivot": [
+   0.375,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "player_fall.png": {
+  "h": 32,
+  "pivot": [
+   0.375,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "player_heal.png": {
+  "h": 32,
+  "pivot": [
+   0.375,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "player_hurt.png": {
+  "h": 32,
+  "pivot": [
+   0.375,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "player_idle_0.png": {
+  "h": 32,
+  "pivot": [
+   0.375,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "player_idle_1.png": {
+  "h": 32,
+  "pivot": [
+   0.375,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "player_jump.png": {
+  "h": 32,
+  "pivot": [
+   0.375,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "player_run_0.png": {
+  "h": 32,
+  "pivot": [
+   0.375,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "player_run_1.png": {
+  "h": 32,
+  "pivot": [
+   0.375,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "player_run_2.png": {
+  "h": 32,
+  "pivot": [
+   0.375,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "player_run_3.png": {
+  "h": 32,
+  "pivot": [
+   0.375,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "player_run_4.png": {
+  "h": 32,
+  "pivot": [
+   0.375,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "player_run_5.png": {
+  "h": 32,
+  "pivot": [
+   0.375,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "proj_bolt.png": {
+  "h": 8,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "proj_shuriken.png": {
+  "h": 14,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 14
+ },
+ "proj_wave_0.png": {
+  "h": 28,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 20
+ },
+ "proj_wave_1.png": {
+  "h": 28,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 20
+ },
+ "tile_ground_fill.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 16
+ },
+ "tile_ground_top.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 16
+ },
+ "tile_plat.png": {
+  "h": 8,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 16
+ },
+ "tile_plat_arena.png": {
+  "h": 8,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 16
+ },
+ "tower_idle_0.png": {
+  "h": 76,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 40
+ },
+ "tower_idle_1.png": {
+  "h": 76,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 40
+ },
+ "tower_idle_2.png": {
+  "h": 76,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 40
+ },
+ "tower_idle_3.png": {
+  "h": 76,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 40
+ },
+ "walker_lunge.png": {
+  "h": 22,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 30
+ },
+ "walker_walk_0.png": {
+  "h": 22,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 30
+ },
+ "walker_walk_1.png": {
+  "h": 22,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 30
+ },
+ "walker_walk_2.png": {
+  "h": 22,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 30
+ },
+ "walker_walk_3.png": {
+  "h": 22,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 30
+ },
+ "walker_windup.png": {
+  "h": 22,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 30
+ }
+}

@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97d49873e9902c240b0f5b0c47fc7d6f, type: 3}
+  m_Name: AudioBank
+  m_EditorClassIdentifier: 
+  entries:
+  - id: jump
+    clip: {fileID: 8300000, guid: 72a107d98aba0494599ed02ee4eea270, type: 3}
+  - id: land
+    clip: {fileID: 8300000, guid: 8067c1a27c6bcbd4e905637b46ad5d67, type: 3}
+  - id: slash
+    clip: {fileID: 8300000, guid: d13d46242ff469e49b48bede85997aaf, type: 3}
+  - id: hit
+    clip: {fileID: 8300000, guid: ee079b9335594d541a4b7da56c7ff2b3, type: 3}
+  - id: dash
+    clip: {fileID: 8300000, guid: 543a8907ad417244e94997c12b32c66d, type: 3}
+  - id: throw
+    clip: {fileID: 8300000, guid: 0e7a27c5714e672468b56c9c6ae7a7c9, type: 3}
+  - id: shurHit
+    clip: {fileID: 8300000, guid: 0d70ab6133195fe4fae52cc4f9b55ea9, type: 3}
+  - id: heal
+    clip: {fileID: 8300000, guid: c87b531354cb5684f81aedf8607433a0, type: 3}
+  - id: pickup
+    clip: {fileID: 8300000, guid: 2a098f2afd90c684da4fd1ac3169f804, type: 3}
+  - id: hurt
+    clip: {fileID: 8300000, guid: c2a9c93a8e68bd34b9a09fb400c3dcd1, type: 3}
+  - id: enemyDie
+    clip: {fileID: 8300000, guid: 101a48deeb142514eb6ea534c8753acb, type: 3}
+  - id: towerHit
+    clip: {fileID: 8300000, guid: 29575c32ffc93a34ea731784e605a099, type: 3}
+  - id: towerDie
+    clip: {fileID: 8300000, guid: 290c17b733352eb40a2700ff0e1e4bf6, type: 3}
+  - id: spawn
+    clip: {fileID: 8300000, guid: df32f7bdb454dca40adafb56ceedd182, type: 3}
+  - id: warn
+    clip: {fileID: 8300000, guid: e966fd05bf53d4f45b31bf50878657b6, type: 3}
+  - id: charge
+    clip: {fileID: 8300000, guid: 5e77aaa6f952312449439857da535ca4, type: 3}
+  - id: laser
+    clip: {fileID: 8300000, guid: 230403e76e940124795baaa049292463, type: 3}
+  - id: bolt
+    clip: {fileID: 8300000, guid: ac4484f36b0723046a3112a75ec3ecd7, type: 3}
+  - id: bossRoar
+    clip: {fileID: 8300000, guid: 714ed13e6771a814daa802de10fedcf7, type: 3}
+  - id: slam
+    clip: {fileID: 8300000, guid: 88201a135cede65409d85fab97af1d3f, type: 3}
+  - id: teleport
+    clip: {fileID: 8300000, guid: 61399492d8238e34ca9ff7ec103bc92a, type: 3}
+  - id: shock
+    clip: {fileID: 8300000, guid: 748461eff4eb24c4aa565afcb86f0568, type: 3}
+  - id: drain
+    clip: {fileID: 8300000, guid: c4e7f7efddcc672499c63480a3160784, type: 3}
+  - id: phase
+    clip: {fileID: 8300000, guid: c0a4fc18134494f4693ce3a18f43583d, type: 3}
+  - id: victory
+    clip: {fileID: 8300000, guid: 70f01a8ea359f7f49aa90a2eb32d7bbb, type: 3}
+  - id: defeat
+    clip: {fileID: 8300000, guid: d5d285390db7c3e4ab096b4f7048ad55, type: 3}
+  - id: click
+    clip: {fileID: 8300000, guid: be14312f54a99de4c8cbab420f85cda6, type: 3}
+  - id: music_explore
+    clip: {fileID: 8300000, guid: 70e3e8d15cfe24e40b4ed3ee0e68d553, type: 3}
+  - id: music_boss
+    clip: {fileID: 8300000, guid: 15dc7e5518c587a4490bbfe873ebad03, type: 3}

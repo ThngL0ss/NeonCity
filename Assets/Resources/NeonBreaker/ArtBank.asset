@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d88bcf458a0dbbe43b6aebf45071f45d, type: 3}
+  m_Name: ArtBank
+  m_EditorClassIdentifier: 
+  square: {fileID: 21300000, guid: 8991e40cc32223e4894ae3fbd1470d60, type: 3}
+  circle: {fileID: 21300000, guid: e65fb71f3c4bbcb43b1fdb8290012c06, type: 3}
+  glow: {fileID: 21300000, guid: 9561f9c44cdf9ca499210b7be706582a, type: 3}
+  ring: {fileID: 21300000, guid: 93435f48dc2b2ee4abafa79df43bb1c3, type: 3}
+  arc: {fileID: 21300000, guid: 0435dc444f2114b45a3e3df769499aa4, type: 3}
+  diamond: {fileID: 21300000, guid: 9f06cf9375a2630448c62fb8e175d8ab, type: 3}
+  triangle: {fileID: 21300000, guid: 5e4f578606cbc324ca1d411d38e8d41b, type: 3}
+  star: {fileID: 21300000, guid: 69125b23b6b132344906d32f8de871a4, type: 3}
+  spriteMaterial: {fileID: 2100000, guid: 3ad3b3776de65e74eb7d0cecd590e8b7, type: 2}
+  additiveMaterial: {fileID: 2100000, guid: fb5f903de2fb31a4cb036d3971a74699, type: 2}
+  flashMaterial: {fileID: 2100000, guid: ec2a540c79e9c2b46b09b0129da6c938, type: 2}
+  walkerPrefab: {fileID: 1508541806146632754, guid: abd8d41dc57e65c45987ce02d20beb28, type: 3}
+  flyerPrefab: {fileID: 484256043987473469, guid: cf88c8f4a6c5af94cbad4f836f253ec5, type: 3}
+  bossPrefab: {fileID: 2922022604227085390, guid: 220357c5c3fe6f8469b567c9afb260ca, type: 3}
+  shurikenPrefab: {fileID: 4779219165701365389, guid: 71287d736c0ce904a965751c6e6e3a6a, type: 3}
+  boltPrefab: {fileID: 5674032754087595693, guid: 3a69e72662c33ed49a60fd19ab647f29, type: 3}
+  wavePrefab: {fileID: 1766229146574446609, guid: 1f4fd318ffe4ef24bababe4f1dc94eaa, type: 3}
+  pickupPrefab: {fileID: 531550722313696810, guid: 45b767b49e499604881050bd069e0152, type: 3}

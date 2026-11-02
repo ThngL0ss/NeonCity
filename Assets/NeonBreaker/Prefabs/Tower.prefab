@@ -330,6 +330,32 @@ MonoBehaviour:
   crystalGlow: {fileID: 4776996171600911408}
   baseGlow: {fileID: 442795318932837324}
   barOffset: {x: 0, y: 5.2}
+  health: 420
+  activateRange: 16
+  spawnTable:
+  - prefab: {fileID: 1508541806146632754, guid: abd8d41dc57e65c45987ce02d20beb28, type: 3}
+    weight: 45
+    powerMul: 1
+    minPower: 0
+  - prefab: {fileID: 484256043987473469, guid: cf88c8f4a6c5af94cbad4f836f253ec5, type: 3}
+    weight: 25
+    powerMul: 1
+    minPower: 0
+  - prefab: {fileID: 1508541806146632754, guid: 25982e9446069ad418410a7b4a23fa0c, type: 3}
+    weight: 15
+    powerMul: 1
+    minPower: 1.1
+  - prefab: {fileID: 1508541806146632754, guid: 4adad83c6f77b25478146de1cf666713, type: 3}
+    weight: 15
+    powerMul: 1
+    minPower: 1.3
+  maxAlive: 3
+  totalSpawnLimit: 0
+  spawnInterval: 4.2
+  intervalJitter: 0.12
+  firstSpawnDelay: 1
+  spawnDistance: {x: 1.6, y: 2.8}
+  powerSpeedsUpSpawn: 1
   autoByOrder: 1
   powerFirst: 1
   powerLast: 1.8

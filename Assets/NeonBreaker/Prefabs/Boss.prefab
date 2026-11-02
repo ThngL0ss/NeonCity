@@ -176,6 +176,41 @@ MonoBehaviour:
   dead: 0
   phase: 1
   Intro: 1
+  p1Hp: 3000
+  p2Hp: 600
+  p1Speed: 2
+  p2Speed: 5.4
+  p1HitSize: {x: 2.8, y: 4.2}
+  p2HitSize: {x: 2.2, y: 3.8}
+  enrageHpFrac: 0.4
+  slamDamage: 18
+  touchDamage: 12
+  touchCooldown: 0.9
+  boltDamage: 10
+  slashDamage: 24
+  lanceDamage: 22
+  lifesteal: 0.6
+  p1WalkTime: {x: 2, y: 3.2}
+  p1RecoverTime: 1.2
+  slamChargeTime: 0.4
+  slamAirTime: 0.75
+  slamJumpHeight: 7
+  slamZoneSize: {x: 6.4, y: 2.6}
+  waveSpeed: 9
+  waveDamageMul: 0.8
+  p2WalkTime: {x: 0.8, y: 1.5}
+  enragedWalkMul: 0.6
+  p2RestTime: {x: 0.8, y: 0.45}
+  blinkDistance: 3
+  slashReach: 3.6
+  slashTelegraph: {x: 0.5, y: 0.38}
+  fanBoltSpeed: 11
+  fanAngle: 13
+  fanVolleys: {x: 3, y: 4}
+  fanGap: {x: 0.55, y: 0.42}
+  laserTelegraph: 1
+  laserSpacing: 4
+  laserWidth: 1.8
   vis: {fileID: 1951479820301852133}
   animP1: {fileID: 8304840528809106929}
   animP2: {fileID: 4387262853120728438}

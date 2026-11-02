@@ -9,6 +9,8 @@ namespace NeonBreaker
         public static readonly List<Enemy> Live = new List<Enemy>();
 
         public Tower owner;
+        [Tooltip("Nhân với tỉ lệ rơi vật phẩm hồi máu chung (Level ▸ Drop Chance). 2 = rơi gấp đôi")]
+        public float dropChanceMul = 1f;
         protected Flasher flasher;
         protected float flashT;
         protected Color accent = Cfg.Orange;
@@ -16,8 +18,27 @@ namespace NeonBreaker
 
         public override bool Targetable { get { return !dead; } }
 
+        /// <summary>Độ cao (y) khi trụ triệu hồi sinh quái này ra (quái bay cao hơn quái đi bộ).</summary>
+        public abstract float SpawnHeight { get; }
+
+        /// <summary>Màu đặc trưng (dùng cho hiệu ứng triệu hồi và tia lửa).</summary>
+        public virtual Color AccentColor { get { return Cfg.Orange; } }
+
+        /// <summary>Sinh một quái từ Prefab bất kỳ (dùng cho bảng triệu hồi của trụ). power = hệ số sức mạnh.</summary>
+        public static Enemy Spawn(GameObject prefab, Vector2 pos, Tower owner, float power)
+        {
+            if (prefab == null) return null;
+            var go = Instantiate(prefab, new Vector3(pos.x, pos.y, 0f), Quaternion.identity, Level.Sub("Enemies"));
+            go.name = prefab.name;
+            var e = go.GetComponent<Enemy>();
+            if (e == null) { Debug.LogError("Neon Breaker: Prefab " + prefab.name + " không có script quái (Walker/Flyer)."); Destroy(go); return null; }
+            e.owner = owner;
+            e.ApplyPower(power);
+            return e;
+        }
+
         /// <summary>
-        /// Làm quái mạnh hơn. power = 1 là chỉ số gốc (GameConfig); 1.5 = máu x1.5, sát thương x1.3, nhanh hơn ~15%.
+        /// Làm quái mạnh hơn. power = 1 là chỉ số gốc trên Prefab; 1.5 = máu x1.5, sát thương x1.3, nhanh hơn ~15%.
         /// Quái mạnh hơn sẽ ngả đỏ dần để người chơi nhận ra. Thời gian báo hiệu đòn giữ nguyên để vẫn công bằng.
         /// </summary>
         public void ApplyPower(float power)
@@ -79,7 +100,7 @@ namespace NeonBreaker
             Fx.Shake(0.12f);
             Sfx.PlayAt("enemyDie", transform.position, 0.9f);
             GameManager.Kills++;
-            if (Random.value < Cfg.DropChance) Pickup.Drop(Center);
+            if (Random.value < Cfg.DropChance * dropChanceMul) Pickup.Drop(Center);
             Destroy(gameObject);
         }
 

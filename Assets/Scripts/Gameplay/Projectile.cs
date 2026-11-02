@@ -12,7 +12,7 @@ namespace NeonBreaker
 
         public PKind kind;
         public Vector2 vel;
-        public float damage, radius = 0.3f, life = 6f, knock = 6f;
+        public float damage, radius = 0.3f, life = 6f, knock = 6f, range = 13f;
         public int pierce;
         public bool fromPlayer, lifesteal;
         public Color color = Color.white;
@@ -35,15 +35,16 @@ namespace NeonBreaker
 
         // ------------------------------------------------------------ factories
         // Hình ảnh nằm trong prefab (ArtBank ▸ Shuriken/Bolt/Wave Prefab): object con "Visual" (sprite) và "Glow" (vầng sáng, tuỳ chọn).
-        public static Projectile Shuriken(Vector2 pos, Vector2 dir)
+        public static Projectile Shuriken(Vector2 pos, Vector2 dir, float speed, float damage, int pierce, float range)
         {
             var p = Make(Art.Bank != null ? Art.Bank.shurikenPrefab : null, pos, "Shuriken");
             if (p == null) return null;
             p.kind = PKind.Shuriken;
-            p.vel = dir.normalized * Cfg.ShurikenSpeed;
-            p.damage = Cfg.ShurikenDamage;
+            p.vel = dir.normalized * speed;
+            p.damage = damage;
+            p.range = range;
             p.radius = 0.38f;
-            p.pierce = Cfg.ShurikenPierce;
+            p.pierce = pierce;
             p.fromPlayer = true;
             p.color = Cfg.Cyan;
             p.life = 3f;
@@ -136,7 +137,7 @@ namespace NeonBreaker
             }
 
             bool dead = life <= 0f || pos.x < Cfg.LevelMinX - 6f || pos.x > Cfg.LevelMaxX + 6f || pos.y > 45f;
-            if (kind == PKind.Shuriken && traveled > Cfg.ShurikenRange) dead = true;
+            if (kind == PKind.Shuriken && traveled > range) dead = true;
             if (kind != PKind.Wave && pos.y < 0.1f) dead = true;
 
             if (!dead && Level.Instance != null && Level.Instance.IsBlocked(pos, radius))

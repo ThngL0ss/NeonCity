@@ -47,12 +47,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f81bdc64648a55e4a9fd4987463a9109, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hitSize: {x: 1, y: 1}
+  hitSize: {x: 1, y: 0.9}
   hitOffset: {x: 0, y: 0}
   hp: 0
   maxHp: 0
   dead: 0
   owner: {fileID: 0}
+  dropChanceMul: 1
+  health: 40
+  moveSpeed: 5
+  boltDamage: 9
+  boltSpeed: 9.5
+  fireInterval: 2.7
+  chargeTime: 0.55
+  fireRange: 14
+  hoverOffset: {x: 5.2, y: 2.7}
+  minHeight: 1.8
+  accentColor: {r: 1, g: 0.15, b: 0.8, a: 1}
+  spawnHeight: 3.4
   vis: {fileID: 419932697102384772}
   anim: {fileID: 8287786767388269853}
   chargeGlow: {fileID: 1825507494557259732}

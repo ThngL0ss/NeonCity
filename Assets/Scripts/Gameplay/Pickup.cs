@@ -69,9 +69,10 @@ namespace NeonBreaker
             {
                 Vector2 to = pl.Center - pos;
                 float d = to.magnitude;
-                if (d < magnetRange)
+                float mr = magnetRange * Inventory.Mul(ItemStat.MagnetRangePct);
+                if (d < mr)
                 {
-                    pos += to.normalized * Mathf.Lerp(magnetSpeed.x, magnetSpeed.y, 1f - d / magnetRange) * dt;
+                    pos += to.normalized * Mathf.Lerp(magnetSpeed.x, magnetSpeed.y, 1f - d / mr) * dt;
                     vel = Vector2.zero;
                 }
                 if (Geo.CircleRect(pos, pickupRadius, pl.HurtRect)) { Collect(pl, pos); return; }

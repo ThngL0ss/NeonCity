@@ -83,7 +83,9 @@ namespace NeonBreaker
         float hurtT, flashT, squashT;
 
         public float AtkCdFrac { get { return Mathf.Clamp01(atkCd / meleeCooldown); } }
-        public float DashCdFrac { get { return Mathf.Clamp01(dashCd / dashCooldown); } }
+        public float DashCdFrac { get { return Mathf.Clamp01(dashCd / DashCooldownNow); } }
+        /// <summary>Thời gian hồi lướt thực tế (đã tính vật phẩm).</summary>
+        public float DashCooldownNow { get { return dashCooldown * Inventory.Mul(ItemStat.DashCooldownPct); } }
         public float ShurCdFrac { get { return Mathf.Clamp01(shurCd / shurikenCooldown); } }
         public float HealCdFrac { get { return Mathf.Clamp01(healCd / healCooldown); } }
         public bool IsHealing { get { return healT > 0f; } }
@@ -104,7 +106,7 @@ namespace NeonBreaker
         void Awake()
         {
             Instance = this;
-            maxHp = maxHealth;
+            maxHp = maxHealth + Inventory.Stat(ItemStat.MaxHealth);
             hp = maxHp;
             healCharges = healStartCharges;
             gameObject.layer = Cfg.LayerPlayer;
@@ -259,7 +261,7 @@ namespace NeonBreaker
             }
 
             float mul = atkT > 0f ? meleeMoveMul : 1f;
-            float target = hx * moveSpeed * mul;
+            float target = hx * moveSpeed * Inventory.Mul(ItemStat.MoveSpeedPct) * mul;
             float accel = grounded ? accelGround : accelAir;
             v.x = Mathf.MoveTowards(v.x, target, accel * dt);
 
@@ -298,7 +300,7 @@ namespace NeonBreaker
             dashDir = hx != 0f ? Mathf.Sign(hx) : Facing;
             Facing = dashDir > 0f ? 1 : -1;
             dashT = dashTime;
-            dashCd = dashCooldown;
+            dashCd = DashCooldownNow;
             invulnT = dashTime + dashInvulnExtra;
             atkT = 0f;
             atkPending = false;
@@ -339,7 +341,7 @@ namespace NeonBreaker
                 var h = list[i];
                 if (h == null || !h.Targetable) continue;
                 if (!r.Overlaps(h.HitRect)) continue;
-                h.TakeHit(meleeDamage * GameManager.DamageMul, new Vector2(Facing, 0.15f).normalized, meleeKnockback, true);
+                h.TakeHit(meleeDamage * GameManager.DamageMul * Inventory.Mul(ItemStat.MeleeDamagePct), new Vector2(Facing, 0.15f).normalized, meleeKnockback, true);
                 any = true;
             }
             if (any)
@@ -353,7 +355,7 @@ namespace NeonBreaker
         {
             shurCd = shurikenCooldown;
             Vector2 p = new Vector2(transform.position.x + Facing * 0.55f, transform.position.y + 0.98f);
-            Projectile.Shuriken(p, new Vector2(Facing, 0f), shurikenSpeed, shurikenDamage * GameManager.DamageMul, shurikenPierce, shurikenRange);
+            Projectile.Shuriken(p, new Vector2(Facing, 0f), shurikenSpeed, shurikenDamage * GameManager.DamageMul * Inventory.Mul(ItemStat.ShurikenDamagePct), shurikenPierce, shurikenRange);
             Sfx.Play("throw", 0.7f);
             Fx.Burst(p, Cfg.A(Cfg.Cyan, 0.9f), 4, 4f, 0.2f, 0.2f);
         }
@@ -385,11 +387,22 @@ namespace NeonBreaker
         void FinishHeal()
         {
             float before = hp;
-            hp = Mathf.Min(maxHp, hp + healAmount);
+            hp = Mathf.Min(maxHp, hp + healAmount * Inventory.Mul(ItemStat.HealPowerPct));
             int got = Mathf.RoundToInt(hp - before);
             Fx.Text(Center + new Vector2(0f, 1.3f), "+" + got, Cfg.Lime, 1.3f);
             Fx.Burst(Center, Cfg.Lime, 16, 6f, 0.5f, 0.3f);
             Fx.Flash(Cfg.Lime, 0.18f);
+        }
+
+        /// <summary>Tính lại máu tối đa khi vật phẩm thay đổi (nhặt / dùng / hết buff). Tăng thêm bao nhiêu thì hồi bấy nhiêu.</summary>
+        public void RecalcStats()
+        {
+            float newMax = Mathf.Max(1f, maxHealth + Inventory.Stat(ItemStat.MaxHealth));
+            if (Mathf.Abs(newMax - maxHp) < 0.01f) return;
+            float diff = newMax - maxHp;
+            maxHp = newMax;
+            if (diff > 0f) hp += diff;
+            hp = Mathf.Min(hp, maxHp);
         }
 
         public bool AddHealCharge()
@@ -415,6 +428,7 @@ namespace NeonBreaker
         {
             if (Dead || !GameManager.Active) return 0f;
             if (Invulnerable) return 0f;
+            dmg *= Inventory.Mul(ItemStat.DamageTakenPct);
 
             hp -= dmg;
             hurtT = hurtInvuln;

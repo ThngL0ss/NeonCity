@@ -11,10 +11,15 @@ namespace NeonBreaker
         public Tower owner;
         [Tooltip("Nhân với tỉ lệ rơi vật phẩm hồi máu chung (Level ▸ Drop Chance). 2 = rơi gấp đôi")]
         public float dropChanceMul = 1f;
+        [Header("Rơi xu (tiền)")]
+        [Tooltip("Xác suất rơi xu khi bị hạ (1 = luôn rơi)"), Range(0f, 1f)] public float coinChance = 0.9f;
+        [Tooltip("Số xu rơi ra ít nhất / nhiều nhất (quái do trụ mạnh sinh ra rơi nhiều hơn theo Power)")] public int coinMin = 1;
+        public int coinMax = 3;
         protected Flasher flasher;
         protected float flashT;
         protected Color accent = Cfg.Orange;
         protected float dmgMul = 1f, spdMul = 1f;     // hệ số sức mạnh (do trụ đặt khi sinh quái)
+        protected float coinScale = 1f;               // hệ số số xu rơi ra (= Power của trụ, tối thiểu 1)
 
         public override bool Targetable { get { return !dead; } }
 
@@ -48,6 +53,7 @@ namespace NeonBreaker
             hp = maxHp;
             dmgMul = 1f + (power - 1f) * 0.6f;
             spdMul = 1f + (power - 1f) * 0.3f;
+            coinScale = Mathf.Max(1f, power);
             float k = Mathf.Clamp01((power - 1f) * 0.9f);
             if (k > 0.001f)
             {
@@ -101,6 +107,11 @@ namespace NeonBreaker
             Sfx.PlayAt("enemyDie", transform.position, 0.9f);
             GameManager.Kills++;
             if (Random.value < Cfg.DropChance * dropChanceMul) Pickup.Drop(Center);
+            if (Random.value < coinChance)
+            {
+                int lo = Mathf.Max(0, Mathf.Min(coinMin, coinMax)), hi = Mathf.Max(lo, Mathf.Max(coinMin, coinMax));
+                Coin.Drop(Center, Mathf.RoundToInt(Random.Range(lo, hi + 1) * coinScale));
+            }
             Destroy(gameObject);
         }
 

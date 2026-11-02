@@ -126,6 +126,27 @@ MonoBehaviour:
   maxHp: 0
   dead: 0
   owner: {fileID: 0}
+  dropChanceMul: 1
+  health: 90
+  moveSpeed: 3.7
+  lungeDamage: 13
+  touchDamage: 5
+  aggroRange: 20
+  windupRange: 4.3
+  windupTime: 0.5
+  lungeSpeed: 13
+  lungeTime: 0.28
+  recoverTime: 0.75
+  attackCooldown: 0.9
+  staggerTime: 0.3
+  knockbackMul: 0.8
+  lungeKnockback: 8
+  touchKnockback: 5
+  gravityScale: 4
+  lungeBoxSize: {x: 0.9, y: 0.9}
+  touchBoxSize: {x: 0.8, y: 0.8}
+  accentColor: {r: 1, g: 0.6, b: 0.1, a: 1}
+  spawnHeight: 0.05
   vis: {fileID: 6870522048528090903}
   anim: {fileID: 8587338285206291041}
   warn: {fileID: 8446553070973275018}

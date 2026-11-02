@@ -265,6 +265,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94b958b723f2ea344aefdef9d80a2978, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cheatDamageMul: 3
+  startVietnamese: 1
   bossPrefab: {fileID: 2922022604227085390, guid: 220357c5c3fe6f8469b567c9afb260ca, type: 3}
 --- !u!4 &267048751
 Transform:
@@ -291,6 +293,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 867699317}
     m_Modifications:
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: maxAlive
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: spawnInterval
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: spawnTable.Array.size
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 3479015166305896631, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
       propertyPath: m_LocalPosition.x
       value: 8
@@ -2359,6 +2373,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 867699317}
     m_Modifications:
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: spawnTable.Array.size
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 3479015166305896631, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
       propertyPath: m_LocalPosition.x
       value: 28
@@ -3402,6 +3420,38 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 867699317}
     m_Modifications:
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: spawnTable.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: spawnTable.Array.data[0].prefab
+      value: 
+      objectReference: {fileID: 484256043987473469, guid: cf88c8f4a6c5af94cbad4f836f253ec5, type: 3}
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: spawnTable.Array.data[0].weight
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: spawnTable.Array.data[1].prefab
+      value: 
+      objectReference: {fileID: 1508541806146632754, guid: 25982e9446069ad418410a7b4a23fa0c, type: 3}
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: spawnTable.Array.data[1].weight
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: spawnTable.Array.data[2].prefab
+      value: 
+      objectReference: {fileID: 1508541806146632754, guid: 4adad83c6f77b25478146de1cf666713, type: 3}
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: spawnTable.Array.data[1].minPower
+      value: 1.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: spawnTable.Array.data[2].minPower
+      value: 1.3
+      objectReference: {fileID: 0}
     - target: {fileID: 3479015166305896631, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
       propertyPath: m_LocalPosition.x
       value: 78
@@ -3831,9 +3881,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 8709082437876163601, guid: 823e5ca09b4090e4691ee28f6737d523, type: 3}
+      propertyPath: meleeDamage
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 8709082437876163601, guid: 823e5ca09b4090e4691ee28f6737d523, type: 3}
+      propertyPath: shurikenRange
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8709082437876163601, guid: 823e5ca09b4090e4691ee28f6737d523, type: 3}
+      propertyPath: shurikenDamage
+      value: 18
+      objectReference: {fileID: 0}
     - target: {fileID: 8834328621775963775, guid: 823e5ca09b4090e4691ee28f6737d523, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2
+      value: -8.2
       objectReference: {fileID: 0}
     - target: {fileID: 8834328621775963775, guid: 823e5ca09b4090e4691ee28f6737d523, type: 3}
       propertyPath: m_LocalPosition.y
@@ -4157,6 +4219,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 867699317}
     m_Modifications:
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: spawnTable.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: spawnTable.Array.data[1].prefab
+      value: 
+      objectReference: {fileID: 1508541806146632754, guid: 25982e9446069ad418410a7b4a23fa0c, type: 3}
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: spawnTable.Array.data[1].weight
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: spawnTable.Array.data[2].prefab
+      value: 
+      objectReference: {fileID: 1508541806146632754, guid: 4adad83c6f77b25478146de1cf666713, type: 3}
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: spawnTable.Array.data[1].minPower
+      value: 1.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 453358811511914596, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
+      propertyPath: spawnTable.Array.data[2].minPower
+      value: 1.3
+      objectReference: {fileID: 0}
     - target: {fileID: 3479015166305896631, guid: 9fed31387ba4fd248907cba3d25ab3cd, type: 3}
       propertyPath: m_LocalPosition.x
       value: 99
@@ -4673,6 +4759,8 @@ MonoBehaviour:
   gate: {fileID: 491804885}
   bossSpawn: {fileID: 1711839397}
   bossTriggerOffset: 7
+  maxEnemiesAlive: 8
+  dropChance: 0.2
   gateCollider: {fileID: 491804884}
   gateBar: {fileID: 330027143}
   gateGlow: {fileID: 383796311}

@@ -17,7 +17,10 @@ namespace NeonBreaker
         public static GameManager Inst;
         public static GameState State = GameState.Menu;
         public static bool Paused, PlayerLocked;
-        public static bool GodMode;                       // bật để thử nghiệm: bất tử (phím F9)
+        /// <summary>Chế độ thử nghiệm (phím P): người chơi bất tử, sát thương nhân lên, không hồi chiêu.</summary>
+        public static bool Cheat;
+        /// <summary>Hệ số sát thương của người chơi: 1 bình thường, Cheat Damage Mul khi bật chế độ thử nghiệm.</summary>
+        public static float DamageMul { get { return Cheat ? (Inst != null ? Inst.cheatDamageMul : 3f) : 1f; } }
         public static bool AutoStart;                     // true = bỏ qua menu (dùng khi "Chơi lại")
 
         public static bool Active { get { return State == GameState.Playing && !Paused; } }
@@ -32,6 +35,14 @@ namespace NeonBreaker
         public static Color BannerColor = Color.white;
         public static float BannerT, BannerMax = 1f;
 
+        [Header("Chế độ thử nghiệm - bấm P trong game để bật/tắt")]
+        [Tooltip("Sát thương của người chơi nhân với số này khi bật chế độ thử nghiệm")]
+        public float cheatDamageMul = 3f;
+
+        [Header("Ngôn ngữ")]
+        [Tooltip("Bật = tiếng Việt, tắt = tiếng Anh (trong game bấm V để đổi)")]
+        public bool startVietnamese = true;
+
         [Header("Boss")]
         [Tooltip("Prefab boss. Để trống = lấy trong ArtBank.")]
         public GameObject bossPrefab;
@@ -45,7 +56,7 @@ namespace NeonBreaker
             State = GameState.Menu;
             Paused = false;
             PlayerLocked = false;
-            GodMode = false;
+            Cheat = false;
             AutoStart = false;
             Kills = 0; HealsUsed = 0; TowersDestroyed = 0; TowerTotal = 0;
             DamageTaken = 0f; PlayTime = 0f;
@@ -70,8 +81,7 @@ namespace NeonBreaker
             Inst = this;
             Time.timeScale = 1f;
 
-            var cfg = GameConfig.Load();                  // thông số từ GameConfig.asset (nếu có)
-            if (cfg != null) cfg.Apply();
+            Cfg.Vietnamese = startVietnamese;
 
             Application.targetFrameRate = 60;
             QualitySettings.vSyncCount = 1;
@@ -140,7 +150,13 @@ namespace NeonBreaker
         {
             GameInput.Poll();
             if (GameInput.LangDown) Cfg.Vietnamese = !Cfg.Vietnamese;
-            if (GodToggle()) { GodMode = !GodMode; Banner(GodMode ? "GOD MODE ON" : "GOD MODE OFF", Cfg.Yellow, 1.5f); }
+            if (GameInput.CheatDown)
+            {
+                Cheat = !Cheat;
+                Banner(Cheat ? Cfg.L("CHẾ ĐỘ THỬ NGHIỆM: BẬT (bất tử, sát thương x" + cheatDamageMul + ", không hồi chiêu)", "TEST MODE: ON (invincible, x" + cheatDamageMul + " damage, no cooldowns)")
+                             : Cfg.L("CHẾ ĐỘ THỬ NGHIỆM: TẮT", "TEST MODE: OFF"), Cfg.Yellow, 2.5f);
+                Sfx.Play("click", 0.8f, Cheat ? 1.4f : 0.8f);
+            }
 
             if (BannerT > 0f) BannerT -= Time.unscaledDeltaTime;
 
@@ -168,15 +184,6 @@ namespace NeonBreaker
             if (Paused) ts = 0f;
             else if (Fx.HitStopTimer > 0f) ts = 0.04f;
             Time.timeScale = ts;
-        }
-
-        bool GodToggle()
-        {
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-            return UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.f9Key.wasPressedThisFrame;
-#else
-            return Input.GetKeyDown(KeyCode.F9);
-#endif
         }
 
         void CheckBossTrigger()

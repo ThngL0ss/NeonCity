@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f81bdc64648a55e4a9fd4987463a9109, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hitSize: {x: 1, y: 1}
+  hitSize: {x: 1, y: 0.9}
   hitOffset: {x: 0, y: 0}
   hp: 0
   maxHp: 0

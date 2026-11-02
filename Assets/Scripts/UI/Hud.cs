@@ -37,6 +37,7 @@ namespace NeonBreaker
                 DrawBossBar();
             }
             DrawBanner();
+            DrawCheatLabel();
             DrawScreenFx(pl);
 
             switch (GameManager.State)
@@ -234,6 +235,15 @@ namespace NeonBreaker
             if (p2) Txt(R(x, 646, w, 26), Cfg.L("HÚT MÁU", "LIFESTEAL"), 14, Cfg.Lime, TextAnchor.MiddleRight);
         }
 
+        /// <summary>Nhãn nhỏ góc trái dưới HUD khi đang bật chế độ thử nghiệm (phím P).</summary>
+        void DrawCheatLabel()
+        {
+            if (!GameManager.Cheat) return;
+            float pulse = 0.75f + 0.25f * Mathf.Sin(Time.unscaledTime * 5f);
+            Txt(R(14, 126, 560, 22), Cfg.L("[P] CHẾ ĐỘ THỬ NGHIỆM: BẤT TỬ · SÁT THƯƠNG x" + GameManager.DamageMul + " · KHÔNG HỒI CHIÊU",
+                                           "[P] TEST MODE: INVINCIBLE · x" + GameManager.DamageMul + " DAMAGE · NO COOLDOWNS"), 14, Cfg.A(Cfg.Yellow, pulse));
+        }
+
         void DrawBanner()
         {
             if (GameManager.BannerT <= 0f) return;
@@ -333,7 +343,7 @@ namespace NeonBreaker
             }
 
             if (Button(R(490, 530, 300, 56), Cfg.L("BẮT ĐẦU  [ENTER]", "START  [ENTER]"), Cfg.Cyan, 26)) GameManager.Inst.StartGame();
-            Txt(R(0, 610, 1280, 24), Cfg.L("ESC = tạm dừng     V = đổi ngôn ngữ (VI/EN)", "ESC = pause     V = switch language (VI/EN)"), 14, Cfg.A(Color.white, 0.6f), TextAnchor.MiddleCenter, false);
+            Txt(R(0, 610, 1280, 24), Cfg.L("ESC = tạm dừng     P = chế độ thử nghiệm     V = đổi ngôn ngữ (VI/EN)", "ESC = pause     P = test mode     V = switch language (VI/EN)"), 14, Cfg.A(Color.white, 0.6f), TextAnchor.MiddleCenter, false);
         }
 
         void DrawPause()

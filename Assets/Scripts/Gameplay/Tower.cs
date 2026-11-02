@@ -5,12 +5,32 @@ namespace NeonBreaker
 {
     /// <summary>
     /// Trụ triệu hồi nhỏ. Khi người chơi lại gần, trụ liên tục triệu hồi quái.
-    /// Cân bằng: tổng quái sống tối đa Cfg.MaxEnemiesAlive, mỗi trụ tối đa Cfg.MaxPerTower.
+    /// Cân bằng: tổng quái sống tối đa = Level ▸ Max Enemies Alive; mỗi trụ tối đa = Max Alive (ô bên dưới).
     /// Phá hủy hết các trụ để mở cổng vào khu boss.
-    /// Số lượng và vị trí trụ do bạn đặt trong Scene (kéo prefab Tower vào).
+    /// Số lượng và vị trí trụ do bạn đặt trong Scene (kéo prefab Tower vào). Mỗi trụ chỉnh riêng được
+    /// loại quái, số lượng, tốc độ triệu hồi và độ mạnh ngay trong Inspector.
     /// </summary>
     public class Tower : Hittable
     {
+        /// <summary>Một dòng trong bảng triệu hồi: loại quái (Prefab) + tỉ lệ + độ mạnh riêng.</summary>
+        [System.Serializable]
+        public class SpawnEntry
+        {
+            [Tooltip("Prefab quái. Kéo từ Project: Walker, Flyer, Heavy, Rusher hoặc Prefab quái bạn tự tạo")]
+            public GameObject prefab;
+            [Tooltip("Trọng số: càng lớn càng hay được chọn (so với tổng trọng số của bảng)")]
+            public float weight = 1f;
+            [Tooltip("Nhân thêm vào độ mạnh (Power) của trụ cho riêng loại quái này")]
+            public float powerMul = 1f;
+            [Tooltip("Chỉ triệu hồi loại quái này khi độ mạnh (Power) của trụ >= số này. 0 = luôn triệu hồi. Dùng để quái mạnh chỉ xuất hiện ở các trụ gần boss")]
+            public float minPower = 0f;
+        }
+
+        bool Eligible(SpawnEntry e)
+        {
+            return e != null && e.prefab != null && e.weight > 0f && power >= e.minPower;
+        }
+
         public static readonly List<Tower> Towers = new List<Tower>();
         public static int Remaining { get { int n = 0; for (int i = 0; i < Towers.Count; i++) if (Towers[i] != null && !Towers[i].dead) n++; return n; } }
 
@@ -19,7 +39,22 @@ namespace NeonBreaker
         public SpriteRenderer baseGlow;
         public Vector2 barOffset = new Vector2(0f, 5.0f);
 
-        [Header("Độ mạnh quái do trụ này sinh ra (1 = chỉ số gốc trong GameConfig)")]
+        [Header("Chỉ số của trụ")]
+        [Tooltip("Máu của trụ")] public float health = 420f;
+        [Tooltip("Người chơi lại gần trong khoảng này (theo trục ngang) thì trụ bắt đầu triệu hồi")] public float activateRange = 16f;
+
+        [Header("Triệu hồi quái")]
+        [Tooltip("Danh sách loại quái trụ này triệu hồi (thêm dòng bằng dấu +). Để trống = mặc định: Walker 70% / Flyer 30%")]
+        public List<SpawnEntry> spawnTable = new List<SpawnEntry>();
+        [Tooltip("Số quái do TRỤ NÀY sinh ra được sống cùng lúc tối đa")] public int maxAlive = 3;
+        [Tooltip("Tổng số quái trụ này triệu hồi trong cả ván (0 = không giới hạn)")] public int totalSpawnLimit = 0;
+        [Tooltip("Số giây giữa 2 lần triệu hồi")] public float spawnInterval = 4.2f;
+        [Tooltip("Dao động ngẫu nhiên của thời gian triệu hồi (0.12 = ±12%)")] public float intervalJitter = 0.12f;
+        [Tooltip("Số giây chờ trước lần triệu hồi đầu tiên khi người chơi vừa lại gần")] public float firstSpawnDelay = 1.0f;
+        [Tooltip("Quái xuất hiện cách trụ trong khoảng này (min, max)")] public Vector2 spawnDistance = new Vector2(1.6f, 2.8f);
+        [Tooltip("Bật = Power càng cao thì trụ triệu hồi càng nhanh")] public bool powerSpeedsUpSpawn = true;
+
+        [Header("Độ mạnh quái do trụ này sinh ra (1 = chỉ số gốc trên Prefab quái)")]
         [Tooltip("Bật = tự tăng dần theo thứ tự trụ từ trái sang phải (trụ gần boss nhất mạnh nhất)")]
         public bool autoByOrder = true;
         [Tooltip("Độ mạnh của trụ đầu tiên (xa boss nhất) khi bật Auto By Order")]
@@ -29,6 +64,7 @@ namespace NeonBreaker
         [Tooltip("Độ mạnh của riêng trụ này khi TẮT Auto By Order")]
         public float power = 1.0f;
 
+        int spawned;
         float spawnT = 1.2f, flashT, pulse, barShowT;
         bool activated;
         Flasher flasher;
@@ -47,7 +83,7 @@ namespace NeonBreaker
 
         void Awake()
         {
-            maxHp = hp = Cfg.TowerHp;
+            maxHp = hp = health;
             pulse = Random.value * 6f;
             if (crystalGlow == null) { var t = transform.Find("CrystalGlow"); if (t != null) crystalGlow = t.GetComponent<SpriteRenderer>(); }
             if (baseGlow == null) { var t = transform.Find("BaseGlow"); if (t != null) baseGlow = t.GetComponent<SpriteRenderer>(); }
@@ -90,37 +126,69 @@ namespace NeonBreaker
             if (p == null || p.Dead || !GameManager.Active) return;
 
             float dist = Mathf.Abs(p.Position.x - transform.position.x);
-            bool near = dist < Cfg.TowerActivateRange;
+            bool near = dist < activateRange;
             bar.SetVisible(barShowT > 0f || (near && hp < maxHp));
             if (!near) return;
-            if (!activated) { activated = true; spawnT = 1.0f; Sfx.PlayAt("warn", transform.position, 0.6f, 0.7f); }
+            if (!activated) { activated = true; spawnT = firstSpawnDelay; Sfx.PlayAt("warn", transform.position, 0.6f, 0.7f); }
 
             spawnT -= dt;
             if (spawnT > 0f) return;
 
-            if (Enemy.Live.Count >= Cfg.MaxEnemiesAlive || OwnedAlive() >= Cfg.MaxPerTower)
+            if (totalSpawnLimit > 0 && spawned >= totalSpawnLimit) return;      // đã triệu hồi đủ số lượng cho cả ván
+            if (Enemy.Live.Count >= Cfg.MaxEnemiesAlive || OwnedAlive() >= maxAlive)
             {
                 spawnT = 0.6f;                 // chờ có chỗ trống
                 return;
             }
             SpawnOne();
-            spawnT = Cfg.TowerSpawnInterval / Mathf.Sqrt(Mathf.Max(0.2f, power)) * Random.Range(0.9f, 1.15f);
+            float speedUp = powerSpeedsUpSpawn ? Mathf.Sqrt(Mathf.Max(0.2f, power)) : 1f;
+            spawnT = spawnInterval / speedUp * Random.Range(1f - intervalJitter, 1f + intervalJitter);
+        }
+
+        /// <summary>Chọn ngẫu nhiên một loại quái theo trọng số trong bảng triệu hồi (trống thì dùng Walker/Flyer mặc định).</summary>
+        GameObject PickPrefab(out float powerMul)
+        {
+            powerMul = 1f;
+            float total = 0f;
+            for (int i = 0; i < spawnTable.Count; i++)
+                if (Eligible(spawnTable[i])) total += spawnTable[i].weight;
+            if (total > 0f)
+            {
+                float r = Random.value * total;
+                for (int i = 0; i < spawnTable.Count; i++)
+                {
+                    var e = spawnTable[i];
+                    if (!Eligible(e)) continue;
+                    r -= e.weight;
+                    if (r <= 0f) { powerMul = e.powerMul; return e.prefab; }
+                }
+                // sai số làm tròn: lấy dòng hợp lệ cuối cùng
+                for (int i = spawnTable.Count - 1; i >= 0; i--)
+                    if (Eligible(spawnTable[i])) { powerMul = spawnTable[i].powerMul; return spawnTable[i].prefab; }
+            }
+            if (Art.Bank == null) return null;
+            bool flyer = Random.value < Mathf.Clamp(0.30f + (power - 1f) * 0.2f, 0.15f, 0.6f);
+            return flyer ? Art.Bank.flyerPrefab : Art.Bank.walkerPrefab;
         }
 
         void SpawnOne()
         {
-            bool flyer = Random.value < Mathf.Clamp(0.30f + (power - 1f) * 0.2f, 0.15f, 0.6f);
+            float powerMul;
+            GameObject prefab = PickPrefab(out powerMul);
+            if (prefab == null) { Debug.LogWarning("Neon Breaker: Tower " + name + " chưa có prefab quái nào để triệu hồi (Spawn Table trống và ArtBank thiếu Walker/Flyer)."); spawnT = 2f; return; }
+            var proto = prefab.GetComponent<Enemy>();
+            float y = proto != null ? proto.SpawnHeight : 0.05f;
+            Color c = proto != null ? proto.AccentColor : Cfg.Orange;
+
             float dir = Random.value < 0.5f ? -1f : 1f;
-            Vector2 pos = new Vector2(transform.position.x + dir * Random.Range(1.6f, 2.8f), flyer ? 3.4f : 0.05f);
+            Vector2 pos = new Vector2(transform.position.x + dir * Random.Range(spawnDistance.x, spawnDistance.y), y);
             pos.x = Mathf.Clamp(pos.x, Cfg.LevelMinX + 1.5f, Cfg.GateX - 2f);
-            Color c = flyer ? Cfg.Magenta : Cfg.Orange;
             Fx.Ring(pos + new Vector2(0f, 0.5f), c, 0.3f, 2.8f, 0.4f);
             Fx.Burst(pos + new Vector2(0f, 0.5f), c, 12, 6f, 0.4f, 0.3f);
             Fx.Flare(pos + new Vector2(0f, 0.5f), c, 2.2f, 0.3f);
             Fx.Beam(Center + new Vector2(0f, 0.8f), pos + new Vector2(0f, 0.5f), c, 0.12f, 0.18f);
             Sfx.PlayAt("spawn", pos, 0.7f);
-            Enemy e = flyer ? (Enemy)Flyer.Spawn(pos, this) : Walker.Spawn(pos, this);
-            if (e != null) e.ApplyPower(power);
+            if (Enemy.Spawn(prefab, pos, this, power * powerMul) != null) spawned++;
         }
 
         public override void TakeHit(float dmg, Vector2 dir, float knockPower, bool melee)
@@ -158,7 +226,7 @@ namespace NeonBreaker
             Gizmos.color = new Color(1f, 0.2f, 0.8f, 0.6f);
             Gizmos.DrawWireCube(Center, hitSize);
             Gizmos.color = new Color(1f, 1f, 0.2f, 0.25f);
-            Gizmos.DrawLine(transform.position + Vector3.left * Cfg.TowerActivateRange, transform.position + Vector3.right * Cfg.TowerActivateRange);
+            Gizmos.DrawLine(transform.position + Vector3.left * activateRange, transform.position + Vector3.right * activateRange);
         }
     }
 }

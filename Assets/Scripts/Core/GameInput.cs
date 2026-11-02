@@ -15,7 +15,7 @@ namespace NeonBreaker
         public static bool DownHeld;
         public static bool JumpDown, JumpHeld, JumpUp;
         public static bool AttackDown, DashDown, ShurikenDown, HealDown;
-        public static bool ConfirmDown, RestartDown, PauseDown, ClickDown, LangDown;
+        public static bool ConfirmDown, RestartDown, PauseDown, ClickDown, LangDown, CheatDown;
 
         public static void Poll()
         {
@@ -39,7 +39,8 @@ namespace NeonBreaker
 
             ConfirmDown = k.enterKey.wasPressedThisFrame || k.numpadEnterKey.wasPressedThisFrame || k.spaceKey.wasPressedThisFrame;
             RestartDown = k.rKey.wasPressedThisFrame || k.enterKey.wasPressedThisFrame;
-            PauseDown = k.escapeKey.wasPressedThisFrame || k.pKey.wasPressedThisFrame;
+            PauseDown = k.escapeKey.wasPressedThisFrame;
+            CheatDown = k.pKey.wasPressedThisFrame;
             LangDown = k.vKey.wasPressedThisFrame;
             var m = Mouse.current;
             ClickDown = m != null && m.leftButton.wasPressedThisFrame;
@@ -60,7 +61,8 @@ namespace NeonBreaker
 
             ConfirmDown = Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Space);
             RestartDown = Input.GetKeyDown(KeyCode.R) || Input.GetKeyDown(KeyCode.Return);
-            PauseDown = Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P);
+            PauseDown = Input.GetKeyDown(KeyCode.Escape);
+            CheatDown = Input.GetKeyDown(KeyCode.P);
             LangDown = Input.GetKeyDown(KeyCode.V);
             ClickDown = Input.GetMouseButtonDown(0);
 #endif
@@ -71,7 +73,7 @@ namespace NeonBreaker
             Horizontal = 0f;
             DownHeld = JumpDown = JumpHeld = JumpUp = false;
             AttackDown = DashDown = ShurikenDown = HealDown = false;
-            ConfirmDown = RestartDown = PauseDown = ClickDown = LangDown = false;
+            ConfirmDown = RestartDown = PauseDown = ClickDown = LangDown = CheatDown = false;
         }
     }
 }

@@ -25,6 +25,56 @@ namespace NeonBreaker
         float lastY;
         int lastSkill = -1;
 
+        // ------------------------------------------------------------ chỉ số (chỉnh trong Inspector của Prefab Boss)
+        [Header("Máu & di chuyển")]
+        [Tooltip("Máu phase 1 (chậm, máu trâu)")] public float p1Hp = 2800f;
+        [Tooltip("Máu phase 2 (nhanh, máu ít hơn nhưng hút máu)")] public float p2Hp = 1500f;
+        public float p1Speed = 2.0f;
+        public float p2Speed = 5.4f;
+        [Tooltip("Hộp trúng đòn phase 1 / phase 2 (rộng, cao)")] public Vector2 p1HitSize = new Vector2(2.8f, 4.2f);
+        public Vector2 p2HitSize = new Vector2(2.2f, 3.8f);
+        [Tooltip("Phase 2 vào trạng thái nổi giận khi máu dưới tỉ lệ này (0.4 = 40%)")] public float enrageHpFrac = 0.4f;
+
+        [Header("Sát thương")]
+        public float slamDamage = 18f;
+        [Tooltip("Sát thương khi chạm thân boss")] public float touchDamage = 12f;
+        [Tooltip("Giãn cách giữa 2 lần chạm gây sát thương (giây)")] public float touchCooldown = 0.9f;
+        public float boltDamage = 10f;
+        public float slashDamage = 24f;
+        public float lanceDamage = 22f;
+        [Tooltip("Hút bao nhiêu % sát thương gây ra thành máu (phase 2). 0.6 = 60%")] public float lifesteal = 0.60f;
+
+        [Header("Phase 1: nhảy đập")]
+        [Tooltip("Thời gian đi bộ trước mỗi đòn (ngắn nhất, dài nhất)")] public Vector2 p1WalkTime = new Vector2(2.0f, 3.2f);
+        [Tooltip("Thời gian nghỉ sau đòn đập = cơ hội phản công")] public float p1RecoverTime = 1.2f;
+        [Tooltip("Thời gian gồng + ngắm trước khi nhảy")] public float slamChargeTime = 0.4f;
+        [Tooltip("Thời gian bay trên không (cũng là thời gian cảnh báo vùng rơi)")] public float slamAirTime = 0.75f;
+        public float slamJumpHeight = 7f;
+        [Tooltip("Vùng sát thương khi đáp đất (rộng, cao)")] public Vector2 slamZoneSize = new Vector2(6.4f, 2.6f);
+        public float waveSpeed = 9f;
+        [Tooltip("Sát thương sóng xung kích = Slam Damage x hệ số này")] public float waveDamageMul = 0.8f;
+
+        [Header("Phase 2: nhịp chiêu")]
+        [Tooltip("Thời gian đi bộ trước mỗi chiêu (ngắn nhất, dài nhất)")] public Vector2 p2WalkTime = new Vector2(0.8f, 1.5f);
+        [Tooltip("Khi nổi giận, thời gian đi bộ nhân với hệ số này (nhỏ = dồn dập hơn)")] public float enragedWalkMul = 0.6f;
+        [Tooltip("Thời gian nghỉ sau mỗi chiêu (bình thường, nổi giận)")] public Vector2 p2RestTime = new Vector2(0.8f, 0.45f);
+
+        [Header("Phase 2: chớp bước chém")]
+        public float blinkDistance = 3.0f;
+        public float slashReach = 3.6f;
+        [Tooltip("Thời gian cảnh báo trước khi chém (bình thường, nổi giận)")] public Vector2 slashTelegraph = new Vector2(0.5f, 0.38f);
+
+        [Header("Phase 2: chùm đạn quạt")]
+        public float fanBoltSpeed = 11f;
+        [Tooltip("Góc giữa 2 viên đạn cạnh nhau (độ). Mỗi loạt bắn 5 viên")] public float fanAngle = 13f;
+        [Tooltip("Số loạt đạn (bình thường, nổi giận)")] public Vector2Int fanVolleys = new Vector2Int(3, 4);
+        [Tooltip("Thời gian giữa các loạt (bình thường, nổi giận)")] public Vector2 fanGap = new Vector2(0.55f, 0.42f);
+
+        [Header("Phase 2: laser từ trời")]
+        [Tooltip("Thời gian cảnh báo trước khi laser giáng xuống")] public float laserTelegraph = 1.0f;
+        [Tooltip("Khoảng cách giữa các cột laser (có 5 cột)")] public float laserSpacing = 4f;
+        public float laserWidth = 1.8f;
+
         [Header("Hình ảnh (object con của prefab Boss - tự tìm theo tên nếu để trống)")]
         public Transform vis;                       // "Visual": lật trái/phải bằng scale.x
         public SpriteAnimator animP1;               // "Visual/Phase1": clip idle, walk, crouch, air
@@ -35,25 +85,25 @@ namespace NeonBreaker
         Coroutine brain;
 
         public override bool Targetable { get { return !dead && !invul && !transitioning && !hidden; } }
-        public bool Enraged { get { return phase == 2 && hp < maxHp * 0.4f; } }
+        public bool Enraged { get { return phase == 2 && hp < maxHp * enrageHpFrac; } }
         /// <summary>Tỉ lệ máu gộp cả 2 phase (0..1) cho thanh máu HUD.</summary>
         public float TotalFrac
         {
             get
             {
-                float total = Cfg.BossP1Hp + Cfg.BossP2Hp;
-                float cur = phase == 1 ? hp + Cfg.BossP2Hp : hp;
+                float total = p1Hp + p2Hp;
+                float cur = phase == 1 ? hp + p2Hp : hp;
                 return Mathf.Clamp01(cur / total);
             }
         }
-        public float PhaseMarker { get { return Cfg.BossP2Hp / (Cfg.BossP1Hp + Cfg.BossP2Hp); } }
+        public float PhaseMarker { get { return p2Hp / (p1Hp + p2Hp); } }
 
         void Awake()
         {
             Instance = this;
-            maxHp = hp = Cfg.BossP1Hp;
-            hitSize = new Vector2(2.8f, 4.2f);
-            hitOffset = new Vector2(0f, 2.1f);
+            maxHp = hp = p1Hp;
+            hitSize = p1HitSize;
+            hitOffset = new Vector2(0f, hitSize.y * 0.5f);
 
             if (vis == null) vis = transform.Find("Visual");
             if (vis != null)
@@ -73,7 +123,7 @@ namespace NeonBreaker
             if (animP1 != null) animP1.gameObject.SetActive(phase == 1);
             if (animP2 != null) animP2.gameObject.SetActive(phase == 2);
             if (aura != null) aura.color = Cfg.A(phase == 1 ? Cfg.Purple : Cfg.Red, 0.3f);
-            hitSize = phase == 1 ? new Vector2(2.8f, 4.2f) : new Vector2(2.2f, 3.8f);
+            hitSize = phase == 1 ? p1HitSize : p2HitSize;
             hitOffset = new Vector2(0f, hitSize.y * 0.5f);
             if (flasher != null) flasher.Capture(gameObject);
         }
@@ -142,15 +192,15 @@ namespace NeonBreaker
                 if (!PlayerAlive) { yield return null; continue; }
                 if (phase == 1)
                 {
-                    yield return Walk(Random.Range(2.0f, 3.2f), Cfg.BossP1Speed);
+                    yield return Walk(Random.Range(p1WalkTime.x, p1WalkTime.y), p1Speed);
                     if (!PlayerAlive) continue;
                     yield return Slam();
-                    yield return new WaitForSeconds(1.2f);       // hở sườn: cửa sổ phản công
+                    yield return new WaitForSeconds(p1RecoverTime);       // hở sườn: cửa sổ phản công
                 }
                 else
                 {
-                    float rush = Enraged ? 0.6f : 1f;
-                    yield return Walk(Random.Range(0.8f, 1.5f) * rush, Cfg.BossP2Speed);
+                    float rush = Enraged ? enragedWalkMul : 1f;
+                    yield return Walk(Random.Range(p2WalkTime.x, p2WalkTime.y) * rush, p2Speed);
                     if (!PlayerAlive) continue;
                     int pick;
                     do { pick = Random.Range(0, 3); } while (pick == lastSkill);
@@ -158,7 +208,7 @@ namespace NeonBreaker
                     if (pick == 0) yield return BlinkSlash();
                     else if (pick == 1) yield return BoltFan();
                     else yield return SkyLasers();
-                    yield return new WaitForSeconds((Enraged ? 0.45f : 0.8f));
+                    yield return new WaitForSeconds(Enraged ? p2RestTime.y : p2RestTime.x);
                 }
             }
         }
@@ -194,28 +244,28 @@ namespace NeonBreaker
             // gồng + nhắm
             float t = 0f;
             float targetX = ArenaClamp(P.Position.x);
-            while (t < 0.4f)
+            while (t < slamChargeTime)
             {
                 t += Time.deltaTime;
                 if (PlayerAlive) targetX = ArenaClamp(P.Position.x);
                 FacePlayer();
-                crouch = Mathf.Lerp(0f, 0.22f, t / 0.4f);
+                crouch = Mathf.Lerp(0f, 0.22f, t / Mathf.Max(0.01f, slamChargeTime));
                 yield return null;
             }
             // khóa vùng đáp, hiện cảnh báo
-            Rect zone = Geo.Box(new Vector2(targetX, 1.2f), new Vector2(6.4f, 2.6f));
-            Telegraph.Zone(new Rect(zone.x, 0f, zone.width, 0.35f), Cfg.Red, 0.75f);
-            Telegraph.Zone(zone, Cfg.Red, 0.75f);
+            Rect zone = Geo.Box(new Vector2(targetX, 1.2f), slamZoneSize);
+            Telegraph.Zone(new Rect(zone.x, 0f, zone.width, 0.35f), Cfg.Red, slamAirTime);
+            Telegraph.Zone(zone, Cfg.Red, slamAirTime);
             crouch = 0f;
 
             float startX = transform.position.x;
             float lt = 0f;
-            const float airTime = 0.75f;
+            float airTime = Mathf.Max(0.05f, slamAirTime);
             while (lt < airTime)
             {
                 lt += Time.deltaTime;
                 float u = Mathf.Clamp01(lt / airTime);
-                SetPos(Mathf.Lerp(startX, targetX, u), 7f * 4f * u * (1f - u));
+                SetPos(Mathf.Lerp(startX, targetX, u), slamJumpHeight * 4f * u * (1f - u));
                 yield return null;
             }
             SetPos(targetX, 0f);
@@ -227,9 +277,9 @@ namespace NeonBreaker
             Fx.Shake(0.9f);
             Fx.HitStop(0.06f);
             Sfx.Play("slam", 1f);
-            if (PlayerAlive && zone.Overlaps(P.HurtRect)) Strike(Cfg.BossSlamDamage, 10f);
-            Projectile.Wave(new Vector2(targetX - 2.2f, 0f), -1f, 9f, Cfg.BossSlamDamage * 0.8f, Cfg.Purple);
-            Projectile.Wave(new Vector2(targetX + 2.2f, 0f), 1f, 9f, Cfg.BossSlamDamage * 0.8f, Cfg.Purple);
+            if (PlayerAlive && zone.Overlaps(P.HurtRect)) Strike(slamDamage, 10f);
+            Projectile.Wave(new Vector2(targetX - 2.2f, 0f), -1f, waveSpeed, slamDamage * waveDamageMul, Cfg.Purple);
+            Projectile.Wave(new Vector2(targetX + 2.2f, 0f), 1f, waveSpeed, slamDamage * waveDamageMul, Cfg.Purple);
         }
 
         float crouch;
@@ -244,18 +294,18 @@ namespace NeonBreaker
 
             if (!PlayerAlive) { hidden = false; yield break; }
             float side = Random.value < 0.5f ? -1f : 1f;
-            float nx = ArenaClamp(P.Position.x + side * 3.0f);
-            if (Mathf.Abs(nx - P.Position.x) < 1.5f) nx = ArenaClamp(P.Position.x - side * 3.0f);
+            float nx = ArenaClamp(P.Position.x + side * blinkDistance);
+            if (Mathf.Abs(nx - P.Position.x) < 1.5f) nx = ArenaClamp(P.Position.x - side * blinkDistance);
             SetPos(nx, 0f);
             FacePlayer();
             hidden = false;
             Sfx.Play("teleport", 0.7f, 1.3f);
             Fx.Ring(new Vector2(nx, 1.2f), Cfg.Orange, 0.5f, 4f, 0.3f);
 
-            float reach = 3.6f;
+            float reach = slashReach;
             Rect hit = new Rect(facing > 0 ? nx : nx - reach, 0f, reach, 2.8f);
             Sfx.Play("warn", 0.9f, 1.4f);
-            float tel = Enraged ? 0.38f : 0.5f;
+            float tel = Enraged ? slashTelegraph.y : slashTelegraph.x;
             Telegraph.Zone(hit, Cfg.Red, tel);
             float t = 0f;
             while (t < tel) { t += Time.deltaTime; FacePlayer(); yield return null; }
@@ -266,7 +316,7 @@ namespace NeonBreaker
             Fx.Slash(new Vector2(hit.center.x, 1.5f), facing, Cfg.Orange, 2.6f);
             Fx.Slash(new Vector2(hit.center.x, 1.5f), facing, Cfg.White, 1.8f);
             Fx.Shake(0.5f);
-            if (PlayerAlive && hit.Overlaps(P.HurtRect)) Strike(Cfg.BossSlashDamage, 11f);
+            if (PlayerAlive && hit.Overlaps(P.HurtRect)) Strike(slashDamage, 11f);
             yield return new WaitForSeconds(0.55f);
             pose = "";
         }
@@ -285,7 +335,7 @@ namespace NeonBreaker
                 Fx.Trail(Muzzle, Cfg.A(Cfg.Orange, 0.8f), 0.4f + 1.2f * t, 0.12f);
                 yield return null;
             }
-            int volleys = Enraged ? 4 : 3;
+            int volleys = Enraged ? fanVolleys.y : fanVolleys.x;
             for (int v = 0; v < volleys; v++)
             {
                 if (!PlayerAlive) break;
@@ -295,13 +345,13 @@ namespace NeonBreaker
                 float baseAng = Mathf.Atan2(aim.y, aim.x) * Mathf.Rad2Deg;
                 for (int i = -2; i <= 2; i++)
                 {
-                    float a = (baseAng + i * 13f) * Mathf.Deg2Rad;
-                    Projectile.Bolt(m, new Vector2(Mathf.Cos(a), Mathf.Sin(a)), 11f, Cfg.BossBoltDamage, Cfg.Orange, true);
+                    float a = (baseAng + i * fanAngle) * Mathf.Deg2Rad;
+                    Projectile.Bolt(m, new Vector2(Mathf.Cos(a), Mathf.Sin(a)), fanBoltSpeed, boltDamage, Cfg.Orange, true);
                 }
                 Sfx.Play("bolt", 0.9f, 0.7f);
                 Fx.Flare(m, Cfg.Orange, 2.4f, 0.2f);
                 Fx.Shake(0.15f);
-                yield return new WaitForSeconds(Enraged ? 0.42f : 0.55f);
+                yield return new WaitForSeconds(Enraged ? fanGap.y : fanGap.x);
             }
             yield return new WaitForSeconds(0.4f);
             pose = "";
@@ -319,7 +369,7 @@ namespace NeonBreaker
                 if (!PlayerAlive) { pose = ""; yield break; }
                 Sfx.Play("charge", 0.9f, 0.9f);
                 float px = P.Position.x;
-                float[] offs = { -8f, -4f, 0f, 4f, 8f };
+                float[] offs = { -2f * laserSpacing, -laserSpacing, 0f, laserSpacing, 2f * laserSpacing };
                 var xs = new List<float>();
                 for (int i = 0; i < offs.Length; i++)
                 {
@@ -329,9 +379,9 @@ namespace NeonBreaker
                 xs[2] = ArenaClamp(px + (w == 1 ? 1.2f : 0f));     // một cột nhắm thẳng vào người chơi
 
                 for (int i = 0; i < xs.Count; i++)
-                    Telegraph.Zone(new Rect(xs[i] - 0.9f, 0f, 1.8f, 18f), Cfg.Magenta, 1.0f);
+                    Telegraph.Zone(new Rect(xs[i] - laserWidth * 0.5f, 0f, laserWidth, 18f), Cfg.Magenta, laserTelegraph);
                 Sfx.Play("warn", 0.8f, 1.2f);
-                yield return new WaitForSeconds(1.0f);
+                yield return new WaitForSeconds(laserTelegraph);
 
                 Sfx.Play("laser", 1f);
                 Fx.Shake(0.7f);
@@ -342,10 +392,10 @@ namespace NeonBreaker
                     float x = xs[i];
                     Fx.Beam(new Vector2(x, 18f), new Vector2(x, 0f), Cfg.Magenta, 1.6f, 0.3f);
                     Fx.Explosion(new Vector2(x, 0.4f), Cfg.Magenta, false);
-                    if (!hitDone && PlayerAlive && new Rect(x - 0.9f, 0f, 1.8f, 18f).Overlaps(P.HurtRect))
+                    if (!hitDone && PlayerAlive && new Rect(x - laserWidth * 0.5f, 0f, laserWidth, 18f).Overlaps(P.HurtRect))
                     {
                         hitDone = true;
-                        Strike(Cfg.BossLanceDamage, 9f, new Vector2(x, 0f));
+                        Strike(lanceDamage, 9f, new Vector2(x, 0f));
                     }
                 }
                 yield return new WaitForSeconds(0.45f);
@@ -366,7 +416,7 @@ namespace NeonBreaker
         public void Drain(float dealt)
         {
             if (phase != 2 || dead || P == null) return;
-            float heal = dealt * Cfg.BossLifesteal;
+            float heal = dealt * lifesteal;
             hp = Mathf.Min(maxHp, hp + heal);
             Fx.Beam(P.Center, Center, Cfg.Lime, 0.18f, 0.35f);
             Fx.Burst(Center, Cfg.Lime, 10, 6f, 0.5f, 0.35f);
@@ -413,7 +463,7 @@ namespace NeonBreaker
             if (PlayerAlive) P.Knock(new Vector2(Mathf.Sign(P.Position.x - transform.position.x) * 14f, 7f));
             Fx.Ring(Center, Cfg.White, 1f, 20f, 0.7f);
             phase = 2;
-            maxHp = hp = Cfg.BossP2Hp;
+            maxHp = hp = p2Hp;
             ApplyPhaseLook();
             Sfx.Play("bossRoar", 1f, 1.3f);
             Fx.Shake(0.8f);
@@ -495,8 +545,8 @@ namespace NeonBreaker
             {
                 if (HitRect.Overlaps(P.HurtRect))
                 {
-                    contactCd = 0.9f;
-                    Strike(Cfg.BossTouchDamage, 9f);
+                    contactCd = touchCooldown;
+                    Strike(touchDamage, 9f);
                 }
             }
 

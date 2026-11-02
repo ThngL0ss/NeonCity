@@ -120,8 +120,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ade1d8b8241e41d4f9440a8084eac04c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hitSize: {x: 1, y: 1}
-  hitOffset: {x: 0, y: 0}
+  hitSize: {x: 1, y: 0.95}
+  hitOffset: {x: 0, y: 0.48}
   hp: 0
   maxHp: 0
   dead: 0

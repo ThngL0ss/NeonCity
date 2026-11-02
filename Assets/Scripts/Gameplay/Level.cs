@@ -25,6 +25,12 @@ namespace NeonBreaker
         [Tooltip("Khoảng cách từ cổng tới điểm mà người chơi đi qua sẽ kích hoạt boss")]
         public float bossTriggerOffset = 7f;
 
+        [Header("Quái & vật phẩm (toàn màn)")]
+        [Tooltip("Trần số quái nhỏ sống cùng lúc trên toàn màn (cộng tất cả các trụ)")]
+        public int maxEnemiesAlive = 8;
+        [Tooltip("Tỉ lệ quái nhỏ rơi vật phẩm hồi máu (0.2 = 20%). Từng loại quái còn có hệ số riêng Drop Chance Mul")]
+        [Range(0f, 1f)] public float dropChance = 0.20f;
+
         [Header("Cổng khu boss")]
         public BoxCollider2D gateCollider;
         public SpriteRenderer gateBar;
@@ -60,6 +66,8 @@ namespace NeonBreaker
         void Awake()
         {
             Instance = this;
+            Cfg.MaxEnemiesAlive = maxEnemiesAlive;
+            Cfg.DropChance = dropChance;
             if (limitLeft != null) Cfg.LevelMinX = limitLeft.position.x;
             if (limitRight != null) Cfg.LevelMaxX = limitRight.position.x;
             if (gate != null) Cfg.GateX = gate.position.x;

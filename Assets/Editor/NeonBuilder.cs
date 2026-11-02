@@ -11,7 +11,7 @@ namespace NeonBreaker.EditorTools
 {
     /// <summary>
     /// Menu Tools ▸ Neon Breaker ▸ Build Project: tạo (một lần) toàn bộ file thật để bạn chỉnh trong Unity:
-    ///   Materials, Audio (WAV), ScriptableObject (ArtBank / AudioBank / GameConfig), Prefab, và Scene Main.unity.
+    ///   Materials, Audio (WAV), ScriptableObject (ArtBank / AudioBank), Prefab, và Scene Main.unity.
     /// Sau khi tạo xong, mọi thứ là file bình thường - bạn sửa / thay / kéo thả thoải mái. Không cần chạy lại.
     /// </summary>
     public static class NeonBuilder
@@ -84,6 +84,50 @@ namespace NeonBreaker.EditorTools
             {
                 EditorUtility.ClearProgressBar();
                 Debug.LogError("Neon Breaker: Build Project lỗi - " + e);
+                EditorUtility.DisplayDialog("Neon Breaker", "Lỗi: " + e.Message + "\n(xem Console)", "OK");
+            }
+        }
+
+        [MenuItem("Tools/Neon Breaker/Thêm quái Heavy + Rusher (không đụng Scene)", false, 10)]
+        public static void AddNewEnemies()
+        {
+            root = null;
+            if (!File.Exists(PrefabDir + "Walker.prefab"))
+            {
+                EditorUtility.DisplayDialog("Neon Breaker", "Chưa có Prefab Walker. Hãy chạy Build Project trước.", "OK");
+                return;
+            }
+            try
+            {
+                Prepare();
+                // sửa hộp trúng đòn của Walker/Flyer nếu Prefab cũ còn giá trị mặc định (1x1 ở chân)
+                EditPrefab("Walker", go =>
+                {
+                    var w = go.GetComponent<Walker>();
+                    if (w != null && w.hitSize == Vector2.one && w.hitOffset == Vector2.zero) { w.hitSize = new Vector2(1.0f, 0.95f); w.hitOffset = new Vector2(0f, 0.48f); }
+                });
+                EditPrefab("Flyer", go =>
+                {
+                    var f = go.GetComponent<Flyer>();
+                    if (f != null && f.hitSize == Vector2.one && f.hitOffset == Vector2.zero) { f.hitSize = new Vector2(1.0f, 0.9f); f.hitOffset = Vector2.zero; }
+                });
+                MakeWalkerVariant("Heavy", false);
+                MakeWalkerVariant("Rusher", false);
+                // nếu bảng triệu hồi của Prefab Tower còn trống thì điền sẵn 4 loại quái
+                EditPrefab("Tower", go =>
+                {
+                    var t = go.GetComponent<Tower>();
+                    if (t != null && (t.spawnTable == null || t.spawnTable.Count == 0)) FillTowerTable(t);
+                });
+                if (missing.Count > 0) throw new System.Exception("Thiếu sprite: " + string.Join(", ", missing.ToArray()));
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+                Debug.Log("Neon Breaker: đã có Prefab Heavy + Rusher và bảng triệu hồi của Tower. Scene của bạn không bị thay đổi.");
+                EditorUtility.DisplayDialog("Neon Breaker", "Xong! Đã tạo Prefab Heavy + Rusher trong " + PrefabDir + "\nBảng triệu hồi của Prefab Tower đã có 4 loại quái.\nScene của bạn không bị thay đổi.", "OK");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("Neon Breaker: lỗi khi thêm quái - " + e);
                 EditorUtility.DisplayDialog("Neon Breaker", "Lỗi: " + e.Message + "\n(xem Console)", "OK");
             }
         }
@@ -258,6 +302,105 @@ namespace NeonBreaker.EditorTools
             return a;
         }
 
+        /// <summary>Mở Prefab trong chế độ cô lập (không đụng Scene đang mở), chạy hàm sửa, rồi lưu lại.</summary>
+        static void EditPrefab(string name, System.Action<GameObject> edit)
+        {
+            string path = PrefabDir + name + ".prefab";
+            if (!File.Exists(path)) return;
+            var root = PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                edit(root);
+                PrefabUtility.SaveAsPrefabAsset(root, path);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(root); }
+        }
+
+        /// <summary>Điền bảng triệu hồi mặc định của trụ: Walker, Flyer, Rusher (từ trụ có Power >= 1.1), Heavy (Power >= 1.3).</summary>
+        static void FillTowerTable(Tower t)
+        {
+            t.spawnTable = new List<Tower.SpawnEntry>
+            {
+                new Tower.SpawnEntry { prefab = Prefab("Walker"), weight = 45f, minPower = 0f },
+                new Tower.SpawnEntry { prefab = Prefab("Flyer"), weight = 25f, minPower = 0f },
+                new Tower.SpawnEntry { prefab = Prefab("Rusher"), weight = 15f, minPower = 1.1f },
+                new Tower.SpawnEntry { prefab = Prefab("Heavy"), weight = 15f, minPower = 1.3f },
+            };
+        }
+
+        /// <summary>
+        /// Tạo quái biến thể từ Prefab Walker: nhân bản file, đổi bộ hình (heavy_*/rusher_*), chỉ số, hộp va chạm.
+        /// Heavy  = máu trâu, sát thương nhỏ, chậm.   Rusher = máu yếu, sát thương lớn, nhanh.
+        /// overwrite = false: nếu Prefab đã có thì giữ nguyên (không đè lên chỉnh sửa của bạn).
+        /// </summary>
+        static void MakeWalkerVariant(string name, bool overwrite)
+        {
+            string src = PrefabDir + "Walker.prefab", dst = PrefabDir + name + ".prefab";
+            if (File.Exists(dst))
+            {
+                if (!overwrite) return;
+                AssetDatabase.DeleteAsset(dst);
+            }
+            if (!AssetDatabase.CopyAsset(src, dst)) throw new System.Exception("Không nhân bản được " + src);
+            AssetDatabase.Refresh();
+
+            var root = PrefabUtility.LoadPrefabContents(dst);
+            try
+            {
+                root.name = name;
+                var w = root.GetComponent<Walker>();
+                var col = root.GetComponent<BoxCollider2D>();
+                var rb = root.GetComponent<Rigidbody2D>();
+                var visT = root.transform.Find("Visual");
+                var anim = visT.GetComponent<SpriteAnimator>();
+                var aura = root.transform.Find("Aura");
+                var warn = visT.Find("Warn");
+                string pre = name.ToLowerInvariant();
+
+                anim.clips = new[]
+                {
+                    Clip("walk", name == "Heavy" ? 6f : 14f, true, Fr(pre + "_walk_", 4)),
+                    Clip("windup", 8f, true, Spr(pre + "_windup")),
+                    Clip("lunge", 8f, true, Spr(pre + "_lunge")),
+                };
+                anim.startClip = "walk";
+                visT.GetComponent<SpriteRenderer>().sprite = anim.clips[0].frames[0];
+
+                if (name == "Heavy")
+                {
+                    w.health = 220f; w.moveSpeed = 2.0f; w.lungeDamage = 8f; w.touchDamage = 3f;
+                    w.aggroRange = 18f; w.windupRange = 3.8f; w.windupTime = 0.75f;
+                    w.lungeSpeed = 8.5f; w.lungeTime = 0.35f; w.recoverTime = 1.0f; w.attackCooldown = 1.4f;
+                    w.staggerTime = 0.12f; w.knockbackMul = 0.25f; w.gravityScale = 6f;
+                    w.lungeBoxSize = new Vector2(2.4f, 1.7f); w.touchBoxSize = new Vector2(2.2f, 1.5f);
+                    w.accentColor = new Color(0.55f, 0.3f, 1f, 1f);
+                    w.spawnHeight = 0.05f; w.dropChanceMul = 2.5f;
+                    w.hitSize = new Vector2(2.3f, 1.8f); w.hitOffset = new Vector2(0f, 0.9f);
+                    col.size = new Vector2(2.2f, 1.7f); col.offset = new Vector2(0f, 0.85f);
+                    aura.localPosition = new Vector3(0f, 1.0f, 0f); aura.localScale = new Vector3(4.2f, 3.2f, 1f);
+                    aura.GetComponent<SpriteRenderer>().color = new Color(0.55f, 0.3f, 1f, 0.25f);
+                    warn.localPosition = new Vector3(0.4f, 1.1f, 0f); warn.localScale = new Vector3(4.6f, 3.6f, 1f);
+                }
+                else
+                {
+                    w.health = 18f; w.moveSpeed = 7.0f; w.lungeDamage = 24f; w.touchDamage = 8f;
+                    w.aggroRange = 22f; w.windupRange = 5.5f; w.windupTime = 0.4f;
+                    w.lungeSpeed = 21f; w.lungeTime = 0.3f; w.recoverTime = 0.6f; w.attackCooldown = 0.7f;
+                    w.staggerTime = 0.4f; w.knockbackMul = 1.4f; w.gravityScale = 4f;
+                    w.lungeBoxSize = new Vector2(1.6f, 0.9f); w.touchBoxSize = new Vector2(1.4f, 0.8f);
+                    w.accentColor = new Color(0.45f, 1f, 0.4f, 1f);
+                    w.spawnHeight = 0.05f; w.dropChanceMul = 0.8f;
+                    w.hitSize = new Vector2(1.5f, 1.0f); w.hitOffset = new Vector2(0f, 0.5f);
+                    col.size = new Vector2(1.5f, 0.9f); col.offset = new Vector2(0f, 0.45f);
+                    aura.localPosition = new Vector3(0f, 0.5f, 0f); aura.localScale = new Vector3(2.6f, 1.6f, 1f);
+                    aura.GetComponent<SpriteRenderer>().color = new Color(0.45f, 1f, 0.4f, 0.25f);
+                    warn.localPosition = new Vector3(0.3f, 0.6f, 0f); warn.localScale = new Vector3(2.6f, 1.8f, 1f);
+                }
+                PrefabUtility.SaveAsPrefabAsset(root, dst);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(root); }
+        }
+
         static GameObject SavePrefab(GameObject go, string name)
         {
             var p = PrefabUtility.SaveAsPrefabAsset(go, PrefabDir + name + ".prefab");
@@ -326,6 +469,8 @@ namespace NeonBreaker.EditorTools
                 col.offset = new Vector2(0f, 0.45f);
                 Glow(go, "Aura", new Vector2(0f, 0.5f), new Vector2(2.2f, 1.8f), A(red, 0.22f), 21);
                 var w = go.AddComponent<Walker>();
+                w.hitSize = new Vector2(1.0f, 0.95f);
+                w.hitOffset = new Vector2(0f, 0.48f);
                 var vis = Visual(go, "Visual", Vector2.zero, 24, "walk",
                     Clip("walk", 8f, true, Fr("walker_walk_", 4)),
                     Clip("windup", 8f, true, Spr("walker_windup")),
@@ -343,6 +488,8 @@ namespace NeonBreaker.EditorTools
                 go.layer = 9;
                 Glow(go, "Aura", Vector2.zero, new Vector2(2.6f, 2.2f), A(magenta, 0.25f), 21);
                 var f = go.AddComponent<Flyer>();
+                f.hitSize = new Vector2(1.0f, 0.9f);
+                f.hitOffset = Vector2.zero;
                 var vis = Visual(go, "Visual", Vector2.zero, 24, "fly",
                     Clip("fly", 8f, true, Fr("flyer_fly_", 2)),
                     Clip("charge", 8f, true, Spr("flyer_charge")));
@@ -352,6 +499,10 @@ namespace NeonBreaker.EditorTools
                 f.chargeGlow = cg;
                 SavePrefab(go, "Flyer");
             }
+
+            // ---- Heavy + Rusher (nhân bản từ Walker, đổi hình + chỉ số)
+            MakeWalkerVariant("Heavy", true);
+            MakeWalkerVariant("Rusher", true);
 
             // ---- Tower
             {
@@ -363,6 +514,7 @@ namespace NeonBreaker.EditorTools
                 Visual(go, "Visual", Vector2.zero, 20, "idle", Clip("idle", 6f, true, Fr("tower_idle_", 4)));
                 t.crystalGlow = Glow(go, "CrystalGlow", new Vector2(0f, 3.7f), new Vector2(2.6f, 2.6f), A(magenta, 0.5f), 21);
                 t.baseGlow = Glow(go, "BaseGlow", new Vector2(0f, 0.4f), new Vector2(3.2f, 1.0f), A(purple, 0.4f), 19);
+                FillTowerTable(t);
                 SavePrefab(go, "Tower");
             }
 
@@ -559,8 +711,6 @@ namespace NeonBreaker.EditorTools
             }
             EditorUtility.SetDirty(au);
 
-            // GameConfig
-            LoadOrCreate<GameConfig>(ResDir + "GameConfig.asset");
             AssetDatabase.SaveAssets();
         }
 

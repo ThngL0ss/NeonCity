@@ -14,6 +14,54 @@ namespace NeonBreaker
     {
         public static Player Instance;
 
+        // ------------------------------------------------------------ chỉ số (chỉnh trong Inspector của Prefab Player)
+        [Header("Sinh tồn")]
+        [Tooltip("Máu tối đa")] public float maxHealth = 100f;
+        [Tooltip("Thời gian bất tử sau khi trúng đòn (giây)")] public float hurtInvuln = 0.85f;
+        [Tooltip("Số lượt hồi máu lúc bắt đầu")] public int healStartCharges = 3;
+        [Tooltip("Số lượt hồi máu tối đa (nhặt vật phẩm cộng dồn đến mức này)")] public int healMaxCharges = 5;
+        [Tooltip("Kích thước vùng nhận sát thương (hurtbox)")] public Vector2 hurtBoxSize = new Vector2(0.68f, 1.4f);
+        [Tooltip("Lực nảy lên khi bị đánh lúc đang đứng đất / đang ở trên không")] public Vector2 hurtHopSpeed = new Vector2(5.5f, 3f);
+
+        [Header("Di chuyển & nhảy")]
+        public float moveSpeed = 8.2f;
+        public float accelGround = 95f;
+        public float accelAir = 55f;
+        public float jumpVelocity = 15.5f;
+        [Tooltip("Trọng lực khi đang bay lên và giữ nút nhảy (nhỏ = nhảy cao hơn)")] public float gravityUp = 3.4f;
+        [Tooltip("Trọng lực bình thường / khi rơi")] public float gravityDown = 4.8f;
+        [Tooltip("Cho phép nhảy trễ sau khi rời mép bục (giây)")] public float coyoteTime = 0.10f;
+        [Tooltip("Nhớ nút nhảy bấm sớm trước khi chạm đất (giây)")] public float jumpBuffer = 0.12f;
+
+        [Header("Chém cận chiến (J) - tầm ngắn, buộc phải áp sát")]
+        public float meleeDamage = 20f;
+        [Tooltip("Tầm chém (đơn vị thế giới)")] public float meleeReach = 2.1f;
+        public float meleeHeight = 2.1f;
+        [Tooltip("Từ lúc bấm đến lúc đòn trúng (giây)")] public float meleeWindup = 0.07f;
+        [Tooltip("Tổng thời gian một đòn chém")] public float meleeDuration = 0.28f;
+        public float meleeCooldown = 0.36f;
+        [Tooltip("Hệ số tốc độ chạy khi đang chém")] public float meleeMoveMul = 0.40f;
+        [Tooltip("Tốc độ bước tới khi chém")] public float meleeStepSpeed = 6.5f;
+        [Tooltip("Lực đẩy lùi kẻ địch")] public float meleeKnockback = 7f;
+
+        [Header("Lướt (I) - bất tử trong lúc lướt")]
+        public float dashSpeed = 25f;
+        public float dashTime = 0.19f;
+        public float dashCooldown = 1.5f;
+        [Tooltip("Thời gian bất tử kéo dài thêm sau khi lướt xong")] public float dashInvulnExtra = 0.06f;
+
+        [Header("Phi tiêu (K)")]
+        public float shurikenDamage = 13f;
+        public float shurikenSpeed = 21f;
+        public float shurikenRange = 13f;
+        public float shurikenCooldown = 0.55f;
+        [Tooltip("Số kẻ địch phi tiêu xuyên qua thêm")] public int shurikenPierce = 2;
+
+        [Header("Hồi máu (L)")]
+        public float healAmount = 38f;
+        [Tooltip("Thời gian đứng yên khi hồi (rủi ro)")] public float healChannel = 0.50f;
+        public float healCooldown = 1.2f;
+
         // ------------------------------------------------------------ state
         public float hp, maxHp;
         public int healCharges;
@@ -34,18 +82,18 @@ namespace NeonBreaker
         float healT, healCd;
         float hurtT, flashT, squashT;
 
-        public float AtkCdFrac { get { return Mathf.Clamp01(atkCd / Cfg.MeleeCooldown); } }
-        public float DashCdFrac { get { return Mathf.Clamp01(dashCd / Cfg.DashCooldown); } }
-        public float ShurCdFrac { get { return Mathf.Clamp01(shurCd / Cfg.ShurikenCooldown); } }
-        public float HealCdFrac { get { return Mathf.Clamp01(healCd / Cfg.HealCooldown); } }
+        public float AtkCdFrac { get { return Mathf.Clamp01(atkCd / meleeCooldown); } }
+        public float DashCdFrac { get { return Mathf.Clamp01(dashCd / dashCooldown); } }
+        public float ShurCdFrac { get { return Mathf.Clamp01(shurCd / shurikenCooldown); } }
+        public float HealCdFrac { get { return Mathf.Clamp01(healCd / healCooldown); } }
         public bool IsHealing { get { return healT > 0f; } }
         public bool IsDashing { get { return dashT > 0f; } }
 
         public float VelocityX { get { return rb != null ? rb.Vel().x : 0f; } }
         public Vector2 Position { get { return transform.position; } }
         public Vector2 Center { get { return (Vector2)transform.position + new Vector2(0f, 0.75f); } }
-        public Rect HurtRect { get { return Geo.Box(Center, new Vector2(0.68f, 1.4f)); } }
-        public bool Invulnerable { get { return Dead || invulnT > 0f || hurtT > 0f || GameManager.GodMode; } }
+        public Rect HurtRect { get { return Geo.Box(Center, hurtBoxSize); } }
+        public bool Invulnerable { get { return Dead || invulnT > 0f || hurtT > 0f || GameManager.Cheat; } }
 
         // ------------------------------------------------------------ visual (object thật trong prefab Player)
         [Header("Hình ảnh (tự tìm object con \"Visual\" nếu để trống)")]
@@ -56,15 +104,15 @@ namespace NeonBreaker
         void Awake()
         {
             Instance = this;
-            maxHp = Cfg.PlayerMaxHp;
+            maxHp = maxHealth;
             hp = maxHp;
-            healCharges = Cfg.HealStartCharges;
+            healCharges = healStartCharges;
             gameObject.layer = Cfg.LayerPlayer;
 
             rb = GetComponent<Rigidbody2D>();
             if (rb == null) rb = gameObject.AddComponent<Rigidbody2D>();
             rb.freezeRotation = true;
-            rb.gravityScale = Cfg.GravityDown;
+            rb.gravityScale = gravityDown;
             rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
             rb.interpolation = RigidbodyInterpolation2D.Interpolate;
             rb.sleepMode = RigidbodySleepMode2D.NeverSleep;
@@ -123,11 +171,12 @@ namespace NeonBreaker
             }
             wasGrounded = grounded;
             lastVy = v.y;
-            if (grounded) coyote = Cfg.CoyoteTime; else coyote -= dt;
+            if (grounded) coyote = coyoteTime; else coyote -= dt;
 
             // timers
             jumpBuf -= dt;
             dashCd -= dt; atkCd -= dt; shurCd -= dt; healCd -= dt;
+            if (GameManager.Cheat) { dashCd = 0f; atkCd = 0f; shurCd = 0f; healCd = 0f; }   // chế độ thử nghiệm (P): không hồi chiêu
             hurtT -= dt; invulnT -= dt; flashT -= dt; squashT -= dt; ghostT -= dt;
             if (atkT > 0f) atkT -= dt;
 
@@ -152,7 +201,7 @@ namespace NeonBreaker
             if (dashT > 0f)
             {
                 dashT -= dt;
-                v.x = dashDir * Cfg.DashSpeed;
+                v.x = dashDir * dashSpeed;
                 v.y = 0f;
                 rb.gravityScale = 0f;
                 if (ghostT <= 0f)
@@ -161,11 +210,11 @@ namespace NeonBreaker
                     Fx.Ghost(Center, new Vector2(0.8f, 1.6f), Cfg.Cyan, 0.28f);
                     Fx.Emit(Fx.S_Glow, Center, Vector2.zero, new Vector2(0.9f, 0.9f), Vector2.zero, Cfg.A(Cfg.Magenta, 0.8f), Cfg.A(Cfg.Magenta, 0f), 0.3f);
                 }
-                if (dashT <= 0f) rb.gravityScale = Cfg.GravityDown;
+                if (dashT <= 0f) rb.gravityScale = gravityDown;
             }
             else
             {
-                rb.gravityScale = (v.y > 0f && GameInput.JumpHeld && canAct) ? Cfg.GravityUp : Cfg.GravityDown;
+                rb.gravityScale = (v.y > 0f && GameInput.JumpHeld && canAct) ? gravityUp : gravityDown;
             }
 
             // đòn chém: tính thời điểm trúng đòn
@@ -191,7 +240,7 @@ namespace NeonBreaker
 
             if (!dashing && !healing && atkT <= 0f && hx != 0f) Facing = hx > 0f ? 1 : -1;
 
-            if (GameInput.JumpDown) jumpBuf = Cfg.JumpBuffer;
+            if (GameInput.JumpDown) jumpBuf = jumpBuffer;
 
             if (GameInput.DashDown && dashCd <= 0f && !healing) StartDash(hx);
             if (GameInput.AttackDown && atkCd <= 0f && !dashing && !healing) StartAttack(ref v);
@@ -209,9 +258,9 @@ namespace NeonBreaker
                 return v;
             }
 
-            float mul = atkT > 0f ? Cfg.MeleeMoveMul : 1f;
-            float target = hx * Cfg.PlayerSpeed * mul;
-            float accel = grounded ? Cfg.PlayerAccelGround : Cfg.PlayerAccelAir;
+            float mul = atkT > 0f ? meleeMoveMul : 1f;
+            float target = hx * moveSpeed * mul;
+            float accel = grounded ? accelGround : accelAir;
             v.x = Mathf.MoveTowards(v.x, target, accel * dt);
 
             if (jumpBuf > 0f && coyote > 0f)
@@ -224,7 +273,7 @@ namespace NeonBreaker
                 }
                 else
                 {
-                    v.y = Cfg.JumpVelocity;
+                    v.y = jumpVelocity;
                     jumpBuf = 0f;
                     coyote = 0f;
                     squashT = 0f;
@@ -248,9 +297,9 @@ namespace NeonBreaker
         {
             dashDir = hx != 0f ? Mathf.Sign(hx) : Facing;
             Facing = dashDir > 0f ? 1 : -1;
-            dashT = Cfg.DashTime;
-            dashCd = Cfg.DashCooldown;
-            invulnT = Cfg.DashTime + Cfg.DashInvulnExtra;
+            dashT = dashTime;
+            dashCd = dashCooldown;
+            invulnT = dashTime + dashInvulnExtra;
             atkT = 0f;
             atkPending = false;
             Sfx.Play("dash", 0.8f);
@@ -260,22 +309,22 @@ namespace NeonBreaker
 
         void StartAttack(ref Vector2 v)
         {
-            atkT = Cfg.MeleeDuration;
-            atkCd = Cfg.MeleeCooldown;
-            atkHitT = Cfg.MeleeWindup;
+            atkT = meleeDuration;
+            atkCd = meleeCooldown;
+            atkHitT = meleeWindup;
             atkPending = true;
-            v.x = Facing * 6.5f;                        // bước tới nhẹ khi chém
+            v.x = Facing * meleeStepSpeed;                        // bước tới nhẹ khi chém
             Sfx.Play("slash", 0.7f);
         }
 
         Rect MeleeRect()
         {
             float x0 = transform.position.x + Facing * 0.05f;
-            float x1 = transform.position.x + Facing * (0.05f + Cfg.MeleeReach);
+            float x1 = transform.position.x + Facing * (0.05f + meleeReach);
             float xmin = Mathf.Min(x0, x1);
             float w = Mathf.Abs(x1 - x0);
             float ymin = transform.position.y - 0.1f;
-            return new Rect(xmin, ymin, w, Cfg.MeleeHeight);
+            return new Rect(xmin, ymin, w, meleeHeight);
         }
 
         void DoMeleeHit()
@@ -290,7 +339,7 @@ namespace NeonBreaker
                 var h = list[i];
                 if (h == null || !h.Targetable) continue;
                 if (!r.Overlaps(h.HitRect)) continue;
-                h.TakeHit(Cfg.MeleeDamage, new Vector2(Facing, 0.15f).normalized, 7f, true);
+                h.TakeHit(meleeDamage * GameManager.DamageMul, new Vector2(Facing, 0.15f).normalized, meleeKnockback, true);
                 any = true;
             }
             if (any)
@@ -302,16 +351,16 @@ namespace NeonBreaker
 
         void ThrowShuriken()
         {
-            shurCd = Cfg.ShurikenCooldown;
+            shurCd = shurikenCooldown;
             Vector2 p = new Vector2(transform.position.x + Facing * 0.55f, transform.position.y + 0.98f);
-            Projectile.Shuriken(p, new Vector2(Facing, 0f));
+            Projectile.Shuriken(p, new Vector2(Facing, 0f), shurikenSpeed, shurikenDamage * GameManager.DamageMul, shurikenPierce, shurikenRange);
             Sfx.Play("throw", 0.7f);
             Fx.Burst(p, Cfg.A(Cfg.Cyan, 0.9f), 4, 4f, 0.2f, 0.2f);
         }
 
         void TryStartHeal()
         {
-            if (healCharges <= 0)
+            if (healCharges <= 0 && !GameManager.Cheat)
             {
                 Fx.Text(Center + new Vector2(0f, 1.2f), Cfg.L("HẾT LƯỢT HỒI", "NO HEALS"), Cfg.A(Cfg.Red, 1f));
                 healCd = 0.4f;
@@ -323,9 +372,9 @@ namespace NeonBreaker
                 healCd = 0.3f;
                 return;
             }
-            healCharges--;
-            healT = Cfg.HealChannel;
-            healCd = Cfg.HealCooldown + Cfg.HealChannel;
+            if (!GameManager.Cheat) healCharges--;
+            healT = healChannel;
+            healCd = healCooldown + healChannel;
             atkT = 0f;
             atkPending = false;
             GameManager.HealsUsed++;
@@ -336,7 +385,7 @@ namespace NeonBreaker
         void FinishHeal()
         {
             float before = hp;
-            hp = Mathf.Min(maxHp, hp + Cfg.HealAmount);
+            hp = Mathf.Min(maxHp, hp + healAmount);
             int got = Mathf.RoundToInt(hp - before);
             Fx.Text(Center + new Vector2(0f, 1.3f), "+" + got, Cfg.Lime, 1.3f);
             Fx.Burst(Center, Cfg.Lime, 16, 6f, 0.5f, 0.3f);
@@ -345,7 +394,7 @@ namespace NeonBreaker
 
         public bool AddHealCharge()
         {
-            if (healCharges >= Cfg.HealMaxCharges) return false;
+            if (healCharges >= healMaxCharges) return false;
             healCharges++;
             return true;
         }
@@ -368,7 +417,7 @@ namespace NeonBreaker
             if (Invulnerable) return 0f;
 
             hp -= dmg;
-            hurtT = Cfg.HurtInvuln;
+            hurtT = hurtInvuln;
             flashT = 0.09f;
             atkT = 0f;
             atkPending = false;
@@ -377,7 +426,7 @@ namespace NeonBreaker
             float dir = transform.position.x >= from.x ? 1f : -1f;
             Vector2 v = rb.Vel();
             v.x = dir * knock;
-            v.y = grounded ? 5.5f : Mathf.Max(v.y, 3f);
+            v.y = grounded ? hurtHopSpeed.x : Mathf.Max(v.y, hurtHopSpeed.y);
             rb.SetVel(v);
 
             Sfx.Play("hurt", 0.9f);
@@ -422,7 +471,7 @@ namespace NeonBreaker
 
             // chọn clip theo trạng thái (tên clip khớp với danh sách Clips của SpriteAnimator trên prefab)
             string clip;
-            if (hurtT > Cfg.HurtInvuln - 0.18f) clip = "hurt";
+            if (hurtT > hurtInvuln - 0.18f) clip = "hurt";
             else if (healT > 0f) clip = "heal";
             else if (dashT > 0f) clip = "dash";
             else if (atkT > 0f) clip = "attack";

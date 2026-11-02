@@ -10,8 +10,14 @@ namespace NeonBreaker
     {
         Vector2 vel;
         float age;
-        const float Lifetime = 18f;
-        const float FloorY = 0.55f;
+        [Header("Thông số vật phẩm hồi máu")]
+        [Tooltip("Thời gian tồn tại trên sàn trước khi biến mất (giây)")] public float lifetime = 18f;
+        [Tooltip("Độ cao (y) của sàn nơi vật phẩm nằm")] public float floorY = 0.55f;
+        [Tooltip("Hút về phía người chơi khi lại gần trong khoảng này")] public float magnetRange = 3.6f;
+        [Tooltip("Tốc độ hút (xa nhất, gần nhất)")] public Vector2 magnetSpeed = new Vector2(3f, 16f);
+        [Tooltip("Bán kính nhặt")] public float pickupRadius = 0.5f;
+        [Tooltip("Lượng máu hồi trực tiếp khi nhặt lúc đã đầy lượt hồi")] public float directHeal = 15f;
+        public float gravity = 26f;
         [Header("Hình ảnh (tự tìm object con \"Visual\" nếu để trống)")]
         public Transform icon;
         SpriteRenderer[] srs;
@@ -43,15 +49,15 @@ namespace NeonBreaker
             Vector2 pos = transform.position;
 
             var pl = Player.Instance;
-            bool grounded = pos.y <= FloorY + 0.001f && vel.y <= 0f;
+            bool grounded = pos.y <= floorY + 0.001f && vel.y <= 0f;
 
             if (!grounded)
             {
-                vel.y -= 26f * dt;
+                vel.y -= gravity * dt;
                 pos += vel * dt;
-                if (pos.y <= FloorY)
+                if (pos.y <= floorY)
                 {
-                    pos.y = FloorY;
+                    pos.y = floorY;
                     if (vel.y < -4f) vel = new Vector2(vel.x * 0.5f, -vel.y * 0.35f);
                     else vel = Vector2.zero;
                 }
@@ -63,22 +69,22 @@ namespace NeonBreaker
             {
                 Vector2 to = pl.Center - pos;
                 float d = to.magnitude;
-                if (d < 3.6f)
+                if (d < magnetRange)
                 {
-                    pos += to.normalized * Mathf.Lerp(3f, 16f, 1f - d / 3.6f) * dt;
+                    pos += to.normalized * Mathf.Lerp(magnetSpeed.x, magnetSpeed.y, 1f - d / magnetRange) * dt;
                     vel = Vector2.zero;
                 }
-                if (Geo.CircleRect(pos, 0.5f, pl.HurtRect)) { Collect(pl, pos); return; }
+                if (Geo.CircleRect(pos, pickupRadius, pl.HurtRect)) { Collect(pl, pos); return; }
             }
 
             transform.position = pos;
             if (icon != null)
                 icon.localPosition = new Vector3(0f, 0.12f * Mathf.Sin(Time.time * 4f), 0f);
 
-            float remain = Lifetime - age;
+            float remain = lifetime - age;
             bool vis = remain > 4f || Mathf.Sin(Time.time * 18f) > 0f;
             for (int i = 0; i < srs.Length; i++) if (srs[i] != null) srs[i].enabled = vis;
-            if (age >= Lifetime) Destroy(gameObject);
+            if (age >= lifetime) Destroy(gameObject);
         }
 
         void Collect(Player pl, Vector2 pos)
@@ -91,7 +97,7 @@ namespace NeonBreaker
             else
             {
                 float before = pl.hp;
-                pl.hp = Mathf.Min(pl.maxHp, pl.hp + 15f);
+                pl.hp = Mathf.Min(pl.maxHp, pl.hp + directHeal);
                 Fx.Text(pl.Center + new Vector2(0f, 1.5f), "+" + Mathf.RoundToInt(pl.hp - before), Cfg.Lime, 1.1f);
             }
             Fx.Burst(pos, Cfg.Lime, 14, 6f, 0.45f, 0.3f);

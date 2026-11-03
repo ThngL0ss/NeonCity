@@ -127,6 +127,9 @@ MonoBehaviour:
   dead: 0
   owner: {fileID: 0}
   dropChanceMul: 0.8
+  coinChance: 0.9
+  coinMin: 2
+  coinMax: 4
   health: 18
   moveSpeed: 7
   lungeDamage: 24

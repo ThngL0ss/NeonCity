@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa79608b6240bf540899e469e20ac128, type: 3}
+  m_Name: Item_ancient_core
+  m_EditorClassIdentifier: 
+  nameVi: "L\xF5i c\u1ED5 \u0111\u1EA1i"
+  nameEn: Ancient Core
+  descVi: "Di v\u1EADt c\u1EE7a h\u1EC7 th\u1ED1ng tri\u1EC7u h\u1ED3i c\u0169. R\u1EA5t
+    \u0111\xE1ng gi\xE1."
+  descEn: A relic of the old summoning grid. Very valuable.
+  icon: {fileID: 21300000, guid: 60cd22c9054d5054099e6f4d0b67d6a5, type: 3}
+  color: {r: 1, g: 0.8, b: 0.25, a: 1}
+  kind: 2
+  maxStack: 20
+  sellValue: 220
+  bonuses: []
+  healHp: 0
+  healCharges: 0
+  buffDuration: 0

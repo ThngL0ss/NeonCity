@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa79608b6240bf540899e469e20ac128, type: 3}
+  m_Name: Item_neon_crystal
+  m_EditorClassIdentifier: 
+  nameVi: "Tinh th\u1EC3 neon"
+  nameEn: Neon Crystal
+  descVi: "Tinh th\u1EC3 ph\xE1t s\xE1ng qu\xFD hi\u1EBFm."
+  descEn: A rare glowing crystal.
+  icon: {fileID: 21300000, guid: 7462c9ef91750574f9fcc6635b3bc2a1, type: 3}
+  color: {r: 0.1, g: 0.95, b: 1, a: 1}
+  kind: 2
+  maxStack: 50
+  sellValue: 80
+  bonuses: []
+  healHp: 0
+  healCharges: 0
+  buffDuration: 0

@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa79608b6240bf540899e469e20ac128, type: 3}
+  m_Name: Item_nano_kit
+  m_EditorClassIdentifier: 
+  nameVi: "B\u1ED9 nano h\u1ED3i ph\u1EE5c"
+  nameEn: Nano Repair Kit
+  descVi: "M\u1ED7i l\u1EA7n h\u1ED3i m\xE1u (L) h\u1ED3i \u0111\u01B0\u1EE3c nhi\u1EC1u
+    h\u01A1n."
+  descEn: Every heal (L) restores more.
+  icon: {fileID: 21300000, guid: 92568a26a319c9f4faf3fc1b7f482af4, type: 3}
+  color: {r: 0.1, g: 0.95, b: 1, a: 1}
+  kind: 0
+  maxStack: 1
+  sellValue: 70
+  bonuses:
+  - stat: 6
+    amount: 25
+  healHp: 0
+  healCharges: 0
+  buffDuration: 0

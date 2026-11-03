@@ -30,3 +30,5 @@ MonoBehaviour:
   boltPrefab: {fileID: 5674032754087595693, guid: 3a69e72662c33ed49a60fd19ab647f29, type: 3}
   wavePrefab: {fileID: 1766229146574446609, guid: 1f4fd318ffe4ef24bababe4f1dc94eaa, type: 3}
   pickupPrefab: {fileID: 531550722313696810, guid: 45b767b49e499604881050bd069e0152, type: 3}
+  coinPrefab: {fileID: 3479302698561464047, guid: 6050a93f021541b41a062b086b044e43, type: 3}
+  coinIcon: {fileID: 21300000, guid: 43e994855f8d6e2479f4fef3aaad8304, type: 3}

@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa79608b6240bf540899e469e20ac128, type: 3}
+  m_Name: Item_speed_serum
+  m_EditorClassIdentifier: 
+  nameVi: "Huy\u1EBFt thanh t\u1ED1c \u0111\u1ED9"
+  nameEn: Speed Serum
+  descVi: "Ch\u1EA1y nhanh h\u01A1n v\xE0 l\u01B0\u1EDBt nhanh h\u1ED3i h\u01A1n
+    trong th\u1EDDi gian ng\u1EAFn."
+  descEn: Run faster and dash more often for a short time.
+  icon: {fileID: 21300000, guid: 7eb8324be11bc3742a1e7b2b42c5ec25, type: 3}
+  color: {r: 0.1, g: 0.95, b: 1, a: 1}
+  kind: 1
+  maxStack: 9
+  sellValue: 30
+  bonuses:
+  - stat: 1
+    amount: 30
+  - stat: 5
+    amount: -20
+  healHp: 0
+  healCharges: 0
+  buffDuration: 30

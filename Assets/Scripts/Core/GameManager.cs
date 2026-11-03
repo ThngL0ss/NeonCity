@@ -43,6 +43,10 @@ namespace NeonBreaker
         [Tooltip("Bật = tiếng Việt, tắt = tiếng Anh (trong game bấm V để đổi)")]
         public bool startVietnamese = true;
 
+        [Header("Kho đồ & tiền")]
+        [Tooltip("Số ô của kho đồ (phím B)")] public int inventorySlots = 24;
+        [Tooltip("Số xu người chơi có lúc bắt đầu")] public int startCoins = 0;
+
         [Header("Boss")]
         [Tooltip("Prefab boss. Để trống = lấy trong ArtBank.")]
         public GameObject bossPrefab;
@@ -65,6 +69,7 @@ namespace NeonBreaker
             BannerColor = Color.white;
             BannerT = 0f;
             BannerMax = 1f;
+            Inventory.ResetAll();
         }
 
         public static void Banner(string text, Color c, float dur = 3f)
@@ -80,6 +85,7 @@ namespace NeonBreaker
         {
             Inst = this;
             Time.timeScale = 1f;
+            Inventory.ResetAll();
 
             Cfg.Vietnamese = startVietnamese;
 
@@ -139,9 +145,30 @@ namespace NeonBreaker
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
+        /// <summary>Mở kho đồ (phím B). Game tạm dừng trong lúc mở.</summary>
+        public static void OpenInventory()
+        {
+            if (State != GameState.Playing || Paused) return;
+            var p = Player.Instance;
+            if (p == null || p.Dead) return;
+            Inventory.IsOpen = true;
+            Inventory.Sel = Mathf.Clamp(Inventory.Sel, 0, Mathf.Max(0, Inventory.Capacity - 1));
+            Paused = true;
+            Sfx.Play("click", 0.8f, 1.2f);
+        }
+
+        public static void CloseInventory()
+        {
+            if (!Inventory.IsOpen) return;
+            Inventory.IsOpen = false;
+            Paused = false;
+            Sfx.Play("click", 0.8f, 0.9f);
+        }
+
         public void TogglePause()
         {
             if (State != GameState.Playing) return;
+            if (Inventory.IsOpen) { CloseInventory(); return; }
             Paused = !Paused;
             Sfx.Play("click", 0.8f);
         }
@@ -166,12 +193,20 @@ namespace NeonBreaker
                     if (GameInput.ConfirmDown) StartGame();
                     break;
                 case GameState.Playing:
-                    if (GameInput.PauseDown) TogglePause();
+                    if (Inventory.IsOpen)
+                    {
+                        if (GameInput.PauseDown || GameInput.InventoryDown) CloseInventory();
+                        else InventoryUi.UpdateInput();
+                    }
+                    else if (GameInput.PauseDown) TogglePause();
                     else if (Paused && GameInput.ConfirmDown) TogglePause();
+                    else if (!Paused && GameInput.InventoryDown) OpenInventory();
+                    else if (!Paused && GameInput.InteractDown) Chest.TryOpenNearest();
                     if (!Paused)
                     {
                         PlayTime += Time.deltaTime;
                         CheckBossTrigger();
+                        Inventory.Tick(Time.deltaTime);
                     }
                     break;
                 case GameState.Won:
@@ -179,6 +214,8 @@ namespace NeonBreaker
                     if (GameInput.RestartDown) Restart();
                     break;
             }
+
+            Inventory.TickUi(Time.unscaledDeltaTime);
 
             float ts = 1f;
             if (Paused) ts = 0f;
@@ -259,6 +296,7 @@ namespace NeonBreaker
             if (State == GameState.Playing)
             {
                 Paused = false;
+                Inventory.IsOpen = false;
                 State = result;
             }
         }

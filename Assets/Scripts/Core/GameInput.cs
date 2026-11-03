@@ -16,6 +16,8 @@ namespace NeonBreaker
         public static bool JumpDown, JumpHeld, JumpUp;
         public static bool AttackDown, DashDown, ShurikenDown, HealDown;
         public static bool ConfirmDown, RestartDown, PauseDown, ClickDown, LangDown, CheatDown;
+        /// <summary>B: mở / đóng kho đồ · T: mở rương · X: vứt vật phẩm (trong kho) · mũi tên / WASD: di chuyển ô chọn trong kho.</summary>
+        public static bool InventoryDown, InteractDown, DiscardDown, NavLeftDown, NavRightDown, NavUpDown, NavDownDown;
 
         public static void Poll()
         {
@@ -42,6 +44,13 @@ namespace NeonBreaker
             PauseDown = k.escapeKey.wasPressedThisFrame;
             CheatDown = k.pKey.wasPressedThisFrame;
             LangDown = k.vKey.wasPressedThisFrame;
+            InventoryDown = k.bKey.wasPressedThisFrame;
+            InteractDown = k.tKey.wasPressedThisFrame;
+            DiscardDown = k.xKey.wasPressedThisFrame;
+            NavLeftDown = k.aKey.wasPressedThisFrame || k.leftArrowKey.wasPressedThisFrame;
+            NavRightDown = k.dKey.wasPressedThisFrame || k.rightArrowKey.wasPressedThisFrame;
+            NavUpDown = k.wKey.wasPressedThisFrame || k.upArrowKey.wasPressedThisFrame;
+            NavDownDown = k.sKey.wasPressedThisFrame || k.downArrowKey.wasPressedThisFrame;
             var m = Mouse.current;
             ClickDown = m != null && m.leftButton.wasPressedThisFrame;
 #else
@@ -64,6 +73,13 @@ namespace NeonBreaker
             PauseDown = Input.GetKeyDown(KeyCode.Escape);
             CheatDown = Input.GetKeyDown(KeyCode.P);
             LangDown = Input.GetKeyDown(KeyCode.V);
+            InventoryDown = Input.GetKeyDown(KeyCode.B);
+            InteractDown = Input.GetKeyDown(KeyCode.T);
+            DiscardDown = Input.GetKeyDown(KeyCode.X);
+            NavLeftDown = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
+            NavRightDown = Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow);
+            NavUpDown = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow);
+            NavDownDown = Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow);
             ClickDown = Input.GetMouseButtonDown(0);
 #endif
         }
@@ -74,6 +90,7 @@ namespace NeonBreaker
             DownHeld = JumpDown = JumpHeld = JumpUp = false;
             AttackDown = DashDown = ShurikenDown = HealDown = false;
             ConfirmDown = RestartDown = PauseDown = ClickDown = LangDown = CheatDown = false;
+            InventoryDown = InteractDown = DiscardDown = NavLeftDown = NavRightDown = NavUpDown = NavDownDown = false;
         }
     }
 }

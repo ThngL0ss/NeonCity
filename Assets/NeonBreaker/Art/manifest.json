@@ -229,6 +229,66 @@
   "tile": false,
   "w": 64
  },
+ "chest_closed.png": {
+  "h": 24,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "chest_open.png": {
+  "h": 30,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "coin_0.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "coin_1.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "coin_2.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "coin_3.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
  "flyer_charge.png": {
   "h": 26,
   "pivot": [
@@ -418,6 +478,176 @@
   "ppu": 16,
   "tile": false,
   "w": 44
+ },
+ "item_ancient_core.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_charge_cell.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_coin_magnet.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_core_cell.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_data_chip.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_freq_blade.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_heal_vial.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_nano_kit.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_neon_armor.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_neon_crystal.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_phase_coil.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_rage_serum.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_scrap_battery.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_shuriken_rail.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_speed_serum.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_vital_shard.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_volt_boots.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
  },
  "pickup_0.png": {
   "h": 16,
@@ -778,6 +1008,116 @@
   "ppu": 16,
   "tile": false,
   "w": 40
+ },
+ "trap_emitter.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "trap_mine_armed_0.png": {
+  "h": 12,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "trap_mine_armed_1.png": {
+  "h": 12,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "trap_mine_idle_0.png": {
+  "h": 12,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "trap_mine_idle_1.png": {
+  "h": 12,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "trap_saw.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "trap_spike_down.png": {
+  "h": 5,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 48
+ },
+ "trap_spike_up.png": {
+  "h": 17,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 48
+ },
+ "trap_spike_warn.png": {
+  "h": 9,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 48
+ },
+ "trap_turret_barrel.png": {
+  "h": 8,
+  "pivot": [
+   0.2,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "trap_turret_base.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 24
  },
  "walker_lunge.png": {
   "h": 22,

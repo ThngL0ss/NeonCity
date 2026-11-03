@@ -34,6 +34,10 @@ namespace NeonBreaker
         public GameObject wavePrefab;
         public GameObject pickupPrefab;
 
+        [Header("Tiền & kho đồ (menu Tools ▸ Neon Breaker ▸ Thêm bẫy + kho đồ + rương tự gán)")]
+        [Tooltip("Prefab đồng xu rơi ra khi hạ quái. Để trống = xu được cộng thẳng vào ví")] public GameObject coinPrefab;
+        [Tooltip("Hình đồng xu vẽ trên HUD")] public Sprite coinIcon;
+
         public static ArtBank Load()
         {
             return Resources.Load<ArtBank>("NeonBreaker/ArtBank");

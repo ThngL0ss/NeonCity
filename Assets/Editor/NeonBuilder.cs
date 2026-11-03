@@ -14,7 +14,7 @@ namespace NeonBreaker.EditorTools
     ///   Materials, Audio (WAV), ScriptableObject (ArtBank / AudioBank), Prefab, và Scene Main.unity.
     /// Sau khi tạo xong, mọi thứ là file bình thường - bạn sửa / thay / kéo thả thoải mái. Không cần chạy lại.
     /// </summary>
-    public static class NeonBuilder
+    public static partial class NeonBuilder
     {
         // Thư mục gốc được TỰ TÌM (theo vị trí file Art/manifest.json) nên project của bạn đặt gói ở đâu cũng chạy,
         // ví dụ Assets/NeonBreaker/ hoặc Assets/Assets/NeonBreaker/.
@@ -71,8 +71,13 @@ namespace NeonBreaker.EditorTools
                 BuildPrefabs();
                 ShowProgress("Prefab...", 0.65f);
                 BuildBanks();
+                ShowProgress("Bẫy, xu, rương, vật phẩm...", 0.72f);
+                BuildEconomyAssets();
+                BuildBanks();
                 ShowProgress("Scene...", 0.8f);
                 BuildScene();
+                ShowProgress("Mở rộng map, đặt bẫy + rương...", 0.92f);
+                UpgradeScene(false);
                 AddToBuildSettings();
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
@@ -142,6 +147,8 @@ namespace NeonBreaker.EditorTools
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             BuildPrefabs();
             BuildBanks();
+            BuildEconomyAssets();
+            BuildBanks();
             AssetDatabase.SaveAssets();
             Debug.Log("Neon Breaker: đã tạo lại Prefab.");
         }
@@ -154,8 +161,11 @@ namespace NeonBreaker.EditorTools
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             Prepare();
             if (!File.Exists(PrefabDir + "Player.prefab")) { BuildPrefabsOnlyQuiet(); }
+            BuildEconomyAssets();
+            BuildBanks();
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             BuildScene();
+            UpgradeScene(false);
             AddToBuildSettings();
             AssetDatabase.SaveAssets();
             Debug.Log("Neon Breaker: đã tạo lại Scene.");
@@ -696,6 +706,8 @@ namespace NeonBreaker.EditorTools
             ab.boltPrefab = Prefab("Bolt");
             ab.wavePrefab = Prefab("Wave");
             ab.pickupPrefab = Prefab("HealPickup");
+            if (ab.coinPrefab == null) ab.coinPrefab = Prefab("Coin");
+            if (ab.coinIcon == null && File.Exists(ArtDir + "coin_0.png")) ab.coinIcon = Spr("coin_0");
             EditorUtility.SetDirty(ab);
 
             // AudioBank

@@ -11,7 +11,7 @@ namespace NeonBreaker
         [Header("Thông số xu")]
         [Tooltip("Số xu nhận được khi nhặt (đặt lúc rơi ra, không cần sửa trong Prefab)")] public int value = 1;
         [Tooltip("Thời gian tồn tại trên sàn (giây)")] public float lifetime = 30f;
-        [Tooltip("Khoảng cách từ mặt sàn lên tâm xu")] public float restHeight = 0.35f;
+        [Tooltip("Khoảng cách từ mặt sàn lên tâm xu")] public float restHeight = 0.5f;
         [Tooltip("Hút về phía người chơi khi lại gần trong khoảng này")] public float magnetRange = 4.5f;
         [Tooltip("Tốc độ hút (xa nhất, gần nhất)")] public Vector2 magnetSpeed = new Vector2(4f, 20f);
         [Tooltip("Bán kính nhặt")] public float pickupRadius = 0.55f;

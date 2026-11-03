@@ -15,6 +15,9 @@ namespace NeonBreaker
         [Tooltip("Xác suất rơi xu khi bị hạ (1 = luôn rơi)"), Range(0f, 1f)] public float coinChance = 0.9f;
         [Tooltip("Số xu rơi ra ít nhất / nhiều nhất (quái do trụ mạnh sinh ra rơi nhiều hơn theo Power)")] public int coinMin = 1;
         public int coinMax = 3;
+        [Header("Hệ thống Skill / sức mạnh")]
+        [Tooltip("Mã loại quái dùng cho linh kiện và chế tạo minibot. Để trống = tên Prefab (Walker, Flyer, Heavy, Rusher...)")] public string typeId = "";
+        [Tooltip("Cấp bậc (F..SSS) và cấp độ (1..200). CHƯA áp dụng vào chỉ số quái; minibot chế tạo từ quái này có cấp bậc giống vậy, cấp độ 1")] public PowerInfo power = new PowerInfo();
         protected Flasher flasher;
         protected float flashT;
         protected Color accent = Cfg.Orange;
@@ -22,6 +25,16 @@ namespace NeonBreaker
         protected float coinScale = 1f;               // hệ số số xu rơi ra (= Power của trụ, tối thiểu 1)
 
         public override bool Targetable { get { return !dead; } }
+
+        List<Minibot> minibotHitters;
+
+        /// <summary>Minibot gây sát thương lên quái này (để chia công trạng độ trưởng thành khi quái chết).</summary>
+        public void NoteMinibotHit(Minibot m)
+        {
+            if (m == null) return;
+            if (minibotHitters == null) minibotHitters = new List<Minibot>(2);
+            if (!minibotHitters.Contains(m)) minibotHitters.Add(m);
+        }
 
         /// <summary>Độ cao (y) khi trụ triệu hồi sinh quái này ra (quái bay cao hơn quái đi bộ).</summary>
         public abstract float SpawnHeight { get; }
@@ -112,6 +125,10 @@ namespace NeonBreaker
                 int lo = Mathf.Max(0, Mathf.Min(coinMin, coinMax)), hi = Mathf.Max(lo, Mathf.Max(coinMin, coinMax));
                 Coin.Drop(Center, Mathf.RoundToInt(Random.Range(lo, hi + 1) * coinScale));
             }
+            if (minibotHitters != null)
+                for (int i = 0; i < minibotHitters.Count; i++)
+                    if (minibotHitters[i] != null) minibotHitters[i].CreditAssist();
+            SkillSystem.OnEnemyKilled(this);
             Destroy(gameObject);
         }
 

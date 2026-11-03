@@ -15,6 +15,7 @@ namespace NeonBreaker
         public float damage, radius = 0.3f, life = 6f, knock = 6f, range = 13f;
         public int pierce;
         public bool fromPlayer, lifesteal;
+        public Minibot owner;          // != null: đạn của minibot (đồng minh, bay trúng quái)
         public Color color = Color.white;
 
         float traveled, trailT, spin;
@@ -23,6 +24,7 @@ namespace NeonBreaker
         public Transform vis;
         public SpriteRenderer glow;
         readonly HashSet<Hittable> hits = new HashSet<Hittable>();
+        readonly HashSet<Minibot> hitBots = new HashSet<Minibot>();
 
         void Awake()
         {
@@ -63,6 +65,25 @@ namespace NeonBreaker
             p.lifesteal = steal;
             p.color = c;
             p.life = 5f;
+            if (p.glow != null) p.glow.color = Cfg.A(c, 0.55f);
+            if (p.vis != null) p.vis.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(p.vel.y, p.vel.x) * Mathf.Rad2Deg);
+            return p;
+        }
+
+        /// <summary>Đạn năng lượng của minibot: bay trúng quái / boss (không trúng người chơi và minibot khác).</summary>
+        public static Projectile AllyBolt(Vector2 pos, Vector2 dir, float speed, float dmg, Color c, Minibot owner)
+        {
+            var p = Make(Art.Bank != null ? Art.Bank.boltPrefab : null, pos, "AllyBolt");
+            if (p == null) return null;
+            p.kind = PKind.Bolt;
+            p.vel = dir.normalized * speed;
+            p.damage = dmg;
+            p.radius = 0.3f;
+            p.fromPlayer = true;
+            p.owner = owner;
+            p.color = c;
+            p.life = 3.5f;
+            p.pierce = 0;
             if (p.glow != null) p.glow.color = Cfg.A(c, 0.55f);
             if (p.vis != null) p.vis.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(p.vel.y, p.vel.x) * Mathf.Rad2Deg);
             return p;
@@ -146,7 +167,7 @@ namespace NeonBreaker
             if (!dead)
             {
                 if (fromPlayer) dead = HitEnemies(pos);
-                else dead = HitPlayer(pos);
+                else dead = HitPlayer(pos) || HitBots(pos);
             }
 
             if (dead) Expire();
@@ -159,9 +180,12 @@ namespace NeonBreaker
             {
                 var h = list[i];
                 if (h == null || !h.Targetable || hits.Contains(h)) continue;
+                if (owner != null && h is Tower && !SkillSystem.Config.attackTowers) continue;
                 if (!Geo.CircleRect(pos, radius, h.HitRect)) continue;
                 hits.Add(h);
+                bool wasDead = h.dead;
                 h.TakeHit(damage, vel.normalized, 3f, false);
+                if (owner != null) owner.OnShotHit(h, wasDead);
                 Sfx.PlayAt("shurHit", pos, 0.8f);
                 Fx.Sparks(pos, -vel.normalized, Cfg.Cyan, 8, 12f, 70f);
                 Fx.HitStop(0.025f);
@@ -188,6 +212,27 @@ namespace NeonBreaker
                 return kind != PKind.Wave;   // sóng đi xuyên qua, chỉ gây một lần
             }
             return false;                    // đang bất tử (lướt) => đạn bay xuyên
+        }
+
+        bool HitBots(Vector2 pos)
+        {
+            for (int i = 0; i < Minibot.Active.Count; i++)
+            {
+                var b = Minibot.Active[i];
+                if (b == null || b.dead || hitBots.Contains(b)) continue;
+                bool overlap;
+                if (kind == PKind.Wave) overlap = Geo.Box(pos + new Vector2(0f, 0.2f), new Vector2(0.9f, 1.3f)).Overlaps(b.HurtRect);
+                else overlap = Geo.CircleRect(pos, radius, b.HurtRect);
+                if (!overlap) continue;
+                float dealt = b.Hurt(damage, pos, knock);
+                if (dealt > 0f)
+                {
+                    if (lifesteal && Boss.Instance != null) Boss.Instance.Drain(dealt);
+                    hitBots.Add(b);
+                    if (kind != PKind.Wave) return true;
+                }
+            }
+            return false;
         }
 
         void Expire()

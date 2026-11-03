@@ -80,6 +80,7 @@ namespace NeonBreaker
 
             var pl = Target;
             if (pl != null && Geo.CircleRect(p, radius, pl.HurtRect)) HurtPlayer(p);
+            HurtBotsCircle(p, radius, p);
         }
 
         void OnDrawGizmosSelected()

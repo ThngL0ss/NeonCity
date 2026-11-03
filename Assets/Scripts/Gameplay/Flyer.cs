@@ -73,7 +73,7 @@ namespace NeonBreaker
                 Vector2 want = to.normalized * Mathf.Min(moveSpeed * spdMul, to.magnitude * 2.2f);
                 vel = Vector2.Lerp(vel, want, 1f - Mathf.Exp(-3f * dt));
 
-                if (!charging && fireT <= 0f && Mathf.Abs(p.Position.x - pos.x) < fireRange)
+                if (!charging && fireT <= 0f && Minibot.PickTarget(pos, fireRange).Valid)
                 {
                     charging = true;
                     chargeT = chargeTime;
@@ -92,7 +92,8 @@ namespace NeonBreaker
                     {
                         charging = false;
                         fireT = fireInterval / spdMul * Random.Range(0.85f, 1.2f);
-                        Vector2 aim = p.Center - pos;
+                        FoeTarget ft = Minibot.PickTarget(pos, fireRange + 4f);
+                        Vector2 aim = (ft.Valid ? ft.Center : p.Center) - pos;
                         Projectile.Bolt(pos, aim, boltSpeed, boltDamage * dmgMul, Cfg.Red);
                         Sfx.PlayAt("bolt", pos, 0.6f);
                         if (chargeGlow != null) chargeGlow.color = Cfg.A(Cfg.Red, 0f);

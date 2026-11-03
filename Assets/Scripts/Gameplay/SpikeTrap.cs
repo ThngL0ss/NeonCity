@@ -59,8 +59,10 @@ namespace NeonBreaker
             if (phase == 2)
             {
                 var pl = Target;
-                if (pl != null && Geo.Box((Vector2)transform.position + hitOffset, hitSize).Overlaps(pl.HurtRect))
+                Rect box = Geo.Box((Vector2)transform.position + hitOffset, hitSize);
+                if (pl != null && box.Overlaps(pl.HurtRect))
                     HurtPlayer(transform.position);
+                HurtBotsRect(box, transform.position);
             }
         }
 

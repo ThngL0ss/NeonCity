@@ -19,7 +19,7 @@ namespace NeonBreaker
         [Header("Hình ảnh (tự tìm object con \"Visual\" nếu để trống)")]
         public Transform icon;
 
-        Vector2 vel;
+        protected Vector2 vel;
         float age;
         SpriteRenderer[] srs;
 
@@ -108,10 +108,16 @@ namespace NeonBreaker
             if (age >= lifetime) Destroy(gameObject);
         }
 
+        /// <summary>Ném đồng xu / linh kiện lên với vận tốc ban đầu.</summary>
+        public void Launch(Vector2 v) { vel = v; }
+
+        /// <summary>Hiệu ứng nhận được khi nhặt. Lớp con (PartDrop) ghi đè để cộng thứ khác thay vì xu.</summary>
+        protected virtual void Grant() { Inventory.AddCoins(value); }
+
         void Collect(Vector2 pos)
         {
             Sfx.Play("pickup", 0.55f, 1.6f + Random.Range(-0.1f, 0.15f));
-            Inventory.AddCoins(value);
+            Grant();
             Fx.Burst(pos, Cfg.Yellow, 6, 4f, 0.3f, 0.22f);
             Destroy(gameObject);
         }

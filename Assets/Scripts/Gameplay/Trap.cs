@@ -45,6 +45,17 @@ namespace NeonBreaker
             return p.Hurt(damage, from, knockback) > 0f;
         }
 
+        /// <summary>Bẫy cũng gây sát thương cho minibot (đồng minh của người chơi) nằm trong vùng.</summary>
+        protected void HurtBotsRect(Rect area, Vector2 from)
+        {
+            Minibot.HurtInRect(area, damage, from, knockback);
+        }
+
+        protected void HurtBotsCircle(Vector2 center, float radius, Vector2 from)
+        {
+            Minibot.HurtInCircle(center, radius, damage, from, knockback);
+        }
+
         protected SpriteAnimator FindAnim()
         {
             var v = transform.Find("Visual");

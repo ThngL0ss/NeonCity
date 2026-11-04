@@ -17,6 +17,7 @@ Game 2D platformer đồ họa **pixel art neon tương lai**. Scene, Prefab, Sp
   1. **Tools ▸ Neon Breaker ▸ Thêm bẫy + kho đồ + rương (không đụng Scene)** — tạo Prefab `TrapSpike/TrapLaser/TrapSaw/TrapTurret/TrapMine`, `Coin`, `Chest`, 17 file vật phẩm trong `Assets/NeonBreaker/Items/`, gán Coin vào `ArtBank`. Không ghi đè gì đã có.
   2. **Tools ▸ Neon Breaker ▸ Mở rộng map + đặt bẫy + rương vào Scene Main** — chỉnh Scene hiện có: kéo dài map, giãn 6 trụ, thêm bục, đặt bẫy (`Level/Traps`) và rương (`Level/Chests`). **Không tạo lại Scene**, các chỉnh sửa khác của bạn được giữ. Nên commit git trước khi chạy. Chạy lại lần 2 chỉ đặt lại bẫy + rương (có hỏi xác nhận).
   Rồi commit các file `.meta`, Prefab, Item, Scene mà Unity vừa tạo.
+- **Bản có hệ thống Skill** (nhánh `claude/he-thong-skill`): sau khi kéo về và Unity biên dịch xong, chạy **Tools ▸ Neon Breaker ▸ Thêm hệ thống Skill (không đụng Scene)** một lần — tạo Prefab `Part` (linh kiện), `Resources/NeonBreaker/SkillConfig.asset`, 9 kỹ năng mẫu trong `Assets/NeonBreaker/Skills/`, gán `ArtBank ▸ Part Prefab`. Chỉ tạo cái còn thiếu, không ghi đè; chạy lại được (ví dụ sau khi thêm quái Heavy/Rusher). Rồi commit các file `.meta`, Prefab, asset Unity vừa tạo. Chi tiết ở mục 7b.
 - Ảnh PNG tự được cài đặt pixel art (Point filter, không nén, PPU, pivot) nhờ `Assets/Editor/NeonArtImporter.cs`.
 
 ## 2. Điều khiển
@@ -31,6 +32,8 @@ Game 2D platformer đồ họa **pixel art neon tương lai**. Scene, Prefab, Sp
 | L | Hồi máu (bắt đầu 3 lượt, tối đa 5; nhặt vật phẩm xanh để cộng dồn) |
 | **B** | **Mở / đóng kho đồ** (game tạm dừng khi mở) |
 | **T** | **Mở rương** gần nhất (đứng trong tầm, hiện gợi ý "[T] MỞ RƯƠNG") |
+| **N** | **Mở / đóng menu Skill** (cây kỹ năng, chế tạo, lưu trữ minibot; game tạm dừng). **Q / E**: đổi tab |
+| **H** | **Bảng chọn minibot** (không tạm dừng): bấm vào minibot để triệu hồi / thu hồi |
 | **P** | **Chế độ thử nghiệm (bật/tắt)**: không thể chết · sát thương ×3 · không hồi chiêu · hồi máu không tốn lượt |
 | Esc | Tạm dừng · Enter: bắt đầu / tiếp tục · R: chơi lại · V: đổi ngôn ngữ |
 
@@ -130,23 +133,47 @@ Mặc định có 17 vật phẩm: 8 trang bị (Lõi năng lượng, Giáp neon
 - `No Duplicates`, `Coins Min/Max` (xu rơi ra khi mở), `Interact Range`.
 Sửa Prefab `Chest` = đổi bảng mặc định cho mọi rương chưa ghi đè riêng; sửa từng rương trong Scene để cho mỗi rương một bảng riêng. Kho đầy thì rương không mở (báo "KHO ĐẦY").
 
+## 7b. Hệ thống Skill (cây kỹ năng · chế tạo · minibot)
+
+Phím **N** mở menu **Skill** gồm các tab: **CÂY SKILL**, **CHẾ TẠO**, **LƯU TRỮ MINIBOT** (và một tab trống dành cho mục sau). Toàn bộ thông số nằm ở một file: `Assets/Resources/NeonBreaker/SkillConfig.asset` (chỉnh trong Inspector).
+
+**Cây kỹ năng — 2 nhánh.** *Nhánh bị động* (xanh lá) và *nhánh chủ động* (hồng). Mỗi kỹ năng là một file `SkillNodeData` (Create ▸ Neon Breaker ▸ Skill Node) trong `Assets/NeonBreaker/Skills/`: nhánh (`Branch`), kỹ năng cha (`Parent` — phải mở cha trước), `Start Unlocked`, `Conditions` (điều kiện mở khoá), `Max Level` + giá nâng cấp bằng xu (`Upgrade Cost Base/Growth`), `Effects` (chỉ số cộng thêm mỗi cấp). Kỹ năng khởi đầu: **Thu thập linh kiện** (bị động) và **Triệu hồi minibot** (chủ động), có sẵn từ đầu. 7 kỹ năng mẫu còn lại (Nhặt nhạnh, Chế tạo tiết kiệm, Biên đội, Bảng chọn mở rộng, Rút lui chiến thuật, Huấn luyện, Sửa chữa nhanh) đang để điều kiện **"sẽ được bổ sung sau"** → hiện KHOÁ; bật **chế độ thử nghiệm (P)** để thấy nút "MỞ (THỬ NGHIỆM)".
+- Loại điều kiện (`UnlockType`): `Manual` (chưa có điều kiện), `None`, `KillCount` (tổng số quái đã hạ), `DefeatedEnemy` (đã hạ loại quái `Enemy Id`), `MinibotsCrafted`, `PartsCollected`. Kỹ năng tự mở khi **mọi** điều kiện thoả và kỹ năng cha đã mở. Thêm loại điều kiện mới: thêm vào enum `UnlockType` rồi viết nhánh `case` trong `SkillSystem.ConditionMet` + `ConditionText`.
+- Chỉ số kỹ năng có thể cộng (`SkillStat`): `PartsDropPct`, `CraftCostPct` (số âm = giảm), `PanelSlots`, `MaxSummoned`, `RecallDelayPct` (âm = ngắn hơn), `MaturityGainPct`, `StorageHealPct`, `MinibotHpPct`, `MinibotDamagePct`. Thêm kỹ năng mới: tạo file `Skill Node`, chọn nhánh + cha, kéo vào `SkillConfig ▸ Nodes`.
+
+**Skill bị động khởi đầu — linh kiện & chế tạo.** Khi bạn **kết liễu** một con quái, quái rơi **linh kiện** của *đúng loại quái đó* (mặc định 1 cái/lần, xác suất 100%; chỉnh ở `SkillConfig ▸ Craftables ▸ Parts Drop Chance/Min/Max`). Nhặt như nhặt xu. Loại quái nào bạn **đã từng hạ** thì tab **CHẾ TẠO** mở công thức: đủ **10 linh kiện** (`Parts Cost`) → chế tạo 1 minibot **cùng cấp bậc với quái gốc, cấp độ 1**, cất trong **Lưu trữ minibot** (tối đa 30). Loại quái chế tạo được: danh sách `SkillConfig ▸ Craftables` (mặc định Walker, Flyer, Heavy, Rusher). Mã loại = `Enemy ▸ Type Id` (để trống = tên Prefab).
+
+**Skill chủ động khởi đầu — minibot.** Có ≥ 1 minibot thì **H** mở **bảng chọn** (4 ô). Quy tắc:
+- Đưa minibot từ *Lưu trữ* ra *Bảng chọn* ở tab LƯU TRỮ MINIBOT (nút "ĐƯA RA BẢNG CHỌN"), làm được ở mọi nơi.
+- Bấm minibot trong bảng chọn → **triệu hồi** (tối đa 2 con cùng lúc, `Max Summoned`). Minibot đi theo bạn, tự tấn công quái gần (Walker/Heavy/Rusher lao cận chiến, Flyer bay bắn đạn), **bị quái và bẫy gây sát thương như bạn** (bất tử 0.5s sau mỗi lần trúng). Mặc định minibot **không đánh trụ** (`Attack Towers`).
+- Minibot **chết** khi đang triệu hồi → biến mất và **rơi linh kiện** (`Death Parts Base + cấp độ × Per Level`).
+- **Thu hồi:** thoát giao tranh **5 giây** (không có quái trong `Combat Range` quanh bạn) rồi **bấm vào minibot** trong màn chơi (dòng chữ trên đầu hiện đếm ngược "GIAO TRANH 3s" → "[CLICK] THU HỒI"). Minibot về bảng chọn **giữ nguyên máu còn lại**.
+- **Cất về lưu trữ** (từ bảng chọn, tab LƯU TRỮ MINIBOT) để **hồi máu dần** (`Storage Heal Pct Per Sec`, 3%/giây). Quy định chỉ làm được ở **căn cứ**: khái niệm căn cứ chưa có nên hiện tại `Anywhere Is Base` = bật (làm được ở mọi nơi). Khi có căn cứ thật: tắt ô này rồi sửa `SkillSystem.AtBase`.
+- **Độ trưởng thành:** +10 khi minibot kết liễu quái, +4 khi chỉ hỗ trợ (đã gây sát thương mà người khác hạ quái). Đầy thanh (`Maturity Base + (cấp-1) × Per Level`) thì bấm **TĂNG CẤP ĐỘ** (miễn phí; đặt `Level Up Coin Cost` > 0 để tính xu). Chỉ tăng **cấp độ** (1–200), **không** tăng cấp bậc. Cấp độ tăng máu (+6%/cấp) và sát thương (+5%/cấp) của minibot.
+- Chưa có hệ thống lưu game: kỹ năng, linh kiện, minibot **reset khi chơi lại / thoát** (giống xu và kho đồ).
+
+**Hệ thống sức mạnh (chưa áp dụng).** `PowerSystem.cs`: **Cấp bậc** `Rank` F < D < C < B < A < S < SS < SSS và **Cấp độ** 1–200 (`PowerRules.MinLevel/MaxLevel`). Player và quái đã có ô `Power` (Rank + Level) để sẵn nhưng **chưa ảnh hưởng chỉ số** (đúng yêu cầu "chưa setup"); minibot lấy cấp bậc từ quái gốc, cấp độ riêng. Hàm `PowerRules.RankMul` là chỗ cắm hệ số cấp bậc về sau.
+
+**Bảng cấu hình `SkillConfig`:** kho (`Storage Slots`, `Panel Slots`, `Max Summoned`, `Storage Heal Pct Per Sec`, `Anywhere Is Base`), giao tranh (`Recall Delay`=5, `Combat Range`), chỉ số theo cấp (`Hp/Damage Per Level`, `Follow Distance`, `Engage Range`, `Attack Towers`), trưởng thành (`Maturity Kill/Assist/Base/Per Level`, `Level Up Coin Cost`), khi chết (`Death Parts Base/Per Level`).
+
 ## 8. Cấu trúc thư mục
 
 ```
 Assets/
-├─ Editor/                    NeonArtImporter (import PNG), NeonBuilder (menu Tools ▸ Neon Breaker)
+├─ Editor/                    NeonArtImporter (import PNG), NeonBuilder + NeonBuilderExtras + NeonBuilderSkill (menu Tools ▸ Neon Breaker)
 ├─ Shaders/                   NeonAdditive (phát sáng), NeonFlash (chớp trắng khi trúng đòn)
 ├─ NeonBreaker/
 │  ├─ Art/                    PNG pixel art + manifest.json (PPU, pivot, tile)
-│  ├─ Audio/  Materials/  Prefabs/  Scenes/  Items/ (vật phẩm)
-├─ Resources/NeonBreaker/     ArtBank, AudioBank
+│  ├─ Audio/  Materials/  Prefabs/  Scenes/  Items/ (vật phẩm)  Skills/ (kỹ năng)
+├─ Resources/NeonBreaker/     ArtBank, AudioBank, SkillConfig
 └─ Scripts/
    ├─ Core/                   Cfg, GameManager, GameInput, PixelScreen, SpriteAnimator, Fx, Sfx, ...
-   ├─ Gameplay/               Player, Enemy, Walker, Flyer, Boss, Tower, Projectile, Pickup, Level, Trap*, Coin, Chest, Inventory, ItemData ...
-   └─ UI/                     Hud.cs (HUD / menu / màn thắng-thua, IMGUI), InventoryUi.cs (kho đồ)
+   ├─ Gameplay/               Player, Enemy, Walker, Flyer, Boss, Tower, Projectile, Pickup, Level, Trap*, Coin, Chest, Inventory, ItemData, SkillSystem, SkillConfig, SkillNodeData, Minibot, PartDrop, PowerSystem ...
+   └─ UI/                     Hud.cs (HUD / menu / màn thắng-thua, IMGUI), InventoryUi.cs (kho đồ), SkillUi.cs (menu Skill, bảng minibot H)
 Tools/PixelArt/gen_art.py       Sinh toàn bộ PNG (tuỳ chọn)
 Tools/PixelArt/gen_enemies2.py  Sinh sprite Heavy + Rusher, CẬP NHẬT manifest.json không ghi đè
 Tools/PixelArt/gen_extras.py    Sinh sprite bẫy, xu, rương, icon vật phẩm, CẬP NHẬT manifest.json không ghi đè
+Tools/PixelArt/gen_skill.py     Sinh sprite linh kiện + 9 icon kỹ năng, CẬP NHẬT manifest.json không ghi đè
 ```
 
 `Cfg.cs` chỉ còn giữ: ngôn ngữ, layer, mốc chiều dài màn, bảng màu. Mốc cổng/boss/bàn thờ chỉnh bằng object `Level` trong Scene.
@@ -162,6 +189,7 @@ Tools/PixelArt/gen_extras.py    Sinh sprite bẫy, xu, rương, icon vật phẩ
 | Đổi **hình** | Thay PNG trong `Art/` (giữ tên, kích thước), hoặc trong Prefab chọn `Visual` → **Sprite Animator ▸ Clips**. Tên clip phải giữ nguyên. |
 | Đổi **âm thanh / nhạc** | `Resources/NeonBreaker/AudioBank` → kéo AudioClip vào Id tương ứng. |
 | Thêm **loại quái mới** | Duplicate Prefab `Heavy` hoặc `Rusher`, đổi chỉ số và sprite, kéo vào `Spawn Table` của trụ. |
+| Thêm **kỹ năng / loại minibot** | Kỹ năng: tạo `Skill Node`, kéo vào `SkillConfig ▸ Nodes`. Loại minibot: thêm một dòng vào `SkillConfig ▸ Craftables` (kéo Prefab quái vào `Enemy Prefab`). |
 | Tắt hiệu ứng pixel | `Main Camera ▸ Pixel Screen ▸ Enable Pixel Render` = tắt. |
 
 Sprite pixel art: 16 pixel = 1 đơn vị thế giới, màn hình tham chiếu 480×270.
@@ -174,6 +202,10 @@ Sprite pixel art: 16 pixel = 1 đơn vị thế giới, màn hình tham chiếu 
 - **Không thấy xu rơi / rương / bẫy:** chạy hai menu ở mục 1 (bản có bẫy + kho đồ) theo đúng thứ tự; kiểm tra `ArtBank ▸ Coin Prefab` đã có Prefab `Coin` (nếu trống, xu được cộng thẳng vào ví thay vì rơi ra).
 - **Bấm B / T không có phản ứng:** bấm vào cửa sổ Game trước; T chỉ mở được khi đứng trong tầm rương (xem gợi ý "[T] MỞ RƯƠNG").
 - **Heavy/Rusher hiện ô vuông/không có hình:** Unity chưa import xong PNG mới trong `Art/` — bấm Assets ▸ Refresh rồi chạy lại menu.
+- **Bấm N / H không thấy gì, hoặc menu Skill báo "Chưa có dữ liệu Skill":** chạy menu *Thêm hệ thống Skill (không đụng Scene)* (mục 1). Bấm H chỉ mở bảng khi có ≥ 1 minibot.
+- **Quái chết nhưng linh kiện cộng thẳng vào kho thay vì rơi ra:** `ArtBank ▸ Part Prefab` đang trống — chạy lại menu *Thêm hệ thống Skill*.
+- **Không chế tạo được:** cần mở kỹ năng "Thu thập linh kiện", đã hạ loại quái đó ít nhất 1 lần và đủ linh kiện (cả ba điều kiện hiện trong tab CHẾ TẠO).
+- **Thiếu dòng Heavy/Rusher trong tab CHẾ TẠO:** tạo Prefab Heavy/Rusher (menu *Thêm quái Heavy + Rusher*) rồi chạy lại menu *Thêm hệ thống Skill*.
 - **Màn hình đen khi Play lần 2:** đã xử lý bằng `Bootstrap` (reset static, hỗ trợ tắt Reload Domain).
 - **Báo "Scene không có GameManager":** mở `Main.unity`.
 - Các menu tạo lại: *Chỉ tạo lại Prefab / Chỉ tạo lại Scene Main / Xuất lại âm thanh WAV* (tạo lại Scene Main cũng mở rộng map + đặt bẫy + rương như menu ở mục 1). **Cảnh báo:** các menu này ghi đè bản Prefab/Scene bạn đã chỉnh.

@@ -219,7 +219,7 @@ namespace NeonBreaker
                 case UnlockType.None: return Cfg.L("Không có điều kiện", "No condition");
                 case UnlockType.Manual: return Cfg.L("Điều kiện sẽ được bổ sung sau", "Condition to be added later");
                 case UnlockType.KillCount: return Cfg.L("Hạ ", "Defeat ") + c.amount + Cfg.L(" quái", " enemies") + "  (" + Mathf.Min(GameManager.Kills, c.amount) + "/" + c.amount + ")";
-                case UnlockType.DefeatedEnemy: return Cfg.L("Hạ gục ", "Defeat ") + c.enemyId + (HasDefeated(c.enemyId) ? "  ✓" : "");
+                case UnlockType.DefeatedEnemy: return Cfg.L("Hạ gục ", "Defeat ") + c.enemyId + (HasDefeated(c.enemyId) ? "  (OK)" : "");
                 case UnlockType.MinibotsCrafted: return Cfg.L("Chế tạo ", "Craft ") + c.amount + " minibot  (" + Mathf.Min(CraftedTotal, c.amount) + "/" + c.amount + ")";
                 case UnlockType.PartsCollected: return Cfg.L("Thu thập ", "Collect ") + c.amount + Cfg.L(" linh kiện", " parts") + "  (" + Mathf.Min(PartsCollected, c.amount) + "/" + c.amount + ")";
             }
@@ -281,7 +281,7 @@ namespace NeonBreaker
             }
             levels[n.id] = LevelOf(n) + 1;
             Sfx.Play("pickup", 0.8f, 1.4f);
-            Say(n.DisplayName + " → Lv." + LevelOf(n));
+            Say(n.DisplayName + " -> Lv." + LevelOf(n));
             return true;
         }
 
@@ -292,7 +292,7 @@ namespace NeonBreaker
         public static int PanelUsed { get { int n = 0; for (int i = 0; i < Bots.Count; i++) if (Bots[i].state != BotState.Storage) n++; return n; } }
         public static int SummonedCount { get { int n = 0; for (int i = 0; i < Bots.Count; i++) if (Bots[i].state == BotState.Out) n++; return n; } }
 
-        /// <summary>Đang ở căn cứ chưa? Hiện tạm coi mọi nơi là căn cứ (SkillConfig ▸ Anywhere Is Base). Khi làm căn cứ, sửa tại đây.</summary>
+        /// <summary>Đang ở căn cứ chưa? Hiện tạm coi mọi nơi là căn cứ (SkillConfig > Anywhere Is Base). Khi làm căn cứ, sửa tại đây.</summary>
         public static bool AtBase { get { return Config.anywhereIsBase; } }
 
         // ------------------------------------------------------------ chỉ số minibot
@@ -373,7 +373,7 @@ namespace NeonBreaker
             SelBot = Bots.Count - 1;
             Sfx.Play("charge", 0.7f, 1.5f);
             Sfx.Play("pickup", 0.8f, 1.2f);
-            Say(Cfg.L("Đã chế tạo minibot ", "Crafted minibot ") + e.DisplayName + "  [" + d.rank + "]  → " + Cfg.L("lưu trữ", "storage"));
+            Say(Cfg.L("Đã chế tạo minibot ", "Crafted minibot ") + e.DisplayName + "  [" + d.rank + "]  -> " + Cfg.L("lưu trữ", "storage"));
             return d;
         }
 
@@ -386,7 +386,7 @@ namespace NeonBreaker
         }
 
         // ------------------------------------------------------------ kho / bảng chọn / triệu hồi / thu hồi
-        /// <summary>Lưu trữ → bảng chọn (làm được ở mọi nơi).</summary>
+        /// <summary>Lưu trữ -> bảng chọn (làm được ở mọi nơi).</summary>
         public static bool ToPanel(MinibotData d)
         {
             if (d == null || d.state != BotState.Storage) return false;
@@ -396,7 +396,7 @@ namespace NeonBreaker
             return true;
         }
 
-        /// <summary>Bảng chọn → lưu trữ (chỉ ở căn cứ). Minibot được hồi máu dần khi nằm trong lưu trữ.</summary>
+        /// <summary>Bảng chọn -> lưu trữ (chỉ ở căn cứ). Minibot được hồi máu dần khi nằm trong lưu trữ.</summary>
         public static bool ToStorage(MinibotData d)
         {
             if (d == null || d.state != BotState.Panel) return false;
@@ -468,7 +468,7 @@ namespace NeonBreaker
             d.hp = Mathf.Min(d.MaxHp, d.hp + Mathf.Max(0f, d.MaxHp - oldMax));
             Sfx.Play("charge", 0.8f, 1.6f);
             Sfx.Play("pickup", 0.9f, 1.5f);
-            Say(d.Name + " → Lv." + d.level);
+            Say(d.Name + " -> Lv." + d.level);
             return true;
         }
 
@@ -483,7 +483,7 @@ namespace NeonBreaker
             }
             if (PanelUsed == 0)
             {
-                GameManager.Banner(Cfg.L("BẢNG CHỌN TRỐNG — mở Skill [N] ▸ Lưu trữ để đưa minibot ra bảng chọn", "SELECTION PANEL EMPTY — open Skill [N] ▸ Storage to move a minibot out"), Cfg.Yellow, 3f);
+                GameManager.Banner(Cfg.L("BẢNG CHỌN TRỐNG — mở Skill [N] > Lưu trữ để đưa minibot ra bảng chọn", "SELECTION PANEL EMPTY — open Skill [N] > Storage to move a minibot out"), Cfg.Yellow, 3f);
                 return;
             }
             PanelOpen = true;

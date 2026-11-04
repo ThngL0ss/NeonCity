@@ -92,8 +92,8 @@ namespace NeonBreaker
             if (!SkillSystem.HasConfig)
             {
                 h.TxtWrap(h.R(200, 220, 880, 120),
-                          Cfg.L("Chưa có dữ liệu Skill. Hãy chạy menu  Tools ▸ Neon Breaker ▸ Thêm hệ thống Skill (không đụng Scene)  trong Unity rồi chơi lại.",
-                                "No skill data yet. Run the menu  Tools ▸ Neon Breaker ▸ Add Skill system  in Unity, then play again."),
+                          Cfg.L("Chưa có dữ liệu Skill. Hãy chạy menu  Tools > Neon Breaker > Thêm hệ thống Skill (không đụng Scene)  trong Unity rồi chơi lại.",
+                                "No skill data yet. Run the menu  Tools > Neon Breaker > Add Skill system  in Unity, then play again."),
                           18, Cfg.Yellow, TextAnchor.UpperCenter);
             }
             else
@@ -150,7 +150,7 @@ namespace NeonBreaker
         {
             if (SkillSystem.Config.nodes.Count == 0)
             {
-                h.Txt(h.R(176, 200, 928, 30), Cfg.L("Chưa có kỹ năng nào trong SkillConfig ▸ Nodes", "No skills in SkillConfig ▸ Nodes"), 16, Cfg.A(Color.white, 0.6f), TextAnchor.UpperCenter);
+                h.Txt(h.R(176, 200, 928, 30), Cfg.L("Chưa có kỹ năng nào trong SkillConfig > Nodes", "No skills in SkillConfig > Nodes"), 16, Cfg.A(Color.white, 0.6f), TextAnchor.UpperCenter);
                 return;
             }
             DrawBranch(h, SkillBranch.Passive, 176f, Cfg.L("NHÁNH BỊ ĐỘNG", "PASSIVE BRANCH"), Cfg.Lime);
@@ -249,7 +249,7 @@ namespace NeonBreaker
                 {
                     if (h.Button(btn, Cfg.L("MỞ (THỬ NGHIỆM)", "UNLOCK (TEST)"), Cfg.Orange, 11)) SkillSystem.CheatUnlock(n);
                 }
-                else h.Txt(btn, "🔒", 16, Cfg.A(Color.white, 0.35f), TextAnchor.MiddleCenter);
+                else h.Txt(btn, Cfg.L("KHOÁ", "LOCKED"), 13, Cfg.A(Color.white, 0.4f), TextAnchor.MiddleCenter);
 
                 string lockText;
                 if (!SkillSystem.ParentUnlocked(n)) lockText = Cfg.L("Cần mở trước: ", "Unlock first: ") + n.parent.DisplayName;
@@ -285,7 +285,7 @@ namespace NeonBreaker
             }
             if (list.Count == 0)
             {
-                h.Txt(h.R(176, 230, 928, 30), Cfg.L("Chưa có loại quái nào trong SkillConfig ▸ Craftables", "No entries in SkillConfig ▸ Craftables"), 16, Cfg.A(Color.white, 0.6f), TextAnchor.UpperCenter);
+                h.Txt(h.R(176, 230, 928, 30), Cfg.L("Chưa có loại quái nào trong SkillConfig > Craftables", "No entries in SkillConfig > Craftables"), 16, Cfg.A(Color.white, 0.6f), TextAnchor.UpperCenter);
                 return;
             }
 
@@ -376,7 +376,7 @@ namespace NeonBreaker
                     h.Txt(new Rect(r.x, r.y + 2f * h.s, r.width - 3f * h.s, 16f * h.s), "Lv." + d.level, 11, Color.white, TextAnchor.UpperRight);
                     h.NeonBar(new Rect(r.x + 4f * h.s, r.yMax - 14f * h.s, r.width - 8f * h.s, 5f * h.s), d.hp / Mathf.Max(1f, d.MaxHp), Cfg.Lime, new Color(0f, 0f, 0f, 0.6f));
                     h.Txt(new Rect(r.x, r.yMax - 12f * h.s, r.width, 12f * h.s), StateTag(d.state), 9, border, TextAnchor.UpperCenter, false, false);
-                    if (d.MaturityFull) h.Txt(new Rect(r.x, r.y + 16f * h.s, r.width - 3f * h.s, 14f * h.s), "▲", 12, Cfg.Lime, TextAnchor.UpperRight);
+                    if (d.MaturityFull) h.Txt(new Rect(r.x, r.y + 16f * h.s, r.width - 3f * h.s, 14f * h.s), Cfg.L("LÊN CẤP", "LEVEL UP"), 12, Cfg.Lime, TextAnchor.UpperRight);
                 }
                 h.Outline(r, sel ? Color.white : Cfg.A(border, d != null ? 0.75f : 0.25f), sel ? 3f : 1.5f);
                 if (d != null && Click(r)) { SkillSystem.SelBot = i; Sfx.Play("click", 0.4f, 1.3f); }
@@ -518,7 +518,7 @@ namespace NeonBreaker
                 h.NeonBar(h.R(x0 + i * (cw + gap) + 8f, y0 + 58f, cw - 16f, 8f), d.hp / Mathf.Max(1f, d.MaxHp), Cfg.Lime, new Color(0f, 0f, 0f, 0.6f));
                 string st = out_ ? Cfg.L("ĐANG TRIỆU HỒI", "SUMMONED") : Cfg.L("TRIỆU HỒI", "SUMMON");
                 h.Txt(h.R(x0 + i * (cw + gap), y0 + 68f, cw, 20f), st, 13, bc, TextAnchor.UpperCenter);
-                if (d.MaturityFull) h.Txt(h.R(x0 + i * (cw + gap), y0 + 4f, cw - 6f, 16f), "▲", 12, Cfg.Lime, TextAnchor.UpperRight);
+                if (d.MaturityFull) h.Txt(h.R(x0 + i * (cw + gap), y0 + 4f, cw - 6f, 16f), Cfg.L("LÊN CẤP", "LEVEL UP"), 12, Cfg.Lime, TextAnchor.UpperRight);
                 h.Outline(r, Cfg.A(bc, hover ? 1f : 0.7f), hover ? 3f : 1.5f);
 
                 if (Click(r))

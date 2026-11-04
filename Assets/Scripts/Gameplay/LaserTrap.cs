@@ -111,6 +111,7 @@ namespace NeonBreaker
                     if (HurtPlayer((Vector2)transform.position + mid))
                         Fx.Sparks(pl.Center, Vector2.up, color, 8, 10f, 60f);
                 }
+                HurtBotsRect(HitRect(), (Vector2)transform.position + mid);
                 if (Random.value < 0.25f)
                 {
                     Vector2 pt = (Vector2)transform.position + a + (b - a) * Random.value;

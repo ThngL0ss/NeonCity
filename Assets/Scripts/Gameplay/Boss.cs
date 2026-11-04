@@ -278,6 +278,7 @@ namespace NeonBreaker
             Fx.HitStop(0.06f);
             Sfx.Play("slam", 1f);
             if (PlayerAlive && zone.Overlaps(P.HurtRect)) Strike(slamDamage, 10f);
+            Minibot.HurtInRect(zone, slamDamage, transform.position, 10f);
             Projectile.Wave(new Vector2(targetX - 2.2f, 0f), -1f, waveSpeed, slamDamage * waveDamageMul, Cfg.Purple);
             Projectile.Wave(new Vector2(targetX + 2.2f, 0f), 1f, waveSpeed, slamDamage * waveDamageMul, Cfg.Purple);
         }
@@ -317,6 +318,7 @@ namespace NeonBreaker
             Fx.Slash(new Vector2(hit.center.x, 1.5f), facing, Cfg.White, 1.8f);
             Fx.Shake(0.5f);
             if (PlayerAlive && hit.Overlaps(P.HurtRect)) Strike(slashDamage, 11f);
+            Minibot.HurtInRect(hit, slashDamage, transform.position, 11f);
             yield return new WaitForSeconds(0.55f);
             pose = "";
         }
@@ -397,6 +399,7 @@ namespace NeonBreaker
                         hitDone = true;
                         Strike(lanceDamage, 9f, new Vector2(x, 0f));
                     }
+                    Minibot.HurtInRect(new Rect(x - laserWidth * 0.5f, 0f, laserWidth, 18f), lanceDamage, new Vector2(x, 0f), 9f);
                 }
                 yield return new WaitForSeconds(0.45f);
             }
@@ -549,6 +552,9 @@ namespace NeonBreaker
                     Strike(touchDamage, 9f);
                 }
             }
+
+            if (!dead && !invul && !transitioning && !hidden && GameManager.Active)
+                Minibot.HurtInRect(HitRect, touchDamage, transform.position, 9f);
 
             // hạt khí lơ lửng
             if (!dead && Random.value < 0.3f)

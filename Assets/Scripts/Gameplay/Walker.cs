@@ -87,12 +87,14 @@ namespace NeonBreaker
             if (dead) return;
             float dt = Time.deltaTime;
             var p = Player.Instance;
-            bool active = PlayerActive;
+            // mục tiêu: người chơi hoặc minibot gần nhất trong tầm phát hiện
+            FoeTarget tg = Minibot.PickTarget(transform.position, aggroRange);
+            bool active = tg.Valid;
             Vector2 v = rb.Vel();
             cd -= dt;
             stT -= dt;
 
-            float dx = active ? p.Position.x - transform.position.x : 0f;
+            float dx = active ? tg.Pos.x - transform.position.x : 0f;
             float adx = Mathf.Abs(dx);
 
             switch (st)
@@ -103,7 +105,7 @@ namespace NeonBreaker
                         face = dx >= 0f ? 1 : -1;
                         float want = adx > 1.0f ? face * moveSpeed * spdMul : 0f;
                         v.x = Mathf.MoveTowards(v.x, want, 45f * dt);
-                        bool sameLevel = Mathf.Abs(p.Position.y - transform.position.y) < 2.4f;
+                        bool sameLevel = Mathf.Abs(tg.Pos.y - transform.position.y) < 2.4f;
                         if (adx < windupRange && cd <= 0f && sameLevel)
                         {
                             st = S.Windup;
@@ -135,6 +137,7 @@ namespace NeonBreaker
                         lungeHit = true;
                         p.Hurt(lungeDamage * dmgMul, transform.position, lungeKnockback);
                     }
+                    Minibot.HurtInRect(Geo.Box(Center, lungeBoxSize), lungeDamage * dmgMul, transform.position, lungeKnockback);
                     if (stT <= 0f)
                     {
                         st = S.Recover;
@@ -157,6 +160,7 @@ namespace NeonBreaker
             // va chạm thân (nhẹ) khi không lao
             if (st != S.Lunge && p != null && !p.Dead && Geo.Box(Center, touchBoxSize).Overlaps(p.HurtRect))
                 p.Hurt(touchDamage * dmgMul, transform.position, touchKnockback);
+            if (st != S.Lunge) Minibot.HurtInRect(Geo.Box(Center, touchBoxSize), touchDamage * dmgMul, transform.position, touchKnockback);
 
             // giữ trong khu vực
             Vector3 pos = transform.position;

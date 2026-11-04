@@ -37,6 +37,11 @@ namespace NeonBreaker
                 DrawTopRight();
                 DrawBossBar();
             }
+            if (GameManager.State == GameState.Playing)
+            {
+                SkillUi.DrawPanel(this);      // bảng chọn minibot (H): vẽ trước để nhận chuột trước nhãn trong màn chơi
+                SkillUi.DrawWorld(this);      // nhãn + bấm vào minibot để thu hồi
+            }
             DrawBanner();
             DrawCheatLabel();
             DrawScreenFx(pl);
@@ -47,7 +52,8 @@ namespace NeonBreaker
                 case GameState.Won: DrawResult(true); break;
                 case GameState.Lost: DrawResult(false); break;
                 case GameState.Playing:
-                    if (Inventory.IsOpen) InventoryUi.Draw(this);
+                    if (SkillSystem.MenuOpen) SkillUi.DrawMenu(this);
+                    else if (Inventory.IsOpen) InventoryUi.Draw(this);
                     else if (GameManager.Paused) DrawPause();
                     break;
             }
@@ -276,12 +282,19 @@ namespace NeonBreaker
             Txt(R(110, 127, 120, 28), Mathf.RoundToInt(coinShown).ToString(), 22, Color.white, TextAnchor.MiddleRight);
             Txt(R(240, 127, 118, 28), Cfg.L("[B] KHO ĐỒ", "[B] BAG"), 13, Cfg.A(Color.white, 0.65f), TextAnchor.MiddleRight, false);
 
+            // dòng phím tắt Skill + minibot + linh kiện
+            Rect sk = R(14, 160, 352, 24);
+            Fill(sk, new Color(0.01f, 0.02f, 0.06f, 0.55f));
+            Outline(sk, Cfg.A(Cfg.Cyan, 0.3f), 1.5f);
+            Txt(R(22, 160, 200, 24), "[N] SKILL   [H] MINIBOT " + SkillSystem.SummonedCount + "/" + SkillSystem.MaxSummoned, 12, Cfg.A(Cfg.Cyan, 0.9f), TextAnchor.MiddleLeft, true);
+            Txt(R(222, 160, 138, 24), Cfg.L("Linh kiện ", "Parts ") + SkillSystem.PartsTotal, 12, Cfg.A(Color.white, 0.8f), TextAnchor.MiddleRight, false);
+
             // buff tạm đang chạy
             for (int i = 0; i < Inventory.TimedCount; i++)
             {
                 var it = Inventory.TimedItem(i);
                 if (it == null) continue;
-                Txt(R(16, 162 + i * 18, 340, 18), it.DisplayName + "  " + Mathf.CeilToInt(Inventory.TimedLeft(i)) + "s", 13, Cfg.A(it.color, 0.95f), TextAnchor.UpperLeft, true);
+                Txt(R(16, 190 + i * 18, 340, 18), it.DisplayName + "  " + Mathf.CeilToInt(Inventory.TimedLeft(i)) + "s", 13, Cfg.A(it.color, 0.95f), TextAnchor.UpperLeft, true);
             }
         }
 
@@ -385,10 +398,10 @@ namespace NeonBreaker
             Txt(R(0, 84, 1280, 110), "NEON BREAKER", 96, Cfg.A(Cfg.Cyan, pulse), TextAnchor.MiddleCenter);
             Txt(R(0, 190, 1280, 30), Cfg.L("PHÁ TRỤ  •  HIT & RUN  •  HẠ BOSS", "BREAK TOWERS  •  HIT & RUN  •  SLAY THE BOSS"), 20, Cfg.A(Color.white, 0.85f), TextAnchor.MiddleCenter);
 
-            Rect panel = R(380, 244, 520, 304);
+            Rect panel = R(380, 228, 520, 338);
             Fill(panel, new Color(0.01f, 0.02f, 0.06f, 0.7f));
             Outline(panel, Cfg.A(Cfg.Cyan, 0.6f), 2f);
-            string[] k = { "A / D", "SPACE", "J", "I", "K", "L", "B", "T" };
+            string[] k = { "A / D", "SPACE", "J", "I", "K", "L", "B", "T", "N", "H" };
             string[] d =
             {
                 Cfg.L("Di chuyển", "Move"),
@@ -398,18 +411,20 @@ namespace NeonBreaker
                 Cfg.L("Ném phi tiêu", "Throw shuriken"),
                 Cfg.L("Hồi máu (giới hạn lượt, nhặt thêm từ quái)", "Heal (limited, pick up more)"),
                 Cfg.L("Mở / đóng kho đồ", "Open / close inventory"),
-                Cfg.L("Mở rương khi đứng gần", "Open a chest when standing near it")
+                Cfg.L("Mở rương khi đứng gần", "Open a chest when standing near it"),
+                Cfg.L("Mục Skill: cây skill, chế tạo, lưu trữ minibot", "Skill menu: skill tree, crafting, minibot storage"),
+                Cfg.L("Bảng chọn minibot (bấm minibot để triệu hồi)", "Minibot panel (click a minibot to summon)")
             };
-            Color[] cs = { Cfg.White, Cfg.White, Cfg.Cyan, Cfg.Magenta, Cfg.Yellow, Cfg.Lime, Cfg.Yellow, Cfg.Yellow };
+            Color[] cs = { Cfg.White, Cfg.White, Cfg.Cyan, Cfg.Magenta, Cfg.Yellow, Cfg.Lime, Cfg.Yellow, Cfg.Yellow, Cfg.Magenta, Cfg.Cyan };
             for (int i = 0; i < k.Length; i++)
             {
-                float y = 254f + i * 35f;
+                float y = 238f + i * 32f;
                 Txt(R(400, y, 110, 30), k[i], 20, cs[i], TextAnchor.MiddleLeft);
                 Txt(R(520, y, 370, 30), d[i], 15, Cfg.A(Color.white, 0.9f), TextAnchor.MiddleLeft, false);
             }
 
-            if (Button(R(490, 562, 300, 56), Cfg.L("BẮT ĐẦU  [ENTER]", "START  [ENTER]"), Cfg.Cyan, 26)) GameManager.Inst.StartGame();
-            Txt(R(0, 636, 1280, 24), Cfg.L("ESC = tạm dừng     P = chế độ thử nghiệm     V = đổi ngôn ngữ (VI/EN)", "ESC = pause     P = test mode     V = switch language (VI/EN)"), 14, Cfg.A(Color.white, 0.6f), TextAnchor.MiddleCenter, false);
+            if (Button(R(490, 580, 300, 52), Cfg.L("BẮT ĐẦU  [ENTER]", "START  [ENTER]"), Cfg.Cyan, 26)) GameManager.Inst.StartGame();
+            Txt(R(0, 646, 1280, 24), Cfg.L("ESC = tạm dừng     P = chế độ thử nghiệm     V = đổi ngôn ngữ (VI/EN)", "ESC = pause     P = test mode     V = switch language (VI/EN)"), 14, Cfg.A(Color.white, 0.6f), TextAnchor.MiddleCenter, false);
         }
 
         void DrawPause()

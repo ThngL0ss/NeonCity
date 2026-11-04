@@ -38,6 +38,10 @@ namespace NeonBreaker
         [Tooltip("Prefab đồng xu rơi ra khi hạ quái. Để trống = xu được cộng thẳng vào ví")] public GameObject coinPrefab;
         [Tooltip("Hình đồng xu vẽ trên HUD")] public Sprite coinIcon;
 
+        [Header("Skill & minibot (menu Tools ▸ Neon Breaker ▸ Thêm hệ thống Skill tự gán)")]
+        [Tooltip("Prefab linh kiện rơi ra khi hạ quái. Để trống = linh kiện được cộng thẳng vào kho")] public GameObject partPrefab;
+        [Tooltip("Hình linh kiện vẽ trên HUD / giao diện Skill")] public Sprite partIcon;
+
         public static ArtBank Load()
         {
             return Resources.Load<ArtBank>("NeonBreaker/ArtBank");

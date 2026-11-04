@@ -15,6 +15,9 @@ namespace NeonBreaker
         public static Player Instance;
 
         // ------------------------------------------------------------ chỉ số (chỉnh trong Inspector của Prefab Player)
+        [Header("Cấp bậc & cấp độ (chưa áp dụng vào chỉ số)")]
+        [Tooltip("Cấp bậc F..SSS và cấp độ 1..200 của người chơi. Hiện chỉ lưu dữ liệu, chưa ảnh hưởng chiến đấu")] public PowerInfo power = new PowerInfo();
+
         [Header("Sinh tồn")]
         [Tooltip("Máu tối đa")] public float maxHealth = 100f;
         [Tooltip("Thời gian bất tử sau khi trúng đòn (giây)")] public float hurtInvuln = 0.85f;

@@ -70,6 +70,7 @@ namespace NeonBreaker
             BannerT = 0f;
             BannerMax = 1f;
             Inventory.ResetAll();
+            SkillSystem.ResetAll();
         }
 
         public static void Banner(string text, Color c, float dur = 3f)
@@ -86,6 +87,7 @@ namespace NeonBreaker
             Inst = this;
             Time.timeScale = 1f;
             Inventory.ResetAll();
+            SkillSystem.ResetAll();
 
             Cfg.Vietnamese = startVietnamese;
 
@@ -165,9 +167,31 @@ namespace NeonBreaker
             Sfx.Play("click", 0.8f, 0.9f);
         }
 
+        /// <summary>Mở mục Skill (phím N): cây skill, chế tạo, lưu trữ minibot. Game tạm dừng trong lúc mở.</summary>
+        public static void OpenSkillMenu()
+        {
+            if (State != GameState.Playing || Paused) return;
+            var p = Player.Instance;
+            if (p == null || p.Dead) return;
+            SkillSystem.MenuOpen = true;
+            SkillSystem.PanelOpen = false;
+            SkillSystem.SelBot = Mathf.Clamp(SkillSystem.SelBot, 0, Mathf.Max(0, SkillSystem.Bots.Count - 1));
+            Paused = true;
+            Sfx.Play("click", 0.8f, 1.2f);
+        }
+
+        public static void CloseSkillMenu()
+        {
+            if (!SkillSystem.MenuOpen) return;
+            SkillSystem.MenuOpen = false;
+            Paused = false;
+            Sfx.Play("click", 0.8f, 0.9f);
+        }
+
         public void TogglePause()
         {
             if (State != GameState.Playing) return;
+            if (SkillSystem.MenuOpen) { CloseSkillMenu(); return; }
             if (Inventory.IsOpen) { CloseInventory(); return; }
             Paused = !Paused;
             Sfx.Play("click", 0.8f);
@@ -193,7 +217,12 @@ namespace NeonBreaker
                     if (GameInput.ConfirmDown) StartGame();
                     break;
                 case GameState.Playing:
-                    if (Inventory.IsOpen)
+                    if (SkillSystem.MenuOpen)
+                    {
+                        if (GameInput.PauseDown || GameInput.SkillMenuDown) CloseSkillMenu();
+                        else SkillUi.UpdateInput();
+                    }
+                    else if (Inventory.IsOpen)
                     {
                         if (GameInput.PauseDown || GameInput.InventoryDown) CloseInventory();
                         else InventoryUi.UpdateInput();
@@ -201,12 +230,15 @@ namespace NeonBreaker
                     else if (GameInput.PauseDown) TogglePause();
                     else if (Paused && GameInput.ConfirmDown) TogglePause();
                     else if (!Paused && GameInput.InventoryDown) OpenInventory();
+                    else if (!Paused && GameInput.SkillMenuDown) OpenSkillMenu();
+                    else if (!Paused && GameInput.MinibotPanelDown) SkillSystem.TogglePanel();
                     else if (!Paused && GameInput.InteractDown) Chest.TryOpenNearest();
                     if (!Paused)
                     {
                         PlayTime += Time.deltaTime;
                         CheckBossTrigger();
                         Inventory.Tick(Time.deltaTime);
+                        SkillSystem.Tick(Time.deltaTime);
                     }
                     break;
                 case GameState.Won:
@@ -216,6 +248,7 @@ namespace NeonBreaker
             }
 
             Inventory.TickUi(Time.unscaledDeltaTime);
+            SkillSystem.TickUi(Time.unscaledDeltaTime);
 
             float ts = 1f;
             if (Paused) ts = 0f;
@@ -297,6 +330,8 @@ namespace NeonBreaker
             {
                 Paused = false;
                 Inventory.IsOpen = false;
+                SkillSystem.MenuOpen = false;
+                SkillSystem.PanelOpen = false;
                 State = result;
             }
         }

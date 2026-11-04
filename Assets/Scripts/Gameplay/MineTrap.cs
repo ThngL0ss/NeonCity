@@ -99,6 +99,7 @@ namespace NeonBreaker
             Fx.Ring(c, Cfg.A(Cfg.Red, 0.9f), 0.5f, blastRadius * 2f, 0.35f);
 
             if (pl != null && !pl.Dead && Geo.CircleRect(c, blastRadius, pl.HurtRect)) pl.Hurt(damage, c, knockback);
+            HurtBotsCircle(c, blastRadius, c);
 
             if (hurtsEnemies)
             {

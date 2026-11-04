@@ -73,6 +73,8 @@ namespace NeonBreaker.EditorTools
                 BuildBanks();
                 ShowProgress("Bẫy, xu, rương, vật phẩm...", 0.72f);
                 BuildEconomyAssets();
+                ShowProgress("Hệ thống Skill...", 0.76f);
+                BuildSkillAssets();
                 BuildBanks();
                 ShowProgress("Scene...", 0.8f);
                 BuildScene();

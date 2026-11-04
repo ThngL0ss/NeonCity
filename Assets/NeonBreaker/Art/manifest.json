@@ -649,6 +649,46 @@
   "tile": false,
   "w": 16
  },
+ "part_0.png": {
+  "h": 12,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 12
+ },
+ "part_1.png": {
+  "h": 12,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 12
+ },
+ "part_2.png": {
+  "h": 12,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 12
+ },
+ "part_3.png": {
+  "h": 12,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 12
+ },
  "pickup_0.png": {
   "h": 16,
   "pivot": [
@@ -928,6 +968,96 @@
   "ppu": 16,
   "tile": false,
   "w": 30
+ },
+ "skill_efficient.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "skill_growth.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "skill_minibot.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "skill_parts.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "skill_repair.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "skill_scavenger.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "skill_slots.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "skill_squad.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "skill_tactics.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
  },
  "tile_ground_fill.png": {
   "h": 16,

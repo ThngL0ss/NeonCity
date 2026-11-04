@@ -1,0 +1,84 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd5197d3fc117474ba8f3d2f71008116, type: 3}
+  m_Name: SkillConfig
+  m_EditorClassIdentifier: 
+  craftables:
+  - enemyPrefab: {fileID: 1508541806146632754, guid: abd8d41dc57e65c45987ce02d20beb28, type: 3}
+    id: 
+    nameVi: Walker
+    nameEn: Walker
+    partsCost: 10
+    partsDropChance: 1
+    partsDropMin: 1
+    partsDropMax: 1
+    partColor: {r: 1, g: 0.6, b: 0.1, a: 1}
+    craftable: 1
+  - enemyPrefab: {fileID: 484256043987473469, guid: cf88c8f4a6c5af94cbad4f836f253ec5, type: 3}
+    id: 
+    nameVi: Flyer
+    nameEn: Flyer
+    partsCost: 10
+    partsDropChance: 1
+    partsDropMin: 1
+    partsDropMax: 1
+    partColor: {r: 1, g: 0.15, b: 0.8, a: 1}
+    craftable: 1
+  - enemyPrefab: {fileID: 1508541806146632754, guid: 06de5e40e545ac74dbaa772ea6bbcb4e, type: 3}
+    id: 
+    nameVi: Heavy
+    nameEn: Heavy
+    partsCost: 10
+    partsDropChance: 1
+    partsDropMin: 1
+    partsDropMax: 1
+    partColor: {r: 0.55, g: 0.3, b: 1, a: 1}
+    craftable: 1
+  - enemyPrefab: {fileID: 1508541806146632754, guid: de63471b2ec6db84d89ef45cd52f830b, type: 3}
+    id: 
+    nameVi: Rusher
+    nameEn: Rusher
+    partsCost: 10
+    partsDropChance: 1
+    partsDropMin: 1
+    partsDropMax: 1
+    partColor: {r: 0.45, g: 1, b: 0.4, a: 1}
+    craftable: 1
+  nodes:
+  - {fileID: 11400000, guid: efd07879bcab49c42a3256b5124eb699, type: 2}
+  - {fileID: 11400000, guid: f96aae7b6e6afe548a9675511df56df6, type: 2}
+  - {fileID: 11400000, guid: 569d2c07e111e4e42b75dbe2cdac1f1a, type: 2}
+  - {fileID: 11400000, guid: 49220c15f886c0247903437b0fdbee90, type: 2}
+  - {fileID: 11400000, guid: b8c25eeab2bdfd64893ad23973c994ab, type: 2}
+  - {fileID: 11400000, guid: f6a0022c79d505d4886c1cbd2ca0a9b6, type: 2}
+  - {fileID: 11400000, guid: 21054409dbd965d43983b763f97d550e, type: 2}
+  - {fileID: 11400000, guid: 0e0d5b29d1e066e478dd6756f0fe706f, type: 2}
+  - {fileID: 11400000, guid: 9f09d9f8964fc364d87b57fbefe2af5d, type: 2}
+  storageSlots: 30
+  panelSlots: 4
+  maxSummoned: 2
+  storageHealPctPerSec: 3
+  anywhereIsBase: 1
+  recallDelay: 5
+  combatRange: 14
+  hpPerLevel: 0.06
+  damagePerLevel: 0.05
+  followDistance: 3.2
+  engageRange: 14
+  attackTowers: 0
+  maturityKill: 10
+  maturityAssist: 4
+  maturityBase: 30
+  maturityPerLevel: 6
+  levelUpCoinCost: 0
+  deathPartsBase: 1
+  deathPartsPerLevel: 0.1

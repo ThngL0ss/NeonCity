@@ -54,7 +54,10 @@ MonoBehaviour:
   dead: 0
   owner: {fileID: 0}
   dropChanceMul: 1
-  health: 40
+  coinChance: 0.9
+  coinMin: 1
+  coinMax: 3
+  health: 30
   moveSpeed: 5
   boltDamage: 9
   boltSpeed: 9.5

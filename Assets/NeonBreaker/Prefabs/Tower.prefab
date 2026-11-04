@@ -341,11 +341,11 @@ MonoBehaviour:
     weight: 25
     powerMul: 1
     minPower: 0
-  - prefab: {fileID: 1508541806146632754, guid: 25982e9446069ad418410a7b4a23fa0c, type: 3}
+  - prefab: {fileID: 1508541806146632754, guid: de63471b2ec6db84d89ef45cd52f830b, type: 3}
     weight: 15
     powerMul: 1
     minPower: 1.1
-  - prefab: {fileID: 1508541806146632754, guid: 4adad83c6f77b25478146de1cf666713, type: 3}
+  - prefab: {fileID: 1508541806146632754, guid: 06de5e40e545ac74dbaa772ea6bbcb4e, type: 3}
     weight: 15
     powerMul: 1
     minPower: 1.3

@@ -136,6 +136,7 @@ MonoBehaviour:
   radius: 0.3
   life: 6
   knock: 6
+  range: 13
   pierce: 0
   fromPlayer: 0
   lifesteal: 0

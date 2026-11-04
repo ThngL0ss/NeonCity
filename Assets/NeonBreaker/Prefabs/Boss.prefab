@@ -176,8 +176,8 @@ MonoBehaviour:
   dead: 0
   phase: 1
   Intro: 1
-  p1Hp: 3000
-  p2Hp: 600
+  p1Hp: 2800
+  p2Hp: 1500
   p1Speed: 2
   p2Speed: 5.4
   p1HitSize: {x: 2.8, y: 4.2}

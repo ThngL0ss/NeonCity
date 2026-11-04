@@ -46,6 +46,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 310e0b4b89cb31d45808ef4fdf4f72df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lifetime: 18
+  floorY: 0.55
+  magnetRange: 3.6
+  magnetSpeed: {x: 3, y: 16}
+  pickupRadius: 0.5
+  directHeal: 15
+  gravity: 26
   icon: {fileID: 0}
 --- !u!1 &2005680469668493894
 GameObject:

@@ -32,3 +32,5 @@ MonoBehaviour:
   pickupPrefab: {fileID: 531550722313696810, guid: 45b767b49e499604881050bd069e0152, type: 3}
   coinPrefab: {fileID: 3479302698561464047, guid: 6050a93f021541b41a062b086b044e43, type: 3}
   coinIcon: {fileID: 21300000, guid: 43e994855f8d6e2479f4fef3aaad8304, type: 3}
+  partPrefab: {fileID: 5850759890881892616, guid: 084c2ddca28bccb458925e1270afc3f6, type: 3}
+  partIcon: {fileID: 21300000, guid: c88a914fac8ede94fb5afab565e09bd4, type: 3}

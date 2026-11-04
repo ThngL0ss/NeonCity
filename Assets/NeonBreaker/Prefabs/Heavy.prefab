@@ -130,7 +130,7 @@ MonoBehaviour:
   coinChance: 1
   coinMin: 3
   coinMax: 6
-  health: 180
+  health: 220
   moveSpeed: 2
   lungeDamage: 8
   touchDamage: 3

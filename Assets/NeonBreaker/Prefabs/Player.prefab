@@ -351,6 +351,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea8dd244b814b644da72e0ff8967e7e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHealth: 100
+  hurtInvuln: 0.85
+  healStartCharges: 3
+  healMaxCharges: 5
+  hurtBoxSize: {x: 0.68, y: 1.4}
+  hurtHopSpeed: {x: 5.5, y: 3}
+  moveSpeed: 8.2
+  accelGround: 95
+  accelAir: 55
+  jumpVelocity: 15.5
+  gravityUp: 3.4
+  gravityDown: 4.8
+  coyoteTime: 0.1
+  jumpBuffer: 0.12
+  meleeDamage: 20
+  meleeReach: 2.1
+  meleeHeight: 2.1
+  meleeWindup: 0.07
+  meleeDuration: 0.28
+  meleeCooldown: 0.36
+  meleeMoveMul: 0.4
+  meleeStepSpeed: 6.5
+  meleeKnockback: 7
+  dashSpeed: 25
+  dashTime: 0.19
+  dashCooldown: 1.5
+  dashInvulnExtra: 0.06
+  shurikenDamage: 13
+  shurikenSpeed: 21
+  shurikenRange: 13
+  shurikenCooldown: 0.55
+  shurikenPierce: 2
+  healAmount: 38
+  healChannel: 0.5
+  healCooldown: 1.2
   hp: 0
   maxHp: 0
   healCharges: 0

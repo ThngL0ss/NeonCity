@@ -43,7 +43,7 @@ namespace NeonBreaker
 
         public static int CraftedTotal, PartsCollected;
         public static bool MenuOpen, PanelOpen;
-        public static int Tab, SelBot;
+        public static int Tab, SelBot, PanelSel;
         public static string Msg = "";
         public static float MsgT;
 
@@ -80,7 +80,7 @@ namespace NeonBreaker
             icons.Clear();
             CraftedTotal = 0; PartsCollected = 0;
             MenuOpen = false; PanelOpen = false;
-            Tab = 0; SelBot = 0;
+            Tab = 0; SelBot = 0; PanelSel = 0;
             Msg = ""; MsgT = 0f;
             lastCombat = -999f; unlockT = 0f; uidCounter = 0;
             cfg = null;

@@ -77,6 +77,34 @@ namespace NeonBreaker
             }
         }
 
+        // ============================================================ nhập liệu khi bảng chọn minibot (H) đang mở
+        static List<MinibotData> PanelItems()
+        {
+            var items = new List<MinibotData>();
+            var bots = SkillSystem.Bots;
+            for (int i = 0; i < bots.Count; i++) if (bots[i].state != BotState.Storage) items.Add(bots[i]);
+            return items;
+        }
+
+        /// <summary>Bảng chọn đang mở: người chơi đứng yên. A / D đổi ô chọn, S triệu hồi (hoặc thu hồi nếu đã triệu hồi).</summary>
+        public static void UpdatePanelInput()
+        {
+            var items = PanelItems();
+            if (items.Count == 0) { SkillSystem.PanelOpen = false; return; }
+            int sel = Mathf.Clamp(SkillSystem.PanelSel, 0, items.Count - 1);
+            if (GameInput.NavLeftDown) sel--;
+            if (GameInput.NavRightDown) sel++;
+            sel = Mathf.Clamp(sel, 0, items.Count - 1);
+            if (sel != SkillSystem.PanelSel) Sfx.Play("click", 0.4f, 1.3f);
+            SkillSystem.PanelSel = sel;
+            if (GameInput.NavDownDown)
+            {
+                var d = items[sel];
+                if (d.state == BotState.Panel) SkillSystem.Summon(d);
+                else if (d.state == BotState.Out) SkillSystem.Recall(d);
+            }
+        }
+
         // ============================================================ MỤC SKILL
         public static void DrawMenu(Hud h)
         {
@@ -483,10 +511,9 @@ namespace NeonBreaker
         public static void DrawPanel(Hud h)
         {
             if (!SkillSystem.PanelOpen || GameManager.State != GameState.Playing || GameManager.Paused) return;
-            var bots = SkillSystem.Bots;
-            var items = new List<MinibotData>();
-            for (int i = 0; i < bots.Count; i++) if (bots[i].state != BotState.Storage) items.Add(bots[i]);
+            var items = PanelItems();
             if (items.Count == 0) { SkillSystem.PanelOpen = false; return; }
+            SkillSystem.PanelSel = Mathf.Clamp(SkillSystem.PanelSel, 0, items.Count - 1);
 
             const float cw = 150f, chh = 92f, gap = 8f;
             float total = items.Count * cw + (items.Count - 1) * gap;
@@ -497,7 +524,7 @@ namespace NeonBreaker
             h.Fill(back, new Color(0.01f, 0.02f, 0.06f, 0.82f));
             h.Outline(back, Cfg.A(Cfg.Cyan, 0.7f), 1.5f);
             h.Txt(h.R(x0, y0 - 27f, 420f, 20f), Cfg.L("BẢNG CHỌN MINIBOT  [H] đóng", "MINIBOT PANEL  [H] close"), 13, Cfg.Cyan, TextAnchor.UpperLeft);
-            h.Txt(h.R(x0, y0 - 27f, total, 20f), Cfg.L("Bấm vào minibot để triệu hồi", "Click a minibot to summon it") + "  ·  " + SkillSystem.SummonedCount + "/" + SkillSystem.MaxSummoned,
+            h.Txt(h.R(x0, y0 - 27f, total, 20f), Cfg.L("[A D] chọn  ·  [S] triệu hồi / thu hồi  ·  hoặc bấm chuột", "[A D] select  ·  [S] summon / recall  ·  or click") + "  ·  " + SkillSystem.SummonedCount + "/" + SkillSystem.MaxSummoned,
                   12, Cfg.A(Color.white, 0.65f), TextAnchor.UpperRight, false);
 
             for (int i = 0; i < items.Count; i++)
@@ -519,7 +546,9 @@ namespace NeonBreaker
                 string st = out_ ? Cfg.L("ĐANG TRIỆU HỒI", "SUMMONED") : Cfg.L("TRIỆU HỒI", "SUMMON");
                 h.Txt(h.R(x0 + i * (cw + gap), y0 + 68f, cw, 20f), st, 13, bc, TextAnchor.UpperCenter);
                 if (d.MaturityFull) h.Txt(h.R(x0 + i * (cw + gap), y0 + 4f, cw - 6f, 16f), Cfg.L("LÊN CẤP", "LEVEL UP"), 12, Cfg.Lime, TextAnchor.UpperRight);
-                h.Outline(r, Cfg.A(bc, hover ? 1f : 0.7f), hover ? 3f : 1.5f);
+                bool selected = i == SkillSystem.PanelSel;
+                if (selected) h.Fill(r, Cfg.A(Cfg.Yellow, 0.10f));
+                h.Outline(selected ? r : r, selected ? Cfg.Yellow : Cfg.A(bc, hover ? 1f : 0.7f), (hover || selected) ? 3f : 1.5f);
 
                 if (Click(r))
                 {

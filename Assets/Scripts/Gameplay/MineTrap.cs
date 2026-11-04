@@ -3,28 +3,29 @@ using UnityEngine;
 namespace NeonBreaker
 {
     /// <summary>
-    /// Mìn năng lượng: nằm im, khi người chơi lại gần (Trigger Radius) thì đèn đỏ nhấp nháy rồi NỔ sau Fuse Time giây,
-    /// gây sát thương trong bán kính Blast Radius (vòng đỏ trên sàn cho biết vùng nổ). Chạy ra khỏi vòng đỏ hoặc lướt (I) để né.
-    /// Sau khi nổ, mìn nạp lại sau Rearm Time giây (0 = chỉ nổ một lần). Có thể dụ quái vào vùng nổ (Hurts Enemies).
+    /// Mìn năng lượng: ban đầu TÀNG HÌNH. Khi người chơi giẫm lên mìn (đứng sát mìn và chân gần mặt đất) thì mìn lộ ra,
+    /// đèn đỏ nhấp nháy rồi NỔ sau Fuse Time giây, gây sát thương trong bán kính Blast Radius (vòng đỏ cho biết vùng nổ).
+    /// Chạy ra khỏi vòng đỏ hoặc lướt (I) để né. Mìn chỉ nổ MỘT lần rồi biến mất. Nhảy qua mìn thì không kích hoạt.
+    /// Có thể bật Hurts Enemies để vụ nổ cũng gây sát thương cho quái.
     /// </summary>
     public class MineTrap : Trap
     {
         [Header("Kích nổ")]
-        [Tooltip("Người chơi lại gần trong bán kính này thì mìn bắt đầu đếm ngược")] public float triggerRadius = 2.6f;
-        [Tooltip("Thời gian đếm ngược trước khi nổ (giây)")] public float fuseTime = 0.85f;
+        [Tooltip("Người chơi đứng cách tâm mìn trong khoảng ngang này (và đang ở sát mìn) thì coi là giẫm phải")] public float stepRadius = 0.9f;
+        [Tooltip("Chân người chơi cao hơn chân mìn quá khoảng này thì không kích hoạt (nhảy qua mìn)")] public float stepHeight = 0.7f;
+        [Tooltip("Thời gian đếm ngược sau khi mìn lộ ra, trước khi nổ (giây)")] public float fuseTime = 0.6f;
 
         [Header("Vụ nổ")]
         [Tooltip("Bán kính vùng nổ gây sát thương")] public float blastRadius = 2.8f;
         [Tooltip("true = vụ nổ cũng gây sát thương cho quái nhỏ (dụ quái vào bẫy)")] public bool hurtsEnemies = false;
-        [Tooltip("Sau khi nổ bao lâu thì mìn nạp lại (giây). 0 = chỉ nổ một lần rồi biến mất")] public float rearmTime = 10f;
         [Tooltip("Tâm vụ nổ / tâm mìn so với chân bẫy")] public Vector2 centerOffset = new Vector2(0f, 0.3f);
 
         [Header("Hình ảnh (tự tìm nếu để trống)")]
         public SpriteAnimator anim;
         public SpriteRenderer dangerGlow;    // object con "Danger": vòng đỏ vùng nổ
 
-        enum S { Armed, Fuse, Gone }
-        S state = S.Armed;
+        enum S { Hidden, Fuse }
+        S state = S.Hidden;
         float timer;
 
         Vector2 Center { get { return (Vector2)transform.position + centerOffset; } }
@@ -40,6 +41,7 @@ namespace NeonBreaker
                 dangerGlow.color = Cfg.A(Cfg.Red, 0f);
             }
             if (anim != null) anim.Play("idle");
+            SetVisible(false);                 // tàng hình cho tới khi bị giẫm
         }
 
         void SetVisible(bool on)
@@ -52,42 +54,32 @@ namespace NeonBreaker
             if (!GameManager.Active) return;
             float dt = Time.deltaTime;
 
-            if (state == S.Gone)
+            if (state == S.Hidden)
             {
-                if (rearmTime <= 0f) return;
-                timer -= dt;
-                if (timer <= 0f)
-                {
-                    var p = Target;
-                    if (p != null && Vector2.Distance(p.Center, Center) < triggerRadius + 1f) return;   // đợi người chơi rời xa rồi mới nạp lại
-                    state = S.Armed;
-                    SetVisible(true);
-                    if (anim != null) anim.Play("idle", true);
-                    Awake();
-                }
+                if (!Running) return;
+                var pl = Target;
+                if (pl == null) return;
+                Vector2 feet = pl.Position;
+                bool stepped = Mathf.Abs(feet.x - transform.position.x) <= stepRadius && feet.y - transform.position.y <= stepHeight && feet.y - transform.position.y >= -1f;
+                if (!stepped) return;
+
+                // lộ ra
+                state = S.Fuse;
+                timer = Mathf.Max(0.1f, fuseTime);
+                SetVisible(true);
+                if (anim != null) anim.Play("armed", true);
+                Sfx.PlayAt("warn", Center, 0.6f, 1.8f);
+                Fx.Flare(Center, Cfg.Red, 1.6f, 0.2f);
+                Fx.Ring(Center, Cfg.A(Cfg.Red, 0.9f), 0.3f, 1.6f, 0.25f);
+                Fx.Text(Center + new Vector2(0f, 1.3f), Cfg.L("MÌN!", "MINE!"), Cfg.Red, 1.2f);
                 return;
             }
 
-            if (!Running) return;
-            var pl = Target;
-
-            if (state == S.Armed)
-            {
-                if (pl != null && Vector2.Distance(pl.Center, Center) <= triggerRadius)
-                {
-                    state = S.Fuse;
-                    timer = Mathf.Max(0.1f, fuseTime);
-                    if (anim != null) anim.Play("armed", true);
-                    Sfx.PlayAt("warn", Center, 0.5f, 1.7f);
-                }
-            }
-            else if (state == S.Fuse)
-            {
-                timer -= dt;
-                if (dangerGlow != null)
-                    dangerGlow.color = Cfg.A(Cfg.Red, 0.15f + 0.2f * Mathf.Abs(Mathf.Sin(Time.time * 18f)));
-                if (timer <= 0f) Explode(pl);
-            }
+            // đang đếm ngược
+            timer -= dt;
+            if (dangerGlow != null)
+                dangerGlow.color = Cfg.A(Cfg.Red, 0.15f + 0.2f * Mathf.Abs(Mathf.Sin(Time.time * 18f)));
+            if (timer <= 0f) Explode(Target);
         }
 
         void Explode(Player pl)
@@ -112,16 +104,13 @@ namespace NeonBreaker
                 }
             }
 
-            if (rearmTime <= 0f) { Destroy(gameObject); return; }
-            state = S.Gone;
-            timer = rearmTime;
-            SetVisible(false);
+            Destroy(gameObject);               // chỉ nổ một lần
         }
 
         void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere((Vector2)transform.position + centerOffset, triggerRadius);
+            Gizmos.DrawWireSphere((Vector2)transform.position + centerOffset, stepRadius);
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere((Vector2)transform.position + centerOffset, blastRadius);
         }

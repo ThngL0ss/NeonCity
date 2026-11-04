@@ -154,7 +154,7 @@ namespace NeonBreaker
             if (Dead) { AnimateDead(); return; }
 
             float dt = Time.deltaTime;
-            bool canAct = GameManager.State == GameState.Playing && !GameManager.Paused && !GameManager.PlayerLocked;
+            bool canAct = GameManager.State == GameState.Playing && !GameManager.Paused && !GameManager.PlayerLocked && !SkillSystem.PanelOpen;
 
             Vector2 v = rb.Vel();
 

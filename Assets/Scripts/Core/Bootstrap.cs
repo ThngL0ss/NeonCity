@@ -26,6 +26,7 @@ namespace NeonBreaker
             Enemy.Live.Clear();
             Tower.Towers.Clear();
             Projectile.Live.Clear();
+            Interactor.ResetStatics();
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]

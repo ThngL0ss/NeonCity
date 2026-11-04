@@ -227,12 +227,18 @@ namespace NeonBreaker
                         if (GameInput.PauseDown || GameInput.InventoryDown) CloseInventory();
                         else InventoryUi.UpdateInput();
                     }
+                    else if (SkillSystem.PanelOpen)
+                    {
+                        // bảng chọn minibot (H): đứng yên, A / D chọn ô, S triệu hồi / thu hồi, H hoặc Esc đóng
+                        if (GameInput.PauseDown || GameInput.MinibotPanelDown) SkillSystem.TogglePanel();
+                        else SkillUi.UpdatePanelInput();
+                    }
                     else if (GameInput.PauseDown) TogglePause();
                     else if (Paused && GameInput.ConfirmDown) TogglePause();
                     else if (!Paused && GameInput.InventoryDown) OpenInventory();
                     else if (!Paused && GameInput.SkillMenuDown) OpenSkillMenu();
                     else if (!Paused && GameInput.MinibotPanelDown) SkillSystem.TogglePanel();
-                    else if (!Paused && GameInput.InteractDown) Chest.TryOpenNearest();
+                    else if (!Paused && !PlayerLocked && GameInput.InteractDown) Interactor.TryInteract();
                     if (!Paused)
                     {
                         PlayTime += Time.deltaTime;

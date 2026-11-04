@@ -3,16 +3,26 @@ using UnityEngine;
 namespace NeonBreaker
 {
     /// <summary>
-    /// Súng tự động: đứng yên, khi người chơi vào tầm thì tụ năng lượng (đầu nòng sáng lên báo hiệu) rồi bắn đạn.
-    /// Né bằng cách nhảy / lướt (I) hoặc núp sau bục. Có thể bắn thẳng hoặc ngắm theo người chơi (giới hạn góc).
-    /// Đặt chân súng ở mặt đất hoặc trên bục; Facing = 1 quay phải, -1 quay trái.
+    /// Súng tự động: đứng yên, khi người chơi vào tầm thì nòng quay ngắm (xoay được cả 180° - mặc định nửa vòng tròn phía trên chân súng),
+    /// tụ năng lượng (đầu nòng sáng lên báo hiệu) rồi bắn đạn. Né bằng cách nhảy / lướt (I) hoặc núp sau bục.
+    /// PHÁ HUỶ ĐƯỢC: chém (J) hoặc ném phi tiêu (K) trúng thân súng; ít máu hơn trụ triệu hồi, nổ và rơi xu khi hết máu.
+    /// Đặt chân súng ở mặt đất hoặc trên bục; Facing = 1 / -1 chỉ là hướng nòng lúc nghỉ và hướng hình thân súng.
     /// </summary>
     public class TurretTrap : Trap
     {
         [Header("Hướng bắn")]
-        [Tooltip("1 = quay sang phải, -1 = quay sang trái")] public int facing = -1;
-        [Tooltip("true = nòng ngắm theo người chơi (trong giới hạn góc), false = bắn thẳng theo hướng quay")] public bool aimAtPlayer = true;
-        [Tooltip("Góc ngắm tối đa lệch khỏi hướng quay (độ)")] public float aimMaxAngle = 40f;
+        [Tooltip("1 = nòng nghỉ ở bên phải, -1 = bên trái (hướng lúc chưa thấy người chơi)")] public int facing = -1;
+        [Tooltip("true = nòng ngắm theo người chơi trong cung xoay, false = đứng yên ở hướng nghỉ")] public bool aimAtPlayer = true;
+        [Tooltip("Góc tâm của cung xoay (độ). 90 = thẳng lên trời, 0 = sang phải, 180 = sang trái")] public float aimCenterAngle = 90f;
+        [Tooltip("Độ rộng cung xoay của nòng (độ). 180 = quay được nửa vòng tròn; 360 = quay tròn")] public float aimArc = 180f;
+        [Tooltip("Tốc độ xoay nòng (độ / giây)")] public float turnSpeed = 220f;
+
+        [Header("Phá hủy được")]
+        [Tooltip("Máu của súng (trụ triệu hồi có 420)")] public float health = 110f;
+        [Tooltip("Số xu rơi ra khi bị phá")] public int rewardCoins = 8;
+        [Tooltip("Hộp trúng đòn (rộng, cao) và vị trí tâm so với chân súng")] public Vector2 bodyHitSize = new Vector2(1.3f, 1.5f);
+        public Vector2 bodyHitOffset = new Vector2(0f, 0.8f);
+        [Tooltip("Vị trí thanh máu so với chân súng")] public Vector2 barOffset = new Vector2(0f, 2.1f);
 
         [Header("Bắn")]
         [Tooltip("Chỉ bắn khi người chơi cách bẫy không quá khoảng này (theo trục ngang)")] public float range = 22f;
@@ -37,8 +47,13 @@ namespace NeonBreaker
         float chargeT = -1f;
         int burstLeft;
         float burstT;
+        float rel;                           // góc nòng so với tâm cung (độ), nằm trong [-arc/2, arc/2]
         Vector2 aimDir;
         SpriteRenderer barrelSr;
+        TurretBody body;
+
+        float HalfArc { get { return Mathf.Clamp(aimArc, 0f, 360f) * 0.5f; } }
+        float RestRel { get { return facing >= 0 ? -HalfArc : HalfArc; } }
 
         void Awake()
         {
@@ -47,17 +62,23 @@ namespace NeonBreaker
             if (barrel != null) barrelSr = barrel.GetComponent<SpriteRenderer>();
             if (muzzleGlow == null) muzzleGlow = FindSr("MuzzleGlow");
             facing = facing >= 0 ? 1 : -1;
-            aimDir = new Vector2(facing, 0f);
+            rel = Mathf.Clamp(RestRel, -HalfArc, HalfArc);
+            UpdateAimDir();
             cd = fireInterval * 0.5f + startOffset;
             if (baseSr != null) baseSr.flipX = facing < 0;
             if (barrel != null) barrel.localPosition = new Vector3(0f, barrelHeight, 0f);
             Face();
+
+            // thân súng có máu: bị chém / phi tiêu trúng như trụ triệu hồi
+            body = GetComponent<TurretBody>();
+            if (body == null) body = gameObject.AddComponent<TurretBody>();
+            body.Setup(this, health, bodyHitSize, bodyHitOffset, barOffset);
         }
 
-        static Vector2 Rotate(Vector2 v, float deg)
+        void UpdateAimDir()
         {
-            float r = deg * Mathf.Deg2Rad, c = Mathf.Cos(r), s = Mathf.Sin(r);
-            return new Vector2(v.x * c - v.y * s, v.x * s + v.y * c);
+            float a = (aimCenterAngle + rel) * Mathf.Deg2Rad;
+            aimDir = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
         }
 
         void Face()
@@ -71,24 +92,30 @@ namespace NeonBreaker
                 muzzleGlow.transform.localPosition = new Vector3(0f, barrelHeight, 0f) + (Vector3)(aimDir * muzzleLength);
         }
 
+        /// <summary>Góc (so với tâm cung) mà nòng muốn quay tới để nhắm vào điểm target; bị giới hạn trong cung xoay.</summary>
+        float WantRel(Vector2 pivot, Vector2 target)
+        {
+            Vector2 d = target - pivot;
+            float a = Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg;
+            float r = Mathf.DeltaAngle(aimCenterAngle, a);
+            float h = HalfArc;
+            return h >= 179.5f ? r : Mathf.Clamp(r, -h, h);
+        }
+
         void Update()
         {
             if (!Running) return;
+            if (body != null && body.dead) return;
             var pl = Target;
             if (pl == null) return;
             float dt = Time.deltaTime;
 
             Vector2 pivot = (Vector2)transform.position + new Vector2(0f, barrelHeight);
-            Vector2 fwd = new Vector2(facing, 0f);
             bool inRange = Mathf.Abs(pl.Position.x - transform.position.x) <= range && Mathf.Abs(pl.Center.y - pivot.y) <= 14f;
 
-            Vector2 want = fwd;
-            if (aimAtPlayer && inRange)
-            {
-                float ang = Mathf.Clamp(Vector2.SignedAngle(fwd, pl.Center - pivot), -aimMaxAngle, aimMaxAngle);
-                want = Rotate(fwd, ang);
-            }
-            aimDir = Vector2.Lerp(aimDir, want, 1f - Mathf.Exp(-12f * dt)).normalized;
+            float want = (aimAtPlayer && inRange) ? WantRel(pivot, pl.Center) : Mathf.Clamp(RestRel, -HalfArc, HalfArc);
+            rel = Mathf.MoveTowards(rel, want, Mathf.Max(10f, turnSpeed) * dt);
+            UpdateAimDir();
             Face();
 
             float glowA = 0f;
@@ -140,9 +167,17 @@ namespace NeonBreaker
 
         void OnDrawGizmosSelected()
         {
-            Gizmos.color = Color.red;
             Vector2 p = (Vector2)transform.position + new Vector2(0f, barrelHeight);
-            Gizmos.DrawLine(p, p + new Vector2(facing * range, 0f));
+            float h = Mathf.Clamp(aimArc, 0f, 360f) * 0.5f;
+            Gizmos.color = new Color(1f, 0.3f, 0.3f, 0.8f);
+            for (int s = -1; s <= 1; s += 2)
+            {
+                float a = (aimCenterAngle + s * h) * Mathf.Deg2Rad;
+                Gizmos.DrawLine(p, p + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * Mathf.Min(range, 6f));
+            }
+            Gizmos.color = Color.yellow;
+            Vector2 c = (Vector2)transform.position + bodyHitOffset;
+            Gizmos.DrawWireCube(c, bodyHitSize);
         }
     }
 }

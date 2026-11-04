@@ -18,6 +18,10 @@ namespace NeonBreaker
         public static bool ConfirmDown, RestartDown, PauseDown, ClickDown, LangDown, CheatDown;
         /// <summary>B: mở / đóng kho đồ · T: mở rương · X: vứt vật phẩm (trong kho) · mũi tên / WASD: di chuyển ô chọn trong kho.</summary>
         public static bool InventoryDown, InteractDown, DiscardDown, NavLeftDown, NavRightDown, NavUpDown, NavDownDown;
+        /// <summary>N: mở / đóng mục Skill (cây skill, chế tạo, lưu trữ minibot) · H: mở / đóng bảng chọn minibot.</summary>
+        public static bool SkillMenuDown, MinibotPanelDown;
+        /// <summary>Q / E: chuyển tab trong mục Skill.</summary>
+        public static bool TabPrevDown, TabNextDown;
 
         public static void Poll()
         {
@@ -47,6 +51,10 @@ namespace NeonBreaker
             InventoryDown = k.bKey.wasPressedThisFrame;
             InteractDown = k.tKey.wasPressedThisFrame;
             DiscardDown = k.xKey.wasPressedThisFrame;
+            SkillMenuDown = k.nKey.wasPressedThisFrame;
+            MinibotPanelDown = k.hKey.wasPressedThisFrame;
+            TabPrevDown = k.qKey.wasPressedThisFrame;
+            TabNextDown = k.eKey.wasPressedThisFrame;
             NavLeftDown = k.aKey.wasPressedThisFrame || k.leftArrowKey.wasPressedThisFrame;
             NavRightDown = k.dKey.wasPressedThisFrame || k.rightArrowKey.wasPressedThisFrame;
             NavUpDown = k.wKey.wasPressedThisFrame || k.upArrowKey.wasPressedThisFrame;
@@ -76,6 +84,10 @@ namespace NeonBreaker
             InventoryDown = Input.GetKeyDown(KeyCode.B);
             InteractDown = Input.GetKeyDown(KeyCode.T);
             DiscardDown = Input.GetKeyDown(KeyCode.X);
+            SkillMenuDown = Input.GetKeyDown(KeyCode.N);
+            MinibotPanelDown = Input.GetKeyDown(KeyCode.H);
+            TabPrevDown = Input.GetKeyDown(KeyCode.Q);
+            TabNextDown = Input.GetKeyDown(KeyCode.E);
             NavLeftDown = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
             NavRightDown = Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow);
             NavUpDown = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow);
@@ -91,6 +103,7 @@ namespace NeonBreaker
             AttackDown = DashDown = ShurikenDown = HealDown = false;
             ConfirmDown = RestartDown = PauseDown = ClickDown = LangDown = CheatDown = false;
             InventoryDown = InteractDown = DiscardDown = NavLeftDown = NavRightDown = NavUpDown = NavDownDown = false;
+            SkillMenuDown = MinibotPanelDown = TabPrevDown = TabNextDown = false;
         }
     }
 }

@@ -47,6 +47,10 @@ namespace NeonBreaker
         [Tooltip("Hình dầu vẽ trên HUD / giao diện")] public Sprite oilIcon;
         [Tooltip("Prefab vật phẩm nằm trên đường, bấm F để nhặt (thùng dầu, nguyên liệu)")] public GameObject worldItemPrefab;
 
+        [Header("Cinematic (menu Tools ▸ Neon Breaker ▸ Cập nhật cấp bậc + dầu + căn cứ tự gán)")]
+        [Tooltip("Bộ khung robot lộ ra khi cơ thể người chơi tan (cùng kích thước / gốc toạ độ với sprite người chơi)")] public Sprite playerSkeleton;
+        [Tooltip("Các mảnh linh kiện robot nhỏ bay ra / bay vào trong cinematic")] public Sprite[] robotBits;
+
         public static ArtBank Load()
         {
             return Resources.Load<ArtBank>("NeonBreaker/ArtBank");

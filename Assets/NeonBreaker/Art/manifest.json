@@ -959,6 +959,16 @@
   "tile": false,
   "w": 32
  },
+ "player_skeleton.png": {
+  "h": 32,
+  "pivot": [
+   0.375,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
  "proj_bolt.png": {
   "h": 8,
   "pivot": [
@@ -998,6 +1008,46 @@
   "ppu": 16,
   "tile": false,
   "w": 20
+ },
+ "robot_bit_0.png": {
+  "h": 7,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 7
+ },
+ "robot_bit_1.png": {
+  "h": 6,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 6
+ },
+ "robot_bit_2.png": {
+  "h": 5,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 8
+ },
+ "robot_bit_3.png": {
+  "h": 6,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 6
  },
  "rusher_lunge.png": {
   "h": 18,

@@ -93,6 +93,8 @@ namespace NeonBreaker
         public float HealCdFrac { get { return Mathf.Clamp01(healCd / healCooldown); } }
         public bool IsHealing { get { return healT > 0f; } }
         public bool IsDashing { get { return dashT > 0f; } }
+        public bool Stunned { get { return stunT > 0f; } }
+        float stunT;
 
         public float VelocityX { get { return rb != null ? rb.Vel().x : 0f; } }
         public Vector2 Position { get { return transform.position; } }
@@ -154,7 +156,8 @@ namespace NeonBreaker
             if (Dead) { AnimateDead(); return; }
 
             float dt = Time.deltaTime;
-            bool canAct = GameManager.State == GameState.Playing && !GameManager.Paused && !GameManager.PlayerLocked && !SkillSystem.PanelOpen;
+            stunT -= dt;
+            bool canAct = GameManager.State == GameState.Playing && !GameManager.Paused && !GameManager.PlayerLocked && !SkillSystem.PanelOpen && stunT <= 0f;
 
             Vector2 v = rb.Vel();
 
@@ -415,6 +418,17 @@ namespace NeonBreaker
             return true;
         }
 
+        /// <summary>Làm người chơi choáng (không di chuyển / đánh / lướt / hồi máu được) trong dur giây.</summary>
+        public void Stun(float dur)
+        {
+            if (Dead || dur <= 0f) return;
+            stunT = Mathf.Max(stunT, dur);
+            dashT = 0f; healT = 0f; atkT = 0f;
+            atkPending = false;
+            Fx.Text(Center + new Vector2(0f, 1.5f), Cfg.L("CHOÁNG!", "STUNNED!"), Cfg.Yellow, 1.3f);
+            Sfx.Play("warn", 0.7f, 1.7f);
+        }
+
         /// <summary>Đẩy người chơi (không gây sát thương).</summary>
         public void Knock(Vector2 impulse)
         {
@@ -468,13 +482,33 @@ namespace NeonBreaker
             rb.SetVel(Vector2.zero);
             rb.gravityScale = 0f;
             rb.simulated = false;
-            Fx.Explosion(Center, Cfg.Cyan, true);
-            Fx.Explosion(Center, Cfg.Magenta, false);
+            stunT = 0f;
+            Fx.Sparks(Center, Vector2.up, Cfg.Cyan, 14, 10f, 90f, 0.5f);
             Fx.Shake(0.8f);
             Sfx.Play("enemyDie", 1f, 0.7f);
             Sfx.Play("hurt", 1f, 0.6f);
-            if (visual != null) visual.gameObject.SetActive(false);
-            GameManager.OnPlayerDead();
+            GameManager.OnPlayerDead();       // chạy cinematic chết (thân xác vẫn hiện để cảnh quay dùng)
+        }
+
+        /// <summary>Chuẩn bị hình cho cinematic chết: dừng hoạt ảnh, giữ khung "hurt", bỏ nhấp nháy. Trả về SpriteRenderer của thân.</summary>
+        public SpriteRenderer FreezeVisual()
+        {
+            if (visual == null) return null;
+            visual.gameObject.SetActive(true);
+            var sr = visual.GetComponent<SpriteRenderer>();
+            if (anim != null)
+            {
+                Sprite hurt = null;
+                if (anim.clips != null)
+                    for (int i = 0; i < anim.clips.Length; i++)
+                        if (anim.clips[i] != null && anim.clips[i].name == "hurt" && anim.clips[i].frames != null && anim.clips[i].frames.Length > 0) { hurt = anim.clips[i].frames[0]; break; }
+                anim.enabled = false;
+                if (sr != null && hurt != null) sr.sprite = hurt;
+            }
+            if (flasher != null) flasher.Apply(false, 1f);
+            visual.localScale = new Vector3(Facing >= 0 ? 1f : -1f, 1f, 1f);
+            visual.localRotation = Quaternion.identity;
+            return sr;
         }
 
         // ------------------------------------------------------------ animation
@@ -488,7 +522,17 @@ namespace NeonBreaker
 
             // chọn clip theo trạng thái (tên clip khớp với danh sách Clips của SpriteAnimator trên prefab)
             string clip;
-            if (hurtT > hurtInvuln - 0.18f) clip = "hurt";
+            if (stunT > 0f)
+            {
+                clip = "hurt";
+                if (Random.value < 0.5f)
+                {
+                    float a = Time.time * 12f;
+                    Vector2 hp = Center + new Vector2(Mathf.Cos(a) * 0.5f, 0.95f + Mathf.Sin(a) * 0.15f);
+                    Fx.Emit(Fx.S_Star, hp, Vector2.zero, new Vector2(0.28f, 0.28f), new Vector2(0.1f, 0.1f), Cfg.Yellow, Cfg.A(Cfg.Yellow, 0f), 0.3f);
+                }
+            }
+            else if (hurtT > hurtInvuln - 0.18f) clip = "hurt";
             else if (healT > 0f) clip = "heal";
             else if (dashT > 0f) clip = "dash";
             else if (atkT > 0f) clip = "attack";

@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 namespace NeonBreaker
 {
-    public enum GameState { Menu, Playing, Won, Lost }
+    public enum GameState { Menu, Playing, Won, Lost, Cinematic }
 
     /// <summary>
     /// Điều phối toàn bộ game: trạng thái, kích hoạt boss, thắng / thua, tạm dừng, hit-stop.
@@ -50,6 +50,10 @@ namespace NeonBreaker
         [Header("Boss")]
         [Tooltip("Prefab boss. Để trống = lấy trong ArtBank.")]
         public GameObject bossPrefab;
+
+        [Header("Cinematic")]
+        [Tooltip("Bật = bấm Chơi sẽ chạy cảnh mở đầu (camera bay tới địa bàn boss + thoại). Bấm ESC để bỏ qua.")]
+        public bool playIntro = true;
 
         Transform runtime;
 
@@ -99,6 +103,7 @@ namespace NeonBreaker
                 SkillSystem.MenuOpen = false;
                 SkillSystem.PanelOpen = false;
             }
+            Cine.NewScene(GameFlow.Carry);      // chuyển cảnh: giữ màn đen để mờ dần vào Scene mới
             GameFlow.Carry = false;
             GameFlow.InBase = false;
 
@@ -145,9 +150,19 @@ namespace NeonBreaker
         public void StartGame()
         {
             if (State != GameState.Menu) return;
-            State = GameState.Playing;
             Sfx.Play("click", 1f);
             Sfx.Music(0);
+            if (playIntro) { StartCoroutine(IntroRoutine()); return; }
+            State = GameState.Playing;
+            Banner(Cfg.L("PHÁ HỦY TẤT CẢ TRỤ TRIỆU HỒI", "DESTROY ALL SUMMON TOWERS"), Cfg.Cyan, 4f);
+        }
+
+        IEnumerator IntroRoutine()
+        {
+            State = GameState.Cinematic;
+            Cine.Play(CineScripts.Intro());
+            while (Cine.Active) yield return null;
+            State = GameState.Playing;
             Banner(Cfg.L("PHÁ HỦY TẤT CẢ TRỤ TRIỆU HỒI", "DESTROY ALL SUMMON TOWERS"), Cfg.Cyan, 4f);
         }
 
@@ -224,6 +239,7 @@ namespace NeonBreaker
             }
 
             if (BannerT > 0f) BannerT -= Time.unscaledDeltaTime;
+            Cine.Tick();
 
             switch (State)
             {
@@ -279,6 +295,7 @@ namespace NeonBreaker
         void CheckBossTrigger()
         {
             if (BossSpawned) return;
+            if (GameFlow.InBase) return;
             var p = Player.Instance;
             if (p == null || p.Dead) return;
             if (Tower.Remaining > 0) return;
@@ -328,6 +345,11 @@ namespace NeonBreaker
             Banner(Cfg.L("PHASE 2 — NÓ ĐANG HÚT MÁU BẠN!", "PHASE 2 — IT DRAINS YOUR LIFE!"), Cfg.Red, 4f);
         }
 
+        public static void OnBossPhase3()
+        {
+            Banner(Cfg.L("PHASE 3 — NÓ ĐÃ TÁI SINH, MẠNH HƠN BAO GIỜ HẾT!", "PHASE 3 — IT HAS REBORN, STRONGER THAN EVER!"), Cfg.Orange, 4.5f);
+        }
+
         public static void OnBossDead()
         {
             Sfx.StopMusic();
@@ -340,7 +362,29 @@ namespace NeonBreaker
         {
             Sfx.StopMusic();
             Sfx.Play("defeat", 1f);
-            if (Inst != null) Inst.StartCoroutine(Inst.EndRoutine(GameState.Lost, 1.8f));
+            GameFlow.Deaths++;
+            if (Inst != null) Inst.StartCoroutine(Inst.DeathRoutine());
+        }
+
+        /// <summary>Cinematic chết (gục xuống, tan thành linh kiện, tối dần) rồi chuyển sang Scene Base. Chưa có Scene Base thì hiện màn thua cũ.</summary>
+        IEnumerator DeathRoutine()
+        {
+            Paused = false;
+            PlayerLocked = false;
+            Inventory.IsOpen = false;
+            SkillSystem.MenuOpen = false;
+            SkillSystem.PanelOpen = false;
+            State = GameState.Cinematic;          // quái, trụ, bẫy đứng yên trong lúc quay
+            Projectile.ClearHostile();
+            Cine.Play(CineScripts.Death());
+            while (Cine.Active) yield return null;
+            if (GameFlow.BaseAvailable)
+            {
+                GameFlow.GoToBase();
+                yield break;
+            }
+            Cine.SetFade(0f, 0.8f);               // chưa có Scene Base: về màn thua cũ
+            State = GameState.Lost;
         }
 
         IEnumerator EndRoutine(GameState result, float delay)

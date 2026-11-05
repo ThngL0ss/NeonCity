@@ -27,6 +27,7 @@ namespace NeonBreaker
             Tower.Towers.Clear();
             Projectile.Live.Clear();
             Interactor.ResetStatics();
+            Cine.ResetStatics();
             BaseConfig.ResetStatics();
         }
 

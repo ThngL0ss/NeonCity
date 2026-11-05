@@ -76,7 +76,18 @@ namespace NeonBreaker.EditorTools
             if (ab.oilPrefab == null) ab.oilPrefab = Prefab("Oil");
             if (ab.oilIcon == null) ab.oilIcon = Spr("oil_can");
             if (ab.worldItemPrefab == null) ab.worldItemPrefab = Prefab("WorldItem");
+            if (ab.playerSkeleton == null) ab.playerSkeleton = Spr("player_skeleton");
+            if (ab.robotBits == null || ab.robotBits.Length == 0) ab.robotBits = Fr("robot_bit_", 4);
             EditorUtility.SetDirty(ab);
+
+            // ---- boss: bậc SS, cấp 1 (chỉ đặt nếu còn là F)
+            EditPrefab("Boss", go =>
+            {
+                var b = go.GetComponent<Boss>();
+                if (b == null) return;
+                if (b.power == null) b.power = new PowerInfo(Rank.SS, 1);
+                if (b.power.rank == Rank.F) { b.power.rank = Rank.SS; b.power.level = 1; }
+            });
 
             // ---- BaseConfig: công thức chế tác + bảng rải vật phẩm
             var cfg = LoadOrCreate<BaseConfig>(ResDir + "BaseConfig.asset");
@@ -121,10 +132,11 @@ namespace NeonBreaker.EditorTools
 
             AssetDatabase.SaveAssets();
             if (missing.Count > 0)
-                throw new System.Exception("Thiếu sprite: " + string.Join(", ", missing.ToArray()) + ". Chạy: python3 Tools/PixelArt/gen_stage2.py rồi thử lại.");
+                throw new System.Exception("Thiếu sprite: " + string.Join(", ", missing.ToArray()) + ". Chạy: python3 Tools/PixelArt/gen_stage2.py và python3 Tools/PixelArt/gen_cine.py rồi thử lại.");
 
             return "• Cấp bậc quái: Walker, Flyer = D · Heavy, Rusher = C (đã đặt " + ranked + " quái còn ở bậc F)\n" +
                    "• Prefab Oil (giọt dầu) + WorldItem (thùng dầu / nguyên liệu nhặt bằng F), ArtBank đã gán\n" +
+                   "• Boss = bậc SS cấp 1; ArtBank có sprite bộ khung robot + mảnh linh kiện cho cinematic\n" +
                    "• 4 nguyên liệu: Sắt vụn, Dây đồng, Bo mạch, Gel năng lượng (thêm vào " + chestAdded + " dòng trong bảng rơi của rương)\n" +
                    "• BaseConfig: " + cfg.recipes.Count + " công thức chế tác (mới thêm " + addedRecipes + "), ghép linh kiện + bảng vật phẩm rải đường\n" +
                    "• Cấu hình: " + ResDir + "BaseConfig.asset";

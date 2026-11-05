@@ -26,11 +26,15 @@ namespace NeonBreaker
 
             var pl = Player.Instance;
 
+            bool cinema = GameManager.State == GameState.Cinematic;
             DrawFloatTexts();
-            DrawWorldIndicators();
-            DrawInteractPrompt();
+            if (!cinema)
+            {
+                DrawWorldIndicators();
+                DrawInteractPrompt();
+            }
 
-            if (pl != null && GameManager.State != GameState.Menu) { DrawPlayerHud(pl); DrawCoinHud(); }
+            if (pl != null && GameManager.State != GameState.Menu && !cinema) { DrawPlayerHud(pl); DrawCoinHud(); }
             if (GameManager.State == GameState.Playing || GameManager.State == GameState.Won || GameManager.State == GameState.Lost)
             {
                 DrawTopCenter();
@@ -43,7 +47,7 @@ namespace NeonBreaker
                 SkillUi.DrawWorld(this);      // nhãn + bấm vào minibot để thu hồi
             }
             DrawBanner();
-            DrawCheatLabel();
+            if (!cinema) DrawCheatLabel();
             DrawScreenFx(pl);
 
             switch (GameManager.State)
@@ -57,6 +61,31 @@ namespace NeonBreaker
                     else if (GameManager.Paused) DrawPause();
                     break;
             }
+            DrawCine();
+        }
+
+        /// <summary>Cinematic: thanh đen trên / dưới, thoại gõ chữ, gợi ý phím, màn đen mờ dần. Vẽ sau cùng, đè lên mọi thứ.</summary>
+        void DrawCine()
+        {
+            const float barH = 94f;                       // 13% chiều cao màn hình chuẩn 720
+            if (Cine.Bars > 0.001f)
+            {
+                float bh = barH * Cine.Bars * s;
+                Fill(new Rect(0f, 0f, Screen.width, bh), Color.black);
+                Fill(new Rect(0f, Screen.height - bh, Screen.width, bh), Color.black);
+            }
+            if (Cine.Active && Cine.Bars > 0.6f)
+            {
+                if (!string.IsNullOrEmpty(Cine.Text))
+                {
+                    float y = 720f - barH + 6f;
+                    if (!string.IsNullOrEmpty(Cine.Speaker)) Txt(R(140, y, 1000, 22), Cine.Speaker, 17, Cfg.Cyan, TextAnchor.UpperLeft);
+                    TxtWrap(R(140, y + 24f, 1000, 64), Cine.TypedText, 22, Color.white, TextAnchor.UpperLeft);
+                }
+                if (Cine.CanSkip)
+                    Txt(R(700, 8, 560, 22), Cfg.L("[ENTER] TIẾP     [ESC] BỎ QUA", "[ENTER] NEXT     [ESC] SKIP"), 14, Cfg.A(Color.white, 0.55f), TextAnchor.UpperRight, false);
+            }
+            if (Cine.Fade > 0.001f) Fill(new Rect(0f, 0f, Screen.width, Screen.height), new Color(0f, 0f, 0f, Cine.Fade));
         }
 
         // ------------------------------------------------------------ primitives
@@ -180,7 +209,7 @@ namespace NeonBreaker
             }
             else
             {
-                msg = Boss.Instance != null && Boss.Instance.phase == 2 ? Cfg.L("TIÊU DIỆT BOSS — PHASE 2", "DESTROY THE BOSS — PHASE 2") : Cfg.L("TIÊU DIỆT BOSS", "DESTROY THE BOSS");
+                msg = Boss.Instance != null && Boss.Instance.phase >= 2 ? Cfg.L("TIÊU DIỆT BOSS — PHASE ", "DESTROY THE BOSS — PHASE ") + Boss.Instance.phase : Cfg.L("TIÊU DIỆT BOSS", "DESTROY THE BOSS");
                 c = Cfg.Red;
             }
             Rect r = R(390, 14, 500, 30);
@@ -230,18 +259,23 @@ namespace NeonBreaker
             if (b == null || b.Intro) return;
             if (GameManager.State == GameState.Lost && b.dead) return;
             bossShown = Mathf.Lerp(bossShown, b.TotalFrac, 0.15f);
-            bool p2 = b.phase == 2;
-            Color c = p2 ? Cfg.Red : Cfg.Magenta;
+            bool p2 = b.phase >= 2;
+            Color c = b.phase == 3 ? Cfg.Orange : (b.phase == 2 ? Cfg.Red : Cfg.Magenta);
 
             float w = 760f;
             float x = (1280f - w) * 0.5f;
             Rect bar = R(x, 676, w, 20);
-            Txt(R(x, 646, w, 26), (p2 ? "OVERLORD — PHASE 2" : "OVERLORD — PHASE 1"), 18, c, TextAnchor.MiddleLeft);
+            Txt(R(x, 646, w, 26), "OVERLORD — PHASE " + b.phase, 18, c, TextAnchor.MiddleLeft);
             Fill(bar, new Color(0f, 0f, 0f, 0.75f));
             Fill(new Rect(bar.x, bar.y, bar.width * Mathf.Clamp01(bossShown), bar.height), Cfg.A(Color.white, 0.5f));
             NeonBar(bar, b.TotalFrac, c, new Color(0f, 0f, 0f, 0f));
             float mx = bar.x + bar.width * b.PhaseMarker;
             Fill(new Rect(mx - 1.5f * s, bar.y - 5f * s, 3f * s, bar.height + 10f * s), Cfg.A(Color.white, 0.9f));
+            if (b.PhaseMarker2 > 0f)
+            {
+                float mx2 = bar.x + bar.width * b.PhaseMarker2;
+                Fill(new Rect(mx2 - 1.5f * s, bar.y - 5f * s, 3f * s, bar.height + 10f * s), Cfg.A(Color.white, 0.9f));
+            }
             if (p2) Txt(R(x, 646, w, 26), Cfg.L("HÚT MÁU", "LIFESTEAL"), 14, Cfg.Lime, TextAnchor.MiddleRight);
         }
 

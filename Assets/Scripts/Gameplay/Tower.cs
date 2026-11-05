@@ -20,9 +20,9 @@ namespace NeonBreaker
             public GameObject prefab;
             [Tooltip("Trọng số: càng lớn càng hay được chọn (so với tổng trọng số của bảng)")]
             public float weight = 1f;
-            [Tooltip("Nhân thêm vào độ mạnh (Power) của trụ cho riêng loại quái này")]
-            public float powerMul = 1f;
-            [Tooltip("Chỉ triệu hồi loại quái này khi độ mạnh (Power) của trụ >= số này. 0 = luôn triệu hồi. Dùng để quái mạnh chỉ xuất hiện ở các trụ gần boss")]
+            [Tooltip("Cộng thêm vào CẤP ĐỘ của trụ cho riêng loại quái này (0 = cùng cấp với trụ)")]
+            public int levelAdd = 0;
+            [Tooltip("Chỉ triệu hồi loại quái này khi 'Độ ưu tiên loại quái' (Power) của trụ >= số này. 0 = luôn triệu hồi. Dùng để quái mạnh (Heavy, Rusher) chỉ xuất hiện ở các trụ gần boss. KHÔNG ảnh hưởng độ khoẻ của quái")]
             public float minPower = 0f;
         }
 
@@ -54,15 +54,21 @@ namespace NeonBreaker
         [Tooltip("Quái xuất hiện cách trụ trong khoảng này (min, max)")] public Vector2 spawnDistance = new Vector2(1.6f, 2.8f);
         [Tooltip("Bật = Power càng cao thì trụ triệu hồi càng nhanh")] public bool powerSpeedsUpSpawn = true;
 
-        [Header("Độ mạnh quái do trụ này sinh ra (1 = chỉ số gốc trên Prefab quái)")]
-        [Tooltip("Bật = tự tăng dần theo thứ tự trụ từ trái sang phải (trụ gần boss nhất mạnh nhất)")]
+        [Header("CẤP ĐỘ quái do trụ này sinh ra (cấp càng cao quái càng khoẻ)")]
+        [Tooltip("0 = tự lấy theo thứ tự trụ từ trái sang phải trong bảng Level ▸ Tower Levels (mặc định 5, 5, 7, 7, 7, 10). Số > 0 = ép riêng trụ này")]
+        public int levelOverride = 0;
+        [Header("Độ ưu tiên loại quái (KHÔNG làm quái khoẻ hơn)")]
+        [Tooltip("Bật = tự tăng dần theo thứ tự trụ: các trụ gần boss mở thêm loại quái mạnh trong Spawn Table (xem Min Power)")]
         public bool autoByOrder = true;
-        [Tooltip("Độ mạnh của trụ đầu tiên (xa boss nhất) khi bật Auto By Order")]
+        [Tooltip("Độ ưu tiên của trụ đầu tiên (xa boss nhất) khi bật Auto By Order")]
         public float powerFirst = 1.0f;
-        [Tooltip("Độ mạnh của trụ cuối cùng (gần boss nhất) khi bật Auto By Order")]
+        [Tooltip("Độ ưu tiên của trụ cuối cùng (gần boss nhất) khi bật Auto By Order")]
         public float powerLast = 1.8f;
-        [Tooltip("Độ mạnh của riêng trụ này khi TẮT Auto By Order")]
+        [Tooltip("Độ ưu tiên của riêng trụ này khi TẮT Auto By Order")]
         public float power = 1.0f;
+
+        /// <summary>Cấp độ của quái do trụ này sinh ra (đã tính thứ tự trụ).</summary>
+        public int SpawnLevel { get; private set; }
 
         int spawned;
         float spawnT = 1.2f, flashT, pulse, barShowT;
@@ -95,12 +101,16 @@ namespace NeonBreaker
 
         void Start()
         {
-            if (!autoByOrder) return;
             int n = Towers.Count, rank = 0;
             for (int i = 0; i < n; i++)
                 if (Towers[i] != null && Towers[i] != this && Towers[i].transform.position.x < transform.position.x) rank++;
-            float t = n > 1 ? rank / (float)(n - 1) : 0f;
-            power = Mathf.Lerp(powerFirst, powerLast, t);
+            if (autoByOrder)
+            {
+                float t = n > 1 ? rank / (float)(n - 1) : 0f;
+                power = Mathf.Lerp(powerFirst, powerLast, t);
+            }
+            SpawnLevel = levelOverride > 0 ? PowerRules.ClampLevel(levelOverride)
+                                           : (Level.Instance != null ? Level.Instance.TowerLevel(rank) : 5);
         }
 
         int OwnedAlive()
@@ -146,9 +156,9 @@ namespace NeonBreaker
         }
 
         /// <summary>Chọn ngẫu nhiên một loại quái theo trọng số trong bảng triệu hồi (trống thì dùng Walker/Flyer mặc định).</summary>
-        GameObject PickPrefab(out float powerMul)
+        GameObject PickPrefab(out int levelAdd)
         {
-            powerMul = 1f;
+            levelAdd = 0;
             float total = 0f;
             for (int i = 0; i < spawnTable.Count; i++)
                 if (Eligible(spawnTable[i])) total += spawnTable[i].weight;
@@ -160,11 +170,11 @@ namespace NeonBreaker
                     var e = spawnTable[i];
                     if (!Eligible(e)) continue;
                     r -= e.weight;
-                    if (r <= 0f) { powerMul = e.powerMul; return e.prefab; }
+                    if (r <= 0f) { levelAdd = e.levelAdd; return e.prefab; }
                 }
                 // sai số làm tròn: lấy dòng hợp lệ cuối cùng
                 for (int i = spawnTable.Count - 1; i >= 0; i--)
-                    if (Eligible(spawnTable[i])) { powerMul = spawnTable[i].powerMul; return spawnTable[i].prefab; }
+                    if (Eligible(spawnTable[i])) { levelAdd = spawnTable[i].levelAdd; return spawnTable[i].prefab; }
             }
             if (Art.Bank == null) return null;
             bool flyer = Random.value < Mathf.Clamp(0.30f + (power - 1f) * 0.2f, 0.15f, 0.6f);
@@ -173,8 +183,8 @@ namespace NeonBreaker
 
         void SpawnOne()
         {
-            float powerMul;
-            GameObject prefab = PickPrefab(out powerMul);
+            int levelAdd;
+            GameObject prefab = PickPrefab(out levelAdd);
             if (prefab == null) { Debug.LogWarning("Neon Breaker: Tower " + name + " chưa có prefab quái nào để triệu hồi (Spawn Table trống và ArtBank thiếu Walker/Flyer)."); spawnT = 2f; return; }
             var proto = prefab.GetComponent<Enemy>();
             float y = proto != null ? proto.SpawnHeight : 0.05f;
@@ -188,7 +198,8 @@ namespace NeonBreaker
             Fx.Flare(pos + new Vector2(0f, 0.5f), c, 2.2f, 0.3f);
             Fx.Beam(Center + new Vector2(0f, 0.8f), pos + new Vector2(0f, 0.5f), c, 0.12f, 0.18f);
             Sfx.PlayAt("spawn", pos, 0.7f);
-            if (Enemy.Spawn(prefab, pos, this, power * powerMul) != null) spawned++;
+            int lv = SpawnLevel > 0 ? SpawnLevel : 5;
+            if (Enemy.Spawn(prefab, pos, this, lv + levelAdd) != null) spawned++;
         }
 
         public override void TakeHit(float dmg, Vector2 dir, float knockPower, bool melee)

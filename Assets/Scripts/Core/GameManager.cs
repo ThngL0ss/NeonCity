@@ -71,6 +71,7 @@ namespace NeonBreaker
             BannerMax = 1f;
             Inventory.ResetAll();
             SkillSystem.ResetAll();
+            GameFlow.ResetStatics();
         }
 
         public static void Banner(string text, Color c, float dur = 3f)
@@ -86,8 +87,20 @@ namespace NeonBreaker
         {
             Inst = this;
             Time.timeScale = 1f;
-            Inventory.ResetAll();
-            SkillSystem.ResetAll();
+            if (!GameFlow.Carry)
+            {
+                Inventory.ResetAll();
+                SkillSystem.ResetAll();
+            }
+            else
+            {
+                // chuyển cảnh Main <-> Base: giữ kho đồ / skill / minibot, chỉ đóng các bảng đang mở
+                Inventory.IsOpen = false;
+                SkillSystem.MenuOpen = false;
+                SkillSystem.PanelOpen = false;
+            }
+            GameFlow.Carry = false;
+            GameFlow.InBase = false;
 
             Cfg.Vietnamese = startVietnamese;
 
@@ -143,6 +156,7 @@ namespace NeonBreaker
         {
             Time.timeScale = 1f;
             AutoStart = true;
+            GameFlow.Carry = false;       // chơi lại từ đầu: xoá sạch dữ liệu (kho, skill, minibot)
             Sfx.Play("click", 1f);
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }

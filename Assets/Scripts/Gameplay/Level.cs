@@ -25,6 +25,14 @@ namespace NeonBreaker
         [Tooltip("Khoảng cách từ cổng tới điểm mà người chơi đi qua sẽ kích hoạt boss")]
         public float bossTriggerOffset = 7f;
 
+        [Header("Cấp độ quái theo từng trụ (từ trái sang phải)")]
+        [Tooltip("Cấp độ của quái do từng trụ sinh ra, theo thứ tự trụ từ trái sang phải (trụ đầu tiên = phần tử 0). Mặc định: 2 trụ đầu cấp 5, 3 trụ sau cấp 7, trụ cuối cấp 10. Nhiều trụ hơn số phần tử thì dùng phần tử cuối")]
+        public int[] towerLevels = { 5, 5, 7, 7, 7, 10 };
+
+        [Header("Vật phẩm nằm trên đường (bấm F để nhặt)")]
+        [Tooltip("Số thùng dầu rải ngẫu nhiên dọc đường mỗi lần vào màn")] public int scatterOilCans = 4;
+        [Tooltip("Số nguyên liệu chế tác rải ngẫu nhiên (bảng vật phẩm ở BaseConfig ▸ Scatter)")] public int scatterMaterials = 9;
+
         [Header("Quái & vật phẩm (toàn màn)")]
         [Tooltip("Trần số quái nhỏ sống cùng lúc trên toàn màn (cộng tất cả các trụ)")]
         public int maxEnemiesAlive = 8;
@@ -47,6 +55,13 @@ namespace NeonBreaker
         Camera cam;
 
         public bool GateClosed { get { return gateClosed; } }
+
+        /// <summary>Cấp độ quái của trụ thứ index (0 = trụ ngoài cùng bên trái).</summary>
+        public int TowerLevel(int index)
+        {
+            if (towerLevels == null || towerLevels.Length == 0) return 5;
+            return PowerRules.ClampLevel(towerLevels[Mathf.Clamp(index, 0, towerLevels.Length - 1)]);
+        }
 
         /// <summary>Nhóm trống trong Hierarchy để gom các đối tượng sinh ra khi chơi (Enemies, Projectiles, Pickups, Telegraphs).</summary>
         public static Transform Sub(string name)
@@ -77,6 +92,12 @@ namespace NeonBreaker
             gateClosed = true;
             if (gateCollider != null) gateCollider.enabled = true;
             cam = Camera.main;
+        }
+
+        void Start()
+        {
+            // rải thùng dầu + nguyên liệu dọc đường (cần ArtBank ▸ World Item Prefab)
+            WorldItem.Scatter(scatterOilCans, scatterMaterials, Cfg.LevelMinX + 8f, Cfg.GateX - 8f);
         }
 
         void OnDestroy() { if (Instance == this) Instance = null; }

@@ -53,11 +53,7 @@ namespace NeonBreaker
             Sfx.Play("click", 0.5f, 1.3f);
         }
 
-        static Rank RankOf(CraftEntry e)
-        {
-            var en = e != null && e.enemyPrefab != null ? e.enemyPrefab.GetComponent<Enemy>() : null;
-            return (en != null && en.power != null) ? en.power.rank : Rank.F;
-        }
+        static Rank RankOf(CraftEntry e) { return SkillSystem.RankOf(e); }
 
         // ============================================================ nhập liệu bàn phím (khi mục Skill đang mở)
         public static void UpdateInput()
@@ -153,7 +149,7 @@ namespace NeonBreaker
             else h.Fill(ic, Cfg.A(Cfg.Yellow, 0.9f));
             h.Txt(h.R(892, 62, 70, 40), Cfg.L("XU", "COINS"), 15, Cfg.A(Cfg.Yellow, 0.95f), TextAnchor.MiddleLeft);
             h.Txt(h.R(940, 62, 160, 40), Inventory.Coins.ToString(), 24, Color.white, TextAnchor.MiddleRight);
-            h.Txt(h.R(560, 62, 280, 40), Cfg.L("Linh kiện: ", "Parts: ") + SkillSystem.PartsTotal, 15, Cfg.A(Cfg.Cyan, 0.9f), TextAnchor.MiddleRight, false);
+            h.Txt(h.R(470, 62, 370, 40), Cfg.L("Linh kiện: ", "Parts: ") + SkillSystem.PartsSummary(), 15, Cfg.A(Cfg.Cyan, 0.9f), TextAnchor.MiddleRight, false);
         }
 
         static void DrawTabs(Hud h)
@@ -302,8 +298,8 @@ namespace NeonBreaker
         {
             var list = SkillSystem.Config.craftables;
             h.TxtWrap(h.R(176, 146, 928, 36),
-                      Cfg.L("Hạ quái để nhặt LINH KIỆN của chính loại quái đó. Đủ linh kiện thì chế tạo thành minibot: cấp bậc giống quái gốc, cấp độ 1, được cất ở LƯU TRỮ MINIBOT.",
-                            "Defeat enemies to collect PARTS of that same type. Enough parts craft a minibot: same rank as the original, level 1, kept in MINIBOT STORAGE."),
+                      Cfg.L("Quái bậc nào rơi LINH KIỆN bậc đó (SS, SSS không rơi). Đủ linh kiện đúng bậc thì chế tạo minibot của loại quái đã từng hạ: cấp bậc giống quái gốc, cấp độ 1, cất ở LƯU TRỮ MINIBOT. Ghép linh kiện lên bậc cao ở căn cứ.",
+                            "Enemies drop PARTS of their own rank (SS, SSS drop none). Enough parts of that rank craft a minibot of a type you have defeated: same rank as the original, level 1, kept in MINIBOT STORAGE. Fuse parts into higher ranks at the base."),
                       13, Cfg.A(Color.white, 0.7f));
 
             if (!SkillSystem.Has(SkillSystem.IdParts))
@@ -331,7 +327,7 @@ namespace NeonBreaker
         static void DrawCraftRow(Hud h, CraftEntry e, float y, float ch)
         {
             bool known = SkillSystem.HasDefeated(e.Id);
-            int have = SkillSystem.Parts(e.Id);
+            int have = SkillSystem.Parts(RankOf(e));
             int cost = SkillSystem.CraftCost(e);
             bool can = SkillSystem.CanCraft(e);
             Color col = known ? Color.Lerp(e.partColor, Color.white, 0.25f) : new Color(0.5f, 0.52f, 0.6f, 1f);
@@ -353,7 +349,7 @@ namespace NeonBreaker
             {
                 Rank rk = RankOf(e);
                 h.Txt(h.R(246, y + 6f, 480, 24), "[" + rk + "]", 15, PowerRules.RankColor(rk), TextAnchor.UpperRight);
-                h.Txt(h.R(246, y + 32f, 160, 20), Cfg.L("Linh kiện: ", "Parts: ") + have + " / " + cost, 14, have >= cost ? Cfg.Lime : Cfg.A(Color.white, 0.8f), TextAnchor.UpperLeft, false);
+                h.Txt(h.R(246, y + 32f, 160, 20), Cfg.L("Linh kiện " + RankOf(e) + ": ", "Parts " + RankOf(e) + ": ") + have + " / " + cost, 14, have >= cost ? Cfg.Lime : Cfg.A(Color.white, 0.8f), TextAnchor.UpperLeft, false);
                 h.NeonBar(h.R(410, y + 36f, 316, 10), cost > 0 ? (float)have / cost : 1f, have >= cost ? Cfg.Lime : Cfg.Cyan, new Color(0f, 0f, 0f, 0.6f));
             }
             else

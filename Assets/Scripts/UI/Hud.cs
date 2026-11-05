@@ -280,7 +280,7 @@ namespace NeonBreaker
             else { Fill(ic, Cfg.A(Cfg.Yellow, 0.9f)); Fill(new Rect(ic.x + 6f * s, ic.y + 6f * s, 12f * s, 12f * s), new Color(0.5f, 0.35f, 0f, 1f)); }
             Txt(R(56, 127, 70, 28), Cfg.L("XU", "COINS"), 15, Cfg.A(Cfg.Yellow, 0.95f), TextAnchor.MiddleLeft);
             Txt(R(110, 127, 120, 28), Mathf.RoundToInt(coinShown).ToString(), 22, Color.white, TextAnchor.MiddleRight);
-            Txt(R(240, 127, 118, 28), Cfg.L("[B] KHO ĐỒ", "[B] BAG"), 13, Cfg.A(Color.white, 0.65f), TextAnchor.MiddleRight, false);
+            Txt(R(236, 127, 122, 28), Cfg.L("DẦU ", "OIL ") + Inventory.Oil, 16, new Color(0.95f, 0.75f, 0.25f, 1f), TextAnchor.MiddleRight);
 
             // dòng phím tắt Skill + minibot + linh kiện
             Rect sk = R(14, 160, 352, 24);

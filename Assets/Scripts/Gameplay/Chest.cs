@@ -34,6 +34,10 @@ namespace NeonBreaker
         public int coinsMin = 8;
         public int coinsMax = 20;
 
+        [Header("Dầu (nhiên liệu chế tác ở căn cứ)")]
+        public int oilMin = 4;
+        public int oilMax = 12;
+
         [Header("Tương tác")]
         [Tooltip("Khoảng cách ngang tối đa để bấm F mở rương")] public float interactRange = 2.2f;
         [Tooltip("Chênh lệch độ cao tối đa")] public float interactHeight = 2.5f;
@@ -182,6 +186,8 @@ namespace NeonBreaker
 
             int coins = Random.Range(Mathf.Min(coinsMin, coinsMax), Mathf.Max(coinsMin, coinsMax) + 1);
             if (coins > 0) Coin.Drop(c, coins);
+            int oil = Random.Range(Mathf.Min(oilMin, oilMax), Mathf.Max(oilMin, oilMax) + 1);
+            if (oil > 0) OilDrop.Drop(c, oil);
         }
     }
 }

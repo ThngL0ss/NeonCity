@@ -207,7 +207,7 @@ namespace NeonBreaker
             Sfx.PlayAt("enemyDie", transform.position, 0.8f, 1.25f);
             Fx.Text(Center + new Vector2(0f, 1.6f), Cfg.L("MINIBOT HỎNG", "MINIBOT LOST"), Cfg.Red, 1.2f);
             int n = Mathf.Max(0, Mathf.RoundToInt(c.deathPartsBase + data.level * c.deathPartsPerLevel));
-            if (n > 0 && entry != null) PartDrop.Drop(Center, data.typeId, n, entry.partColor);
+            if (n > 0) PartDrop.Drop(Center, data.rank, n);          // rơi linh kiện cùng cấp bậc với minibot (SS+ không rơi)
             SkillSystem.RemoveBot(data);
             Destroy(gameObject);
         }

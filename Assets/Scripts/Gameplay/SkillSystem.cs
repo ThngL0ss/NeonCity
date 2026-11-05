@@ -36,7 +36,7 @@ namespace NeonBreaker
         public const string IdMinibot = "active_minibot";   // kỹ năng chủ động khởi đầu: triệu hồi minibot
 
         public static readonly List<MinibotData> Bots = new List<MinibotData>();
-        static readonly Dictionary<string, int> parts = new Dictionary<string, int>();
+        static readonly int[] partCount = new int[PowerRules.PartRankCount];     // linh kiện theo cấp bậc F, D, C, B, A, S
         static readonly HashSet<string> defeated = new HashSet<string>();
         static readonly Dictionary<string, int> levels = new Dictionary<string, int>();
         static readonly Dictionary<string, Sprite> icons = new Dictionary<string, Sprite>();
@@ -74,11 +74,11 @@ namespace NeonBreaker
         public static void ResetAll()
         {
             Bots.Clear();
-            parts.Clear();
+            System.Array.Clear(partCount, 0, partCount.Length);
             defeated.Clear();
             levels.Clear();
             icons.Clear();
-            CraftedTotal = 0; PartsCollected = 0;
+            CraftedTotal = 0; PartsCollected = 0; PartFusion.ResetAll();
             MenuOpen = false; PanelOpen = false;
             Tab = 0; SelBot = 0; PanelSel = 0;
             Msg = ""; MsgT = 0f;
@@ -109,23 +109,50 @@ namespace NeonBreaker
 
         public static bool HasDefeated(string id) { return defeated.Contains(id); }
 
-        public static int Parts(string id) { int n; return parts.TryGetValue(id, out n) ? n : 0; }
+        // ---- linh kiện theo CẤP BẬC (F, D, C, B, A, S): quái bậc nào rơi linh kiện bậc đó; SS và SSS không rơi
+        public static int Parts(Rank r) { int i = (int)r; return i >= 0 && i < partCount.Length ? partCount[i] : 0; }
 
-        public static int PartsTotal { get { int s = 0; foreach (var kv in parts) s += kv.Value; return s; } }
+        public static int PartsTotal { get { int s = 0; for (int i = 0; i < partCount.Length; i++) s += partCount[i]; return s; } }
 
-        public static void AddParts(string id, int n, bool announce)
+        /// <summary>Chuỗi "D x3  C x1" liệt kê số linh kiện đang có theo bậc (chỉ bậc có > 0).</summary>
+        public static string PartsSummary()
         {
-            if (n <= 0) return;
-            parts[id] = Parts(id) + n;
-            PartsCollected += n;
+            var sb = new System.Text.StringBuilder();
+            for (int i = 0; i < partCount.Length; i++)
+            {
+                if (partCount[i] <= 0) continue;
+                if (sb.Length > 0) sb.Append("   ");
+                sb.Append((Rank)i).Append(" x").Append(partCount[i]);
+            }
+            return sb.Length > 0 ? sb.ToString() : "0";
+        }
+
+        public static void AddParts(Rank r, int n, bool announce, bool countCollected = true)
+        {
+            if (n <= 0 || !PowerRules.DropsParts(r)) return;
+            partCount[(int)r] += n;
+            if (countCollected) PartsCollected += n;
             if (announce)
             {
-                var en = Entry(id);
                 var pl = Player.Instance;
                 if (pl != null)
-                    Fx.Text(pl.Center + new Vector2(0f, 1.6f), "+" + n + " " + Cfg.L("linh kiện ", "parts ") + (en != null ? en.DisplayName : id),
-                            en != null ? Color.Lerp(en.partColor, Color.white, 0.35f) : Cfg.Cyan, 0.95f);
+                    Fx.Text(pl.Center + new Vector2(0f, 1.6f), "+" + n + " " + Cfg.L("linh kiện bậc ", "part rank ") + r, Color.Lerp(PowerRules.RankColor(r), Color.white, 0.35f), 0.95f);
             }
+        }
+
+        /// <summary>Trừ n linh kiện bậc r. false (không trừ gì) nếu không đủ.</summary>
+        public static bool SpendParts(Rank r, int n)
+        {
+            if (n < 0 || Parts(r) < n) return false;
+            partCount[(int)r] -= n;
+            return true;
+        }
+
+        /// <summary>Cấp bậc của loại quái này (lấy từ Enemy ▸ Power trên Prefab quái gốc). Chế tạo minibot cần linh kiện đúng bậc này.</summary>
+        public static Rank RankOf(CraftEntry e)
+        {
+            var en = e != null && e.enemyPrefab != null ? e.enemyPrefab.GetComponent<Enemy>() : null;
+            return (en != null && en.power != null) ? en.power.rank : Rank.F;
         }
 
         /// <summary>Enemy gọi khi bị hạ (bất kể ai hạ): ghi nhận loại quái đã hạ + rơi linh kiện.</summary>
@@ -135,16 +162,21 @@ namespace NeonBreaker
             if (string.IsNullOrEmpty(id)) return;
             bool first = defeated.Add(id);
             var en = Entry(id);
-            if (en == null || !en.craftable || !Has(IdParts)) return;
-            if (first && en.enemyPrefab != null)
+            if (!Has(IdParts)) return;
+            if (en != null && !en.craftable) return;
+            if (first && en != null && en.enemyPrefab != null)
                 GameManager.Banner(Cfg.L("ĐÃ GHI NHẬN: ", "RECORDED: ") + en.DisplayName + Cfg.L(" — có thể chế tạo minibot [N]", " — minibot can be crafted [N]"), Cfg.Cyan, 3f);
-            if (Random.value > en.partsDropChance) return;
-            int lo = Mathf.Max(1, Mathf.Min(en.partsDropMin, en.partsDropMax));
-            int hi = Mathf.Max(lo, Mathf.Max(en.partsDropMin, en.partsDropMax));
+            Rank rk = e.power != null ? e.power.rank : Rank.F;
+            if (!PowerRules.DropsParts(rk)) return;                 // quái bậc SS / SSS không rơi linh kiện
+            float chance = en != null ? en.partsDropChance : 1f;
+            if (Random.value > chance) return;
+            int dmin = en != null ? en.partsDropMin : 1, dmax = en != null ? en.partsDropMax : 1;
+            int lo = Mathf.Max(1, Mathf.Min(dmin, dmax));
+            int hi = Mathf.Max(lo, Mathf.Max(dmin, dmax));
             float a = Random.Range(lo, hi + 1) * (1f + Stat(SkillStat.PartsDropPct) / 100f);
             int n = Mathf.FloorToInt(a);
             if (Random.value < a - n) n++;
-            if (n > 0) PartDrop.Drop(e.Center, id, n, en.partColor);
+            if (n > 0) PartDrop.Drop(e.Center, rk, n);
         }
 
         public static Sprite IconOf(CraftEntry e)
@@ -292,8 +324,11 @@ namespace NeonBreaker
         public static int PanelUsed { get { int n = 0; for (int i = 0; i < Bots.Count; i++) if (Bots[i].state != BotState.Storage) n++; return n; } }
         public static int SummonedCount { get { int n = 0; for (int i = 0; i < Bots.Count; i++) if (Bots[i].state == BotState.Out) n++; return n; } }
 
-        /// <summary>Đang ở căn cứ chưa? Hiện tạm coi mọi nơi là căn cứ (SkillConfig > Anywhere Is Base). Khi làm căn cứ, sửa tại đây.</summary>
-        public static bool AtBase { get { return Config.anywhereIsBase; } }
+        /// <summary>
+        /// Đang ở căn cứ chưa? Có cảnh Base thì chỉ ở trong căn cứ. Chưa có cảnh Base (chưa chạy menu cập nhật) thì dùng
+        /// SkillConfig ▸ Anywhere Is Base để vẫn thử được.
+        /// </summary>
+        public static bool AtBase { get { return GameFlow.InBase || (Config.anywhereIsBase && !GameFlow.BaseAvailable); } }
 
         // ------------------------------------------------------------ chỉ số minibot
         static float BaseHealth(GameObject prefab)
@@ -344,7 +379,7 @@ namespace NeonBreaker
         public static bool CanCraft(CraftEntry e)
         {
             return e != null && e.craftable && e.enemyPrefab != null && Has(IdParts) && HasDefeated(e.Id)
-                   && Parts(e.Id) >= CraftCost(e) && Bots.Count < Config.storageSlots;
+                   && Parts(RankOf(e)) >= CraftCost(e) && Bots.Count < Config.storageSlots;
         }
 
         public static MinibotData Craft(CraftEntry e)
@@ -353,13 +388,14 @@ namespace NeonBreaker
             if (!HasDefeated(e.Id)) { Say(Cfg.L("Chưa hạ gục loại quái này", "You have not defeated this enemy yet")); return null; }
             if (Bots.Count >= Config.storageSlots) { Say(Cfg.L("Lưu trữ minibot đã đầy", "Minibot storage is full")); return null; }
             int cost = CraftCost(e);
-            if (Parts(e.Id) < cost)
+            Rank pr = RankOf(e);
+            if (Parts(pr) < cost)
             {
-                Say(Cfg.L("Thiếu linh kiện (" + Parts(e.Id) + "/" + cost + ")", "Not enough parts (" + Parts(e.Id) + "/" + cost + ")"));
+                Say(Cfg.L("Thiếu linh kiện bậc " + pr + " (" + Parts(pr) + "/" + cost + ")", "Not enough rank " + pr + " parts (" + Parts(pr) + "/" + cost + ")"));
                 Sfx.Play("click", 0.7f, 0.7f);
                 return null;
             }
-            parts[e.Id] = Parts(e.Id) - cost;
+            SpendParts(pr, cost);
             var en = e.enemyPrefab.GetComponent<Enemy>();
             var d = new MinibotData();
             d.uid = ++uidCounter;
@@ -470,6 +506,20 @@ namespace NeonBreaker
             Sfx.Play("pickup", 0.9f, 1.5f);
             Say(d.Name + " -> Lv." + d.level);
             return true;
+        }
+
+        /// <summary>Thu hồi mọi minibot đang triệu hồi về bảng chọn (giữ máu). Dùng khi chuyển cảnh / người chơi gục.</summary>
+        public static void RecallAllSilently()
+        {
+            for (int i = 0; i < Bots.Count; i++)
+            {
+                var d = Bots[i];
+                if (d.state != BotState.Out) continue;
+                if (d.world != null) { d.hp = Mathf.Clamp(d.world.hp, 1f, d.MaxHp); }
+                d.world = null;
+                d.state = BotState.Panel;
+            }
+            PanelOpen = false;
         }
 
         public static void TogglePanel()

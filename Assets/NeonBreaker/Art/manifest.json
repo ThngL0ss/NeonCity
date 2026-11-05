@@ -499,7 +499,27 @@
   "tile": false,
   "w": 16
  },
+ "item_circuit_board.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
  "item_coin_magnet.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_copper_wire.png": {
   "h": 16,
   "pivot": [
    0.5,
@@ -520,6 +540,16 @@
   "w": 16
  },
  "item_data_chip.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_energy_gel.png": {
   "h": 16,
   "pivot": [
    0.5,
@@ -609,6 +639,16 @@
   "tile": false,
   "w": 16
  },
+ "item_scrap_metal.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
  "item_shuriken_rail.png": {
   "h": 16,
   "pivot": [
@@ -648,6 +688,56 @@
   "ppu": 16,
   "tile": false,
   "w": 16
+ },
+ "oil_can.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "oil_drop_0.png": {
+  "h": 14,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 12
+ },
+ "oil_drop_1.png": {
+  "h": 14,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 12
+ },
+ "oil_drop_2.png": {
+  "h": 14,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 12
+ },
+ "oil_drop_3.png": {
+  "h": 14,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 12
  },
  "part_0.png": {
   "h": 12,

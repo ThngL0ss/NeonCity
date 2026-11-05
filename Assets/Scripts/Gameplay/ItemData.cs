@@ -9,7 +9,8 @@ namespace NeonBreaker
     {
         Passive,      // trang bị: mang theo trong kho là có tác dụng (không cần dùng)
         Consumable,   // tiêu hao: bấm DÙNG trong kho -> hồi máu / thêm lượt hồi / buff tạm hoặc vĩnh viễn rồi biến mất
-        Valuable      // chỉ có giá trị, để bán cho thương nhân
+        Valuable,     // chỉ có giá trị, để bán cho thương nhân
+        Material      // nguyên liệu: dùng ở bàn chế tác trong căn cứ (nhặt trên đường / trong rương)
     }
 
     /// <summary>Chỉ số mà vật phẩm có thể cộng / trừ. Các loại "Pct" tính theo phần trăm (15 = +15%, -15 = giảm 15%).</summary>
@@ -118,6 +119,7 @@ namespace NeonBreaker
                 {
                     case ItemKind.Passive: return Cfg.L("TRANG BỊ — có tác dụng khi mang theo", "GEAR — active while carried");
                     case ItemKind.Consumable: return Cfg.L("TIÊU HAO — bấm DÙNG", "CONSUMABLE — press USE");
+                    case ItemKind.Material: return Cfg.L("NGUYÊN LIỆU — dùng ở bàn chế tác (căn cứ)", "MATERIAL — used at the crafting bench (base)");
                     default: return Cfg.L("VẬT PHẨM GIÁ TRỊ — bán cho thương nhân", "VALUABLE — sell to a merchant");
                 }
             }

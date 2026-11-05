@@ -61,6 +61,9 @@ namespace NeonBreaker
         [Header("Chế tác vật phẩm (bàn chế tác trong căn cứ)")]
         public List<CraftRecipe> recipes = new List<CraftRecipe>();
 
+        [Header("Bản đồ (phím M / cửa ra của căn cứ)")]
+        [Tooltip("Bật = trên bản đồ đen có 1 điểm thử nghiệm để quay lại màn chơi. Tắt = bản đồ chỉ là màn đen, không đi vào được")] public bool mapTestDestination = true;
+
         [Header("Vật phẩm rải rác trên đường (bấm F để nhặt)")]
         public List<ScatterEntry> scatter = new List<ScatterEntry>();
         [Tooltip("Số dầu trong mỗi thùng dầu nằm trên đường (ít nhất / nhiều nhất)")] public Vector2Int oilCanAmount = new Vector2Int(6, 14);

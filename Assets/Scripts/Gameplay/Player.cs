@@ -491,7 +491,7 @@ namespace NeonBreaker
         }
 
         /// <summary>Chuẩn bị hình cho cinematic chết: dừng hoạt ảnh, giữ khung "hurt", bỏ nhấp nháy. Trả về SpriteRenderer của thân.</summary>
-        public SpriteRenderer FreezeVisual()
+        public SpriteRenderer FreezeVisual(string clipName = "hurt")
         {
             if (visual == null) return null;
             visual.gameObject.SetActive(true);
@@ -501,7 +501,7 @@ namespace NeonBreaker
                 Sprite hurt = null;
                 if (anim.clips != null)
                     for (int i = 0; i < anim.clips.Length; i++)
-                        if (anim.clips[i] != null && anim.clips[i].name == "hurt" && anim.clips[i].frames != null && anim.clips[i].frames.Length > 0) { hurt = anim.clips[i].frames[0]; break; }
+                        if (anim.clips[i] != null && anim.clips[i].name == clipName && anim.clips[i].frames != null && anim.clips[i].frames.Length > 0) { hurt = anim.clips[i].frames[0]; break; }
                 anim.enabled = false;
                 if (sr != null && hurt != null) sr.sprite = hurt;
             }
@@ -509,6 +509,13 @@ namespace NeonBreaker
             visual.localScale = new Vector3(Facing >= 0 ? 1f : -1f, 1f, 1f);
             visual.localRotation = Quaternion.identity;
             return sr;
+        }
+
+        /// <summary>Trả hoạt ảnh bình thường sau FreezeVisual (cảnh hồi sinh ở căn cứ).</summary>
+        public void ReleaseVisual()
+        {
+            if (anim != null) anim.enabled = true;
+            if (visual != null) visual.localRotation = Quaternion.identity;
         }
 
         // ------------------------------------------------------------ animation

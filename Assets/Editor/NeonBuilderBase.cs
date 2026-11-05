@@ -28,6 +28,8 @@ namespace NeonBreaker.EditorTools
                 Prepare();
                 string report = BuildRankOilAssets();
                 AssetDatabase.SaveAssets();
+                report += "\n" + EnsureBaseScene(false);
+                AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
                 Debug.Log("Neon Breaker: đã cập nhật cấp bậc + dầu + căn cứ.\n" + report);
                 EditorUtility.DisplayDialog("Neon Breaker",
@@ -132,7 +134,7 @@ namespace NeonBreaker.EditorTools
 
             AssetDatabase.SaveAssets();
             if (missing.Count > 0)
-                throw new System.Exception("Thiếu sprite: " + string.Join(", ", missing.ToArray()) + ". Chạy: python3 Tools/PixelArt/gen_stage2.py và python3 Tools/PixelArt/gen_cine.py rồi thử lại.");
+                throw new System.Exception("Thiếu sprite: " + string.Join(", ", missing.ToArray()) + ". Chạy: python3 Tools/PixelArt/gen_stage2.py, gen_cine.py và gen_base.py rồi thử lại.");
 
             return "• Cấp bậc quái: Walker, Flyer = D · Heavy, Rusher = C (đã đặt " + ranked + " quái còn ở bậc F)\n" +
                    "• Prefab Oil (giọt dầu) + WorldItem (thùng dầu / nguyên liệu nhặt bằng F), ArtBank đã gán\n" +

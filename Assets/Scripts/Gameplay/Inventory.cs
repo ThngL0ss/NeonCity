@@ -131,6 +131,20 @@ namespace NeonBreaker
             return c;
         }
 
+        /// <summary>Lấy đi n vật phẩm loại it (từ nhiều ô nếu cần). false nếu không đủ (không lấy gì cả).</summary>
+        public static bool RemoveItem(ItemData it, int n)
+        {
+            if (it == null || n <= 0 || Count(it) < n) return false;
+            for (int i = Slots.Count - 1; i >= 0 && n > 0; i--)
+            {
+                if (Slots[i].item != it) continue;
+                int k = Mathf.Min(n, Slots[i].count);
+                Remove(i, k);
+                n -= k;
+            }
+            return n == 0;
+        }
+
         public static void Remove(int index, int n = 1)
         {
             if (index < 0 || index >= Slots.Count) return;

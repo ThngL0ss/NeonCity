@@ -95,6 +95,7 @@ namespace NeonBreaker
             {
                 Inventory.ResetAll();
                 SkillSystem.ResetAll();
+                GameFlow.ResetStatics();      // chơi lại từ đầu: nhiệm vụ + cốt truyện căn cứ cũng về ban đầu
             }
             else
             {
@@ -139,7 +140,7 @@ namespace NeonBreaker
             var cam = Camera.main;
             if (cam != null) Sfx.Listener = cam.transform;
             Sfx.Music(0);
-            if (State == GameState.Playing)
+            if (State == GameState.Playing && !GameFlow.InBase)
                 Banner(Cfg.L("PHÁ HỦY TẤT CẢ TRỤ TRIỆU HỒI", "DESTROY ALL SUMMON TOWERS"), Cfg.Cyan, 4f);
             AutoStart = false;
         }
@@ -152,7 +153,7 @@ namespace NeonBreaker
             if (State != GameState.Menu) return;
             Sfx.Play("click", 1f);
             Sfx.Music(0);
-            if (playIntro) { StartCoroutine(IntroRoutine()); return; }
+            if (playIntro && !GameFlow.InBase) { StartCoroutine(IntroRoutine()); return; }
             State = GameState.Playing;
             Banner(Cfg.L("PHÁ HỦY TẤT CẢ TRỤ TRIỆU HỒI", "DESTROY ALL SUMMON TOWERS"), Cfg.Cyan, 4f);
         }
@@ -247,7 +248,12 @@ namespace NeonBreaker
                     if (GameInput.ConfirmDown) StartGame();
                     break;
                 case GameState.Playing:
-                    if (SkillSystem.MenuOpen)
+                    if (BaseUi.IsOpen)
+                    {
+                        // hội thoại / bàn chế tác / máy ghép / bản đồ: người chơi đứng yên, thế giới vẫn chạy
+                        BaseUi.UpdateInput();
+                    }
+                    else if (SkillSystem.MenuOpen)
                     {
                         if (GameInput.PauseDown || GameInput.SkillMenuDown) CloseSkillMenu();
                         else SkillUi.UpdateInput();
@@ -268,6 +274,7 @@ namespace NeonBreaker
                     else if (!Paused && GameInput.InventoryDown) OpenInventory();
                     else if (!Paused && GameInput.SkillMenuDown) OpenSkillMenu();
                     else if (!Paused && GameInput.MinibotPanelDown) SkillSystem.TogglePanel();
+                    else if (!Paused && !PlayerLocked && GameInput.MapDown) BaseUi.Open(BaseMode.Map);
                     else if (!Paused && !PlayerLocked && GameInput.InteractDown) Interactor.TryInteract();
                     if (!Paused)
                     {
@@ -354,6 +361,7 @@ namespace NeonBreaker
         {
             Sfx.StopMusic();
             Sfx.Play("victory", 1f);
+            BaseMissions.BossKills++;
             Banner(Cfg.L("BOSS ĐÃ BỊ TIÊU DIỆT", "BOSS DESTROYED"), Cfg.Cyan, 3f);
             if (Inst != null) Inst.StartCoroutine(Inst.EndRoutine(GameState.Won, 2.6f));
         }

@@ -38,7 +38,7 @@ namespace NeonBreaker
             if (GameManager.State == GameState.Playing || GameManager.State == GameState.Won || GameManager.State == GameState.Lost)
             {
                 DrawTopCenter();
-                DrawTopRight();
+                if (!GameFlow.InBase) DrawTopRight();
                 DrawBossBar();
             }
             if (GameManager.State == GameState.Playing)
@@ -56,7 +56,8 @@ namespace NeonBreaker
                 case GameState.Won: DrawResult(true); break;
                 case GameState.Lost: DrawResult(false); break;
                 case GameState.Playing:
-                    if (SkillSystem.MenuOpen) SkillUi.DrawMenu(this);
+                    if (BaseUi.IsOpen) BaseUi.Draw(this);
+                    else if (SkillSystem.MenuOpen) SkillUi.DrawMenu(this);
                     else if (Inventory.IsOpen) InventoryUi.Draw(this);
                     else if (GameManager.Paused) DrawPause();
                     break;
@@ -194,7 +195,12 @@ namespace NeonBreaker
             Color c = Cfg.Cyan;
             int left = Tower.Remaining;
             int total = GameManager.TowerTotal;
-            if (!GameManager.BossSpawned)
+            if (GameFlow.InBase)
+            {
+                msg = Cfg.L("CĂN CỨ CỦA ALBERT", "ALBERT'S BASE");
+                c = Cfg.Orange;
+            }
+            else if (!GameManager.BossSpawned)
             {
                 if (left > 0)
                 {
@@ -218,7 +224,7 @@ namespace NeonBreaker
             Txt(r, msg, 17, c, TextAnchor.MiddleCenter);
 
             // mũi tên chỉ tới trụ gần nhất ngoài màn hình
-            if (!GameManager.BossSpawned && Player.Instance != null && GameManager.State == GameState.Playing)
+            if (!GameFlow.InBase && !GameManager.BossSpawned && Player.Instance != null && GameManager.State == GameState.Playing)
             {
                 float px = Player.Instance.Position.x;
                 Vector2 target = Vector2.zero;

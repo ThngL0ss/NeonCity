@@ -33,14 +33,16 @@ namespace NeonBreaker
             BaseDialogDone = false;
             Deaths = 0;
             BaseVisited = false;
+            BaseMissions.ResetAll();
         }
 
         /// <summary>Chuyển về căn cứ (sau khi chết). Giữ dữ liệu.</summary>
         public static void GoToBase()
         {
             SkillSystem.RecallAllSilently();
+            BaseMissions.BankRun();
             Carry = true;
-            GameManager.AutoStart = false;
+            GameManager.AutoStart = true;         // vào thẳng căn cứ (không hiện menu chính)
             Time.timeScale = 1f;
             SceneManager.LoadScene(BaseScene);
         }
@@ -49,6 +51,7 @@ namespace NeonBreaker
         public static void GoToLevel()
         {
             SkillSystem.RecallAllSilently();
+            BaseMissions.BankRun();
             Carry = true;
             GameManager.AutoStart = true;
             Time.timeScale = 1f;

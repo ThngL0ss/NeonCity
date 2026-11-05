@@ -1,4 +1,84 @@
 {
+ "albert_admire_0.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "albert_admire_1.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "albert_idle_0.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "albert_idle_1.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "albert_walk_0.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "albert_walk_1.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "albert_walk_2.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "albert_walk_3.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
  "arena_pillar.png": {
   "h": 100,
   "pivot": [
@@ -18,6 +98,126 @@
   "ppu": 16,
   "tile": false,
   "w": 256
+ },
+ "base_ceiling.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 16
+ },
+ "base_column.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 16
+ },
+ "base_conductor.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 6
+ },
+ "base_floor_fill.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 16
+ },
+ "base_floor_top.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 16
+ },
+ "base_lamp.png": {
+  "h": 22,
+  "pivot": [
+   0.5,
+   1.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 14
+ },
+ "base_lamp_cone.png": {
+  "h": 96,
+  "pivot": [
+   0.5,
+   1.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 64
+ },
+ "base_pipe_h.png": {
+  "h": 8,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 16
+ },
+ "base_sign_exit.png": {
+  "h": 8,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 20
+ },
+ "base_wainscot.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 16
+ },
+ "base_wall.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 32
+ },
+ "base_wall_back.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 32
  },
  "bg_far.png": {
   "h": 96,
@@ -228,6 +428,26 @@
   "ppu": 16,
   "tile": false,
   "w": 64
+ },
+ "capsule_back.png": {
+  "h": 80,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 48
+ },
+ "capsule_glass.png": {
+  "h": 80,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 48
  },
  "chest_closed.png": {
   "h": 24,
@@ -1009,6 +1229,206 @@
   "tile": false,
   "w": 20
  },
+ "prop_barrel.png": {
+  "h": 20,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 14
+ },
+ "prop_cable_0.png": {
+  "h": 20,
+  "pivot": [
+   0.5,
+   1.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 36
+ },
+ "prop_cable_1.png": {
+  "h": 14,
+  "pivot": [
+   0.5,
+   1.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 28
+ },
+ "prop_crate.png": {
+  "h": 18,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 20
+ },
+ "prop_generator_0.png": {
+  "h": 36,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 44
+ },
+ "prop_generator_1.png": {
+  "h": 36,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 44
+ },
+ "prop_holo_0.png": {
+  "h": 56,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 48
+ },
+ "prop_holo_1.png": {
+  "h": 56,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 48
+ },
+ "prop_monitors_0.png": {
+  "h": 36,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 56
+ },
+ "prop_monitors_1.png": {
+  "h": 36,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 56
+ },
+ "prop_prototype.png": {
+  "h": 64,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 40
+ },
+ "prop_rack_0.png": {
+  "h": 48,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 24
+ },
+ "prop_rack_1.png": {
+  "h": 48,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 24
+ },
+ "prop_robot_arm.png": {
+  "h": 56,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 40
+ },
+ "prop_rocks.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 40
+ },
+ "prop_shelf.png": {
+  "h": 56,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 44
+ },
+ "prop_stalactite_0.png": {
+  "h": 20,
+  "pivot": [
+   0.5,
+   1.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 12
+ },
+ "prop_stalactite_1.png": {
+  "h": 14,
+  "pivot": [
+   0.5,
+   1.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 9
+ },
+ "prop_tesla_0.png": {
+  "h": 64,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "prop_tesla_1.png": {
+  "h": 64,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
  "robot_bit_0.png": {
   "h": 7,
   "pivot": [
@@ -1198,6 +1618,36 @@
   "ppu": 16,
   "tile": false,
   "w": 16
+ },
+ "station_craft.png": {
+  "h": 48,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 64
+ },
+ "station_door.png": {
+  "h": 72,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 48
+ },
+ "station_fusion.png": {
+  "h": 72,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 72
  },
  "tile_ground_fill.png": {
   "h": 16,

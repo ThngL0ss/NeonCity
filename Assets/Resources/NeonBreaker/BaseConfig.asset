@@ -1,0 +1,96 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58620f0d2ccfc514986e3351f5ed544f, type: 3}
+  m_Name: BaseConfig
+  m_EditorClassIdentifier: 
+  fusion:
+  - from: 0
+    partsNeeded: 3
+    oil: 10
+    coins: 20
+  - from: 1
+    partsNeeded: 3
+    oil: 20
+    coins: 50
+  - from: 2
+    partsNeeded: 3
+    oil: 40
+    coins: 120
+  luckChance: 0.15
+  luckBonusParts: 2
+  recipes:
+  - output: {fileID: 11400000, guid: fd31bd38a3ff5044592cc8b7cdc51a79, type: 2}
+    outputCount: 2
+    ingredients:
+    - item: {fileID: 11400000, guid: 1465d8501acc8884da190da7ad26ab73, type: 2}
+      count: 1
+    - item: {fileID: 11400000, guid: 3caaea8a506d57e43aef520744c4aec2, type: 2}
+      count: 1
+    oil: 4
+    coins: 0
+  - output: {fileID: 11400000, guid: 94dd003f7b832724d98dcebdd42257b3, type: 2}
+    outputCount: 1
+    ingredients:
+    - item: {fileID: 11400000, guid: fe988f35b9a6c2541964b3850a3033bb, type: 2}
+      count: 2
+    - item: {fileID: 11400000, guid: 3caaea8a506d57e43aef520744c4aec2, type: 2}
+      count: 1
+    oil: 6
+    coins: 15
+  - output: {fileID: 11400000, guid: b3df125022fe4de45b32a4bb86fbb1bc, type: 2}
+    outputCount: 1
+    ingredients:
+    - item: {fileID: 11400000, guid: 3caaea8a506d57e43aef520744c4aec2, type: 2}
+      count: 2
+    - item: {fileID: 11400000, guid: 990ecfd67c436a049b2001bd6de1e297, type: 2}
+      count: 1
+    oil: 10
+    coins: 30
+  - output: {fileID: 11400000, guid: 4f99f7ff1eba79447960ac046b9f5e1d, type: 2}
+    outputCount: 1
+    ingredients:
+    - item: {fileID: 11400000, guid: 3caaea8a506d57e43aef520744c4aec2, type: 2}
+      count: 2
+    - item: {fileID: 11400000, guid: fe988f35b9a6c2541964b3850a3033bb, type: 2}
+      count: 1
+    oil: 10
+    coins: 30
+  - output: {fileID: 11400000, guid: 572243dd40906164fae1c9897fc8338e, type: 2}
+    outputCount: 1
+    ingredients:
+    - item: {fileID: 11400000, guid: 990ecfd67c436a049b2001bd6de1e297, type: 2}
+      count: 2
+    - item: {fileID: 11400000, guid: 3caaea8a506d57e43aef520744c4aec2, type: 2}
+      count: 3
+    - item: {fileID: 11400000, guid: 1465d8501acc8884da190da7ad26ab73, type: 2}
+      count: 3
+    oil: 25
+    coins: 80
+  mapTestDestination: 1
+  scatter:
+  - item: {fileID: 11400000, guid: 1465d8501acc8884da190da7ad26ab73, type: 2}
+    weight: 40
+    minCount: 1
+    maxCount: 3
+  - item: {fileID: 11400000, guid: fe988f35b9a6c2541964b3850a3033bb, type: 2}
+    weight: 30
+    minCount: 1
+    maxCount: 2
+  - item: {fileID: 11400000, guid: 990ecfd67c436a049b2001bd6de1e297, type: 2}
+    weight: 15
+    minCount: 1
+    maxCount: 1
+  - item: {fileID: 11400000, guid: 3caaea8a506d57e43aef520744c4aec2, type: 2}
+    weight: 25
+    minCount: 1
+    maxCount: 2
+  oilCanAmount: {x: 6, y: 14}

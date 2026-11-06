@@ -335,19 +335,19 @@ MonoBehaviour:
   spawnTable:
   - prefab: {fileID: 1508541806146632754, guid: abd8d41dc57e65c45987ce02d20beb28, type: 3}
     weight: 45
-    powerMul: 1
+    levelAdd: 0
     minPower: 0
   - prefab: {fileID: 484256043987473469, guid: cf88c8f4a6c5af94cbad4f836f253ec5, type: 3}
     weight: 25
-    powerMul: 1
+    levelAdd: 0
     minPower: 0
-  - prefab: {fileID: 1508541806146632754, guid: de63471b2ec6db84d89ef45cd52f830b, type: 3}
+  - prefab: {fileID: 1508541806146632754, guid: 3d21561e4f1abaa4fb82b639d3de8f6f, type: 3}
     weight: 15
-    powerMul: 1
+    levelAdd: 0
     minPower: 1.1
-  - prefab: {fileID: 1508541806146632754, guid: 06de5e40e545ac74dbaa772ea6bbcb4e, type: 3}
+  - prefab: {fileID: 1508541806146632754, guid: b8f3a87cf6f45fe44af448400173bf27, type: 3}
     weight: 15
-    powerMul: 1
+    levelAdd: 0
     minPower: 1.3
   maxAlive: 3
   totalSpawnLimit: 0
@@ -356,6 +356,7 @@ MonoBehaviour:
   firstSpawnDelay: 1
   spawnDistance: {x: 1.6, y: 2.8}
   powerSpeedsUpSpawn: 1
+  levelOverride: 0
   autoByOrder: 1
   powerFirst: 1
   powerLast: 1.8

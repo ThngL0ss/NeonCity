@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa79608b6240bf540899e469e20ac128, type: 3}
+  m_Name: Item_energy_gel
+  m_EditorClassIdentifier: 
+  nameVi: "Gel n\u0103ng l\u01B0\u1EE3ng"
+  nameEn: Energy Gel
+  descVi: "Gel ch\u1EE9a n\u0103ng l\u01B0\u1EE3ng, d\xF9ng l\xE0m thu\u1ED1c v\xE0
+    huy\u1EBFt thanh."
+  descEn: Energy-rich gel for potions and serums.
+  icon: {fileID: 21300000, guid: 0405fe1557bb0c847904a7d6af6530f7, type: 3}
+  color: {r: 0.1, g: 0.95, b: 1, a: 1}
+  kind: 3
+  maxStack: 99
+  sellValue: 8
+  bonuses: []
+  healHp: 0
+  healCharges: 0
+  buffDuration: 0

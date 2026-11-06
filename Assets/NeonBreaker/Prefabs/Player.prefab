@@ -351,6 +351,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea8dd244b814b644da72e0ff8967e7e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  power:
+    rank: 0
+    level: 1
   maxHealth: 100
   hurtInvuln: 0.85
   healStartCharges: 3

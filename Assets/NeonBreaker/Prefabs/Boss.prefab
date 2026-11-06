@@ -176,12 +176,19 @@ MonoBehaviour:
   dead: 0
   phase: 1
   Intro: 1
+  power:
+    rank: 6
+    level: 1
   p1Hp: 2800
   p2Hp: 1500
+  p3Hp: 2800
   p1Speed: 2
   p2Speed: 5.4
+  p3Speed: 5.4
   p1HitSize: {x: 2.8, y: 4.2}
   p2HitSize: {x: 2.2, y: 3.8}
+  p3HitSize: {x: 2.5, y: 4.2}
+  p3Scale: 1.12
   enrageHpFrac: 0.4
   slamDamage: 18
   touchDamage: 12
@@ -190,6 +197,8 @@ MonoBehaviour:
   slashDamage: 24
   lanceDamage: 22
   lifesteal: 0.6
+  p3DamageMul: 1
+  p3Lifesteal: 0.25
   p1WalkTime: {x: 2, y: 3.2}
   p1RecoverTime: 1.2
   slamChargeTime: 0.4
@@ -211,6 +220,25 @@ MonoBehaviour:
   laserTelegraph: 1
   laserSpacing: 4
   laserWidth: 1.8
+  p3WalkTime: {x: 0.7, y: 1.3}
+  p3RestTime: {x: 0.7, y: 0.4}
+  collapseTime: 1.2
+  refillTime: 1.4
+  stillTime: 2
+  blastRadius: 8.5
+  blastDamage: 20
+  blastWarn: 0.45
+  blastGap: 0.5
+  finalBlastRadiusMul: 1.4
+  finalBlastDamageMul: 1.25
+  stunTime: 2.2
+  standUpTime: 1.3
+  thunderSteps: 6
+  thunderSpacing: 3.2
+  thunderGap: 0.2
+  thunderTelegraph: 0.55
+  thunderWidth: 1.7
+  thunderDamage: 20
   vis: {fileID: 1951479820301852133}
   animP1: {fileID: 8304840528809106929}
   animP2: {fileID: 4387262853120728438}

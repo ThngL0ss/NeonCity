@@ -34,3 +34,12 @@ MonoBehaviour:
   coinIcon: {fileID: 21300000, guid: 43e994855f8d6e2479f4fef3aaad8304, type: 3}
   partPrefab: {fileID: 5850759890881892616, guid: 084c2ddca28bccb458925e1270afc3f6, type: 3}
   partIcon: {fileID: 21300000, guid: c88a914fac8ede94fb5afab565e09bd4, type: 3}
+  oilPrefab: {fileID: 7636324285121060512, guid: 124b4151ca2acdc4189a9979a72bfe84, type: 3}
+  oilIcon: {fileID: 21300000, guid: 4b42bf90e4bf48944b2dd16f136fda6d, type: 3}
+  worldItemPrefab: {fileID: 2706365528729910216, guid: 10d7518a8ff2626489c15b3784b7582d, type: 3}
+  playerSkeleton: {fileID: 21300000, guid: 6cfe1b7eae55f43458452663f80ec9c2, type: 3}
+  robotBits:
+  - {fileID: 21300000, guid: 608de9f0d20b5244db54228d486247a5, type: 3}
+  - {fileID: 21300000, guid: 3899b6890f5008240997a79f277763c8, type: 3}
+  - {fileID: 21300000, guid: 667f84a321c596d4aaa0643302ee9bb8, type: 3}
+  - {fileID: 21300000, guid: 208580dd14d0ff540ad12082686391cc, type: 3}

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa79608b6240bf540899e469e20ac128, type: 3}
+  m_Name: Item_circuit_board
+  m_EditorClassIdentifier: 
+  nameVi: "Bo m\u1EA1ch"
+  nameEn: Circuit Board
+  descVi: "Bo m\u1EA1ch c\xF2n nguy\xEAn v\u1EB9n. C\u1EA7n cho c\xE1c m\xF3n ch\u1EBF
+    t\xE1c n\xE2ng cao."
+  descEn: An intact circuit board. Needed for advanced crafts.
+  icon: {fileID: 21300000, guid: 419f650e342a8ba4c9e5707352a639c8, type: 3}
+  color: {r: 0.45, g: 1, b: 0.4, a: 1}
+  kind: 3
+  maxStack: 99
+  sellValue: 10
+  bonuses: []
+  healHp: 0
+  healCharges: 0
+  buffDuration: 0

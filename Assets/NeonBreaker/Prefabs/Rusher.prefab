@@ -130,6 +130,13 @@ MonoBehaviour:
   coinChance: 0.9
   coinMin: 2
   coinMax: 4
+  oilChance: 0.35
+  oilMin: 1
+  oilMax: 3
+  typeId: 
+  power:
+    rank: 0
+    level: 1
   health: 18
   moveSpeed: 7
   lungeDamage: 24

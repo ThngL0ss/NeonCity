@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa79608b6240bf540899e469e20ac128, type: 3}
+  m_Name: Item_scrap_metal
+  m_EditorClassIdentifier: 
+  nameVi: "S\u1EAFt v\u1EE5n"
+  nameEn: Scrap Metal
+  descVi: "M\u1EA3nh kim lo\u1EA1i nh\u1EB7t \u0111\u01B0\u1EE3c. Nguy\xEAn li\u1EC7u
+    ch\u1EBF t\xE1c c\u01A1 b\u1EA3n."
+  descEn: Salvaged metal. Basic crafting material.
+  icon: {fileID: 21300000, guid: 3808d90ace080564aaae916643d3d688, type: 3}
+  color: {r: 0.75, g: 0.82, b: 0.95, a: 1}
+  kind: 3
+  maxStack: 99
+  sellValue: 4
+  bonuses: []
+  healHp: 0
+  healCharges: 0
+  buffDuration: 0

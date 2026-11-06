@@ -116,11 +116,29 @@ MonoBehaviour:
     weight: 5
     minCount: 1
     maxCount: 1
+  - item: {fileID: 11400000, guid: 1465d8501acc8884da190da7ad26ab73, type: 2}
+    weight: 26
+    minCount: 1
+    maxCount: 3
+  - item: {fileID: 11400000, guid: fe988f35b9a6c2541964b3850a3033bb, type: 2}
+    weight: 20
+    minCount: 1
+    maxCount: 2
+  - item: {fileID: 11400000, guid: 990ecfd67c436a049b2001bd6de1e297, type: 2}
+    weight: 10
+    minCount: 1
+    maxCount: 2
+  - item: {fileID: 11400000, guid: 3caaea8a506d57e43aef520744c4aec2, type: 2}
+    weight: 16
+    minCount: 1
+    maxCount: 2
   rollsMin: 1
   rollsMax: 2
   noDuplicates: 1
   coinsMin: 8
   coinsMax: 20
+  oilMin: 4
+  oilMax: 12
   interactRange: 2.2
   interactHeight: 2.5
   nameVi: "R\u01AF\u01A0NG"

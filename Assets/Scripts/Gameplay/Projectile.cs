@@ -180,7 +180,7 @@ namespace NeonBreaker
             {
                 var h = list[i];
                 if (h == null || !h.Targetable || hits.Contains(h)) continue;
-                if (owner != null && h is Tower && !SkillSystem.Config.attackTowers) continue;
+                if (owner != null && (h is Tower || h is TurretBody) && !SkillSystem.Config.attackTowers) continue;
                 if (!Geo.CircleRect(pos, radius, h.HitRect)) continue;
                 hits.Add(h);
                 bool wasDead = h.dead;

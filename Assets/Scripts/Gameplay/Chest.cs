@@ -14,12 +14,12 @@ namespace NeonBreaker
     }
 
     /// <summary>
-    /// Rương đồ. Đứng gần rồi bấm T để mở: nhận vật phẩm vào kho + xu.
+    /// Rương đồ. Đứng gần rồi bấm F để mở: nhận vật phẩm vào kho + xu.
     /// Tự chỉnh vật phẩm: chọn rương trong Scene → Chest ▸ Loot Table (kéo ItemData vào ô Item, chỉnh Weight).
     ///  • Guaranteed: luôn có.   • Loot Table: bốc ngẫu nhiên theo trọng số, số lần bốc = Rolls Min..Max.
     /// Kho đầy thì rương không mở (để bạn dọn kho rồi quay lại).
     /// </summary>
-    public class Chest : MonoBehaviour
+    public class Chest : MonoBehaviour, IInteractable
     {
         public static readonly List<Chest> All = new List<Chest>();
 
@@ -34,8 +34,12 @@ namespace NeonBreaker
         public int coinsMin = 8;
         public int coinsMax = 20;
 
+        [Header("Dầu (nhiên liệu chế tác ở căn cứ)")]
+        public int oilMin = 4;
+        public int oilMax = 12;
+
         [Header("Tương tác")]
-        [Tooltip("Khoảng cách ngang tối đa để bấm T mở rương")] public float interactRange = 2.2f;
+        [Tooltip("Khoảng cách ngang tối đa để bấm F mở rương")] public float interactRange = 2.2f;
         [Tooltip("Chênh lệch độ cao tối đa")] public float interactHeight = 2.5f;
         public string nameVi = "RƯƠNG";
         public string nameEn = "CHEST";
@@ -50,8 +54,14 @@ namespace NeonBreaker
 
         float t;
 
-        void OnEnable() { if (!All.Contains(this)) All.Add(this); }
-        void OnDisable() { All.Remove(this); }
+        void OnEnable() { if (!All.Contains(this)) All.Add(this); Interactor.Register(this); }
+        void OnDisable() { All.Remove(this); Interactor.Unregister(this); }
+
+        // ---- IInteractable
+        public bool CanInteract { get { return !Opened; } }
+        public string PromptText { get { return "[F] " + Cfg.L("MỞ ", "OPEN ") + DisplayName; } }
+        public bool InRange(Player p) { return Chest.InRange(this); }
+        public void Interact() { Open(); }
 
         void Awake()
         {
@@ -104,13 +114,6 @@ namespace NeonBreaker
                 if (d < bd) { bd = d; best = c; }
             }
             return best;
-        }
-
-        /// <summary>Gọi khi người chơi bấm T.</summary>
-        public static void TryOpenNearest()
-        {
-            var c = Nearest();
-            if (c != null) c.Open();
         }
 
         // ------------------------------------------------------------ mở rương
@@ -183,6 +186,8 @@ namespace NeonBreaker
 
             int coins = Random.Range(Mathf.Min(coinsMin, coinsMax), Mathf.Max(coinsMin, coinsMax) + 1);
             if (coins > 0) Coin.Drop(c, coins);
+            int oil = Random.Range(Mathf.Min(oilMin, oilMax), Mathf.Max(oilMin, oilMax) + 1);
+            if (oil > 0) OilDrop.Drop(c, oil);
         }
     }
 }

@@ -11,11 +11,11 @@ namespace NeonBreaker
         [Tooltip("Mã loại. Để trống = tên Prefab. Phải trùng với Enemy ▸ Type Id (hoặc tên Prefab) của quái")] public string id = "";
         public string nameVi = "";
         public string nameEn = "";
-        [Tooltip("Số linh kiện cần để chế tạo 1 minibot")] public int partsCost = 10;
-        [Tooltip("Xác suất quái loại này rơi linh kiện khi bị hạ (1 = luôn rơi)"), Range(0f, 1f)] public float partsDropChance = 1f;
+        [Tooltip("Số linh kiện (đúng cấp bậc của quái gốc: Enemy ▸ Power ▸ Rank) cần để chế tạo 1 minibot")] public int partsCost = 10;
+        [Tooltip("Xác suất quái loại này rơi linh kiện (cùng cấp bậc với quái) khi bị hạ (1 = luôn rơi). Quái bậc SS / SSS không rơi")] [Range(0f, 1f)] public float partsDropChance = 1f;
         [Tooltip("Số linh kiện rơi ra ít nhất / nhiều nhất mỗi lần")] public int partsDropMin = 1;
         public int partsDropMax = 1;
-        [Tooltip("Màu của linh kiện rơi ra")] public Color partColor = Color.white;
+        [Tooltip("Màu đặc trưng của loại này (viền minibot, giao diện). Màu LINH KIỆN thì theo cấp bậc")] public Color partColor = Color.white;
         [Tooltip("Tắt = loại quái này không rơi linh kiện và không chế tạo được")] public bool craftable = true;
 
         public string Id { get { return !string.IsNullOrEmpty(id) ? id : (enemyPrefab != null ? enemyPrefab.name : ""); } }

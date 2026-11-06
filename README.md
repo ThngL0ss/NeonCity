@@ -18,6 +18,11 @@ Game 2D platformer đồ họa **pixel art neon tương lai**. Scene, Prefab, Sp
   2. **Tools ▸ Neon Breaker ▸ Mở rộng map + đặt bẫy + rương vào Scene Main** — chỉnh Scene hiện có: kéo dài map, giãn 6 trụ, thêm bục, đặt bẫy (`Level/Traps`) và rương (`Level/Chests`). **Không tạo lại Scene**, các chỉnh sửa khác của bạn được giữ. Nên commit git trước khi chạy. Chạy lại lần 2 chỉ đặt lại bẫy + rương (có hỏi xác nhận).
   Rồi commit các file `.meta`, Prefab, Item, Scene mà Unity vừa tạo.
 - **Bản có hệ thống Skill** (nhánh `claude/he-thong-skill`): sau khi kéo về và Unity biên dịch xong, chạy **Tools ▸ Neon Breaker ▸ Thêm hệ thống Skill (không đụng Scene)** một lần — tạo Prefab `Part` (linh kiện), `Resources/NeonBreaker/SkillConfig.asset`, 9 kỹ năng mẫu trong `Assets/NeonBreaker/Skills/`, gán `ArtBank ▸ Part Prefab`. Chỉ tạo cái còn thiếu, không ghi đè; chạy lại được (ví dụ sau khi thêm quái Heavy/Rusher). Rồi commit các file `.meta`, Prefab, asset Unity vừa tạo. Chi tiết ở mục 7b.
+- **Bản có cấp bậc / dầu / cinematic / căn cứ** (nhánh `claude/base-cinematic`): sau khi kéo về và Unity biên dịch xong, chạy lần lượt (mỗi menu chỉ tạo cái còn thiếu, không ghi đè chỉnh sửa của bạn)
+  1. **Tools ▸ Neon Breaker ▸ Thêm bẫy + kho đồ + rương** và **Thêm hệ thống Skill** nếu bạn chưa chạy (xem trên).
+  2. **Tools ▸ Neon Breaker ▸ Cập nhật cấp bậc + dầu + căn cứ (không đụng Scene Main)** — gán bậc cho quái (Walker/Flyer = D, Heavy/Rusher = C, Boss = SS cấp 1), tạo Prefab `Oil` + `WorldItem`, 4 nguyên liệu, `BaseConfig.asset` (công thức chế tác, luật ghép linh kiện, bảng vật phẩm rải đường), thêm nguyên liệu vào rương, và **tạo Scene `Base.unity`** (nếu chưa có) + thêm vào Build Settings. Scene Main không bị đụng.
+  3. Mở `Main.unity` và `Base.unity`, bấm Play thử, rồi commit các file `.meta`, Prefab, asset, Scene mới.
+  Muốn dựng lại căn cứ từ đầu: **Tools ▸ Neon Breaker ▸ Tạo lại Scene Căn cứ Base (GHI ĐÈ Base.unity)**.
 - Ảnh PNG tự được cài đặt pixel art (Point filter, không nén, PPU, pivot) nhờ `Assets/Editor/NeonArtImporter.cs`.
 
 ## 2. Điều khiển
@@ -31,11 +36,14 @@ Game 2D platformer đồ họa **pixel art neon tương lai**. Scene, Prefab, Sp
 | K | Ném phi tiêu |
 | L | Hồi máu (bắt đầu 3 lượt, tối đa 5; nhặt vật phẩm xanh để cộng dồn) |
 | **B** | **Mở / đóng kho đồ** (game tạm dừng khi mở) |
-| **T** | **Mở rương** gần nhất (đứng trong tầm, hiện gợi ý "[T] MỞ RƯƠNG") |
+| **F** | **Tương tác**: nhặt vật phẩm nằm trên đường (thùng dầu, nguyên liệu), mở rương, nói chuyện với Albert, dùng bàn chế tác / máy ghép / cửa căn cứ. Đứng gần là hiện gợi ý "[F] …" |
+| **M** | **Bản đồ** (hiện chỉ là màn đen; ở căn cứ có thêm điểm "khu thử nghiệm" để quay lại màn chơi) |
 | **N** | **Mở / đóng menu Skill** (cây kỹ năng, chế tạo, lưu trữ minibot; game tạm dừng). **Q / E**: đổi tab |
-| **H** | **Bảng chọn minibot** (không tạm dừng): bấm vào minibot để triệu hồi / thu hồi |
+| **H** | **Bảng chọn minibot**: khi mở, người chơi đứng yên; **A / D** đổi ô, **S** triệu hồi (hoặc thu hồi nếu đang triệu hồi); bấm chuột vào ô cũng được |
 | **P** | **Chế độ thử nghiệm (bật/tắt)**: không thể chết · sát thương ×3 · không hồi chiêu · hồi máu không tốn lượt |
 | Esc | Tạm dừng · Enter: bắt đầu / tiếp tục · R: chơi lại · V: đổi ngôn ngữ |
+
+Xu, linh kiện và giọt dầu vẫn tự hút về khi lại gần (không cần bấm F).
 
 Trong kho đồ: **A D W S / mũi tên** chọn ô · **Enter** dùng · **X** vứt 1 · **chuột**: bấm chọn, bấm đúp = dùng · **B / Esc** đóng.
 
@@ -43,19 +51,23 @@ Hệ số sát thương của chế độ thử nghiệm chỉnh ở `Systems �
 
 ## 3. Luồng chơi (~10 phút)
 
-Phá hết **các trụ triệu hồi** (mỗi trụ sinh quái khi bạn lại gần) → cổng khu boss mở → vào khu boss → boss xuất hiện.
-Boss: **Phase 1** chậm, máu trâu, 1 kỹ năng (nhảy đập + sóng xung kích). **Phase 2** nhanh, máu ít hơn, 3 kỹ năng (chớp bước chém, chùm đạn quạt, laser giáng từ trời) và **hút máu**.
+Bấm **Chơi** → **cảnh mở đầu** (camera bay tới địa bàn boss: bạn đến lấy lại linh kiện bậc SS bị cướp; Enter = tiếp, Esc = bỏ qua) → phá hết **các trụ triệu hồi** (mỗi trụ sinh quái khi bạn lại gần) → cổng khu boss mở → vào khu boss → boss xuất hiện.
+Boss (bậc **SS**, cấp 1): **Phase 1** chậm, máu trâu, 1 kỹ năng (nhảy đập + sóng xung kích). **Phase 2** nhanh, máu ít hơn, 3 kỹ năng (chớp bước chém, chùm đạn quạt, laser giáng từ trời) và **hút máu**. **Phase 3** (mới): khi hạ phase 2, boss gục, hồi **đầy máu**, đứng im 2 giây rồi **tự nổ 3 lần** (sát thương lớn + sóng xung kích làm bạn choáng), rồi đứng dậy đánh tiếp với tốc độ/sát thương phase 2, độ trâu phase 1, dùng kỹ năng cả hai phase + 1 kỹ năng mới (**Bão sét**: các cột sét giáng lan ra hai bên).
+**Khi chết:** cảnh người chơi gục, cơ thể tan ra lộ bộ khung robot, màn hình tối rồi chuyển về **căn cứ của Albert** (mục 7e), hồi sinh trong lồng kính. Ra khỏi căn cứ bằng cửa → bản đồ → quay lại màn chơi.
 Quái nhỏ rơi vật phẩm hồi máu (mặc định 20%) — nhặt = +1 lượt hồi. Quái bị hạ còn **rơi xu** (mục 9).
 Map dài ~260 đơn vị: 6 trụ cách nhau ~43 đơn vị, bục 3 tầng, **5 loại bẫy** (mục 8), rương rải rác (mục 9).
 
 ### Các loại quái
 
-| Quái | Prefab | Máu | Sát thương | Tốc độ | Ghi chú |
-|---|---|---|---|---|---|
-| Walker | `Walker` | 48 | 13 (lao) | 3.7 | Quái thường: đuổi → báo hiệu → lao |
-| Flyer | `Flyer` | 30 | 9 (đạn) | 5 | Bay lơ lửng, bắn đạn |
-| **Heavy** (mới) | `Heavy` | 220 | 8 (lao) | 2.0 | "Máu trâu": to, giáp nặng, gần như không bị đẩy lùi, báo hiệu đòn lâu (0.75s) |
-| **Rusher** (mới) | `Rusher` | 18 | 24 (lao) | 7.0 | "Dao găm": nhỏ, lao rất nhanh (tốc độ lao 21), báo hiệu ngắn (0.4s) |
+| Quái | Prefab | Bậc | Máu | Sát thương | Tốc độ | Ghi chú |
+|---|---|---|---|---|---|---|
+| Walker | `Walker` | **D** | 48 | 13 (lao) | 3.7 | Quái thường: đuổi → báo hiệu → lao |
+| Flyer | `Flyer` | **D** | 30 | 9 (đạn) | 5 | Bay lơ lửng, bắn đạn |
+| **Heavy** | `Heavy` | **C** | 220 | 8 (lao) | 2.0 | "Máu trâu": to, giáp nặng, gần như không bị đẩy lùi, báo hiệu đòn lâu (0.75s) |
+| **Rusher** | `Rusher` | **C** | 18 | 24 (lao) | 7.0 | "Dao găm": nhỏ, lao rất nhanh (tốc độ lao 21), báo hiệu ngắn (0.4s) |
+| Boss | `Boss` | **SS** | — | — | — | Cấp 1; không rơi linh kiện |
+
+Chỉ số ở bảng là mặc định **ở cấp 1**; cấp độ quái (mục 4) nhân thêm lên.
 
 Heavy và Rusher dùng chung script `Walker` nhưng khác chỉ số (xem từng Prefab). Các con số trên là mặc định lúc tạo Prefab; chỉnh trực tiếp trên Prefab.
 
@@ -100,7 +112,8 @@ Ví dụ:
 Giới hạn toàn màn hình là `Level ▸ Max Enemies Alive`: dù trụ cho phép, tổng quái trên màn không vượt con số này.
 Nếu `Spawn Table` rỗng, trụ tự dùng Walker + Flyer như bản cũ.
 
-**Quái mạnh dần theo trụ (gần boss càng khỏe):** chọn từng trụ trong `Level/Towers`, bật `Auto By Order` rồi đặt `Power First` (trụ đầu) và `Power Last` (trụ cuối). Hoặc tắt Auto và gõ `Power` riêng. Power 1 = chỉ số gốc; 1.5 = máu ×1.5, sát thương ×1.3, nhanh hơn ~15%, quái ngả đỏ dần.
+**Cấp độ quái (thay cho cách "mạnh dần theo trụ" cũ):** quái càng **cấp cao** càng khoẻ. Cấp của quái do từng trụ sinh ra lấy từ `Level ▸ Tower Levels` theo thứ tự trụ từ trái sang phải — mặc định **5, 5, 7, 7, 7, 10** (2 trụ đầu cấp 5, 3 trụ sau cấp 7, trụ cuối cấp 10); ép riêng một trụ bằng `Tower ▸ Level Override` (> 0). Boss cấp 1. Công thức nhân theo cấp (tăng đều, không nhảy vọt) nằm ở `PowerRules` (`PowerSystem.cs`): `HpPerLevel` = 5% máu/cấp, `DamagePerLevel` = 3% sát thương/cấp, `SpeedPerLevel` = 0.6% tốc độ/cấp, `RewardPerLevel` = 4% xu/cấp. Ví dụ cấp 10: máu ×1.45, sát thương ×1.27. Chỉ số của người chơi chưa scale theo cấp.
+`Tower ▸ Auto By Order / Power First / Power Last / Power` giờ chỉ còn quyết định **loại quái nào được ra** (cột `Min Power` trong `Spawn Table`) và tốc độ triệu hồi — **không làm quái khoẻ hơn** nữa.
 
 ## 6. Bẫy (5 loại)
 
@@ -111,8 +124,8 @@ Mọi bẫy kế thừa `Trap` (chung: `Damage`, `Knockback`, `Active Range` —
 | **Gai** | `TrapSpike` | Gai thụt → nhấp nháy báo hiệu → bật lên gây sát thương → thụt xuống (theo chu kỳ) | `Down Time`, `Warn Time`, `Up Time`, `Start Offset` (lệch pha), `Always Up` |
 | **Laser** | `TrapLaser` | Hai trụ phát tia; tắt → báo hiệu → bật. Dọc (cổng laser, lướt `I` qua khi tia tắt) hoặc ngang sát đất (phải nhảy) | `Vertical`, `Length`, `Horizontal Height`, `Off/Warn/On Time`, `Always On` |
 | **Cưa quay** | `TrapSaw` | Lưỡi cưa chạy qua lại trên ray | `Travel` (điểm cuối so với điểm đầu, ví dụ (9,0) hoặc (0,4)), `Speed`, `Radius`, `Start Phase` |
-| **Súng tự động** | `TrapTurret` | Ngắm theo người chơi, tụ năng lượng rồi bắn loạt đạn | `Facing` (-1 trái / 1 phải), `Fire Interval`, `Charge Time`, `Burst Count`, `Projectile Speed`, `Range` |
-| **Mìn** | `TrapMine` | Lại gần thì đếm ngược rồi nổ (vòng đỏ báo vùng nổ), nạp lại sau một lúc | `Trigger Radius`, `Fuse Time`, `Blast Radius`, `Rearm Time`, `Hurts Enemies` |
+| **Súng tự động** | `TrapTurret` | Nòng **xoay nửa vòng (180°)** ngắm theo người chơi, tụ năng lượng rồi bắn loạt đạn. **Phá huỷ được** như trụ (ít máu hơn, rơi xu) | `Aim Center Angle` (90 = hướng lên), `Aim Arc` (180 = nửa vòng, 360 = quay tròn), `Turn Speed`, `Health` (110), `Reward Coins`, `Fire Interval`, `Charge Time`, `Burst Count`, `Range` |
+| **Mìn** | `TrapMine` | **Vô hình** lúc đầu; giẫm lên thì **lộ ra** rồi đếm ngược và nổ (vòng đỏ báo vùng nổ). **Chỉ nổ một lần** rồi biến mất | `Step Radius`, `Step Height` (nhảy qua mìn thì không kích), `Fuse Time`, `Blast Radius`, `Hurts Enemies` |
 
 ## 7. Kho đồ, vật phẩm, xu, rương
 
@@ -127,7 +140,7 @@ Chỉ số cộng được (`Bonuses ▸ Stat`): `MaxHealth` (cộng thẳng), `
 
 Mặc định có 17 vật phẩm: 8 trang bị (Lõi năng lượng, Giáp neon, Giày tia chớp, Lưỡi dao tần số, Ray phóng phi tiêu, Cuộn pha lướt, Nam châm xu, Bộ nano hồi phục), 5 tiêu hao (Ống hồi máu, Pin hồi năng lượng, Huyết thanh cuồng nộ, Huyết thanh tốc độ, Mảnh sinh lực), 4 đồ giá trị (Pin phế liệu, Chip dữ liệu, Tinh thể neon, Lõi cổ đại).
 
-**Rương (`Chest`)** — bấm **T** khi đứng gần. **Bảng vật phẩm công khai:** chọn rương trong Scene (hoặc Prefab `Chest`) ▸ component **Chest**:
+**Rương (`Chest`)** — bấm **F** khi đứng gần. **Bảng vật phẩm công khai:** chọn rương trong Scene (hoặc Prefab `Chest`) ▸ component **Chest**:
 - `Guaranteed`: vật phẩm LUÔN có.
 - `Loot Table`: kéo file `ItemData` vào ô **Item**, chỉnh **Weight** (trọng số), **Min/Max Count**. Mỗi lần mở bốc `Rolls Min..Max` lần theo trọng số.
 - `No Duplicates`, `Coins Min/Max` (xu rơi ra khi mở), `Interact Range`.
@@ -144,36 +157,64 @@ Phím **N** mở menu **Skill** gồm các tab: **CÂY SKILL**, **CHẾ TẠO**,
 **Skill bị động khởi đầu — linh kiện & chế tạo.** Khi bạn **kết liễu** một con quái, quái rơi **linh kiện** của *đúng loại quái đó* (mặc định 1 cái/lần, xác suất 100%; chỉnh ở `SkillConfig ▸ Craftables ▸ Parts Drop Chance/Min/Max`). Nhặt như nhặt xu. Loại quái nào bạn **đã từng hạ** thì tab **CHẾ TẠO** mở công thức: đủ **10 linh kiện** (`Parts Cost`) → chế tạo 1 minibot **cùng cấp bậc với quái gốc, cấp độ 1**, cất trong **Lưu trữ minibot** (tối đa 30). Loại quái chế tạo được: danh sách `SkillConfig ▸ Craftables` (mặc định Walker, Flyer, Heavy, Rusher). Mã loại = `Enemy ▸ Type Id` (để trống = tên Prefab).
 
 **Skill chủ động khởi đầu — minibot.** Có ≥ 1 minibot thì **H** mở **bảng chọn** (4 ô). Quy tắc:
-- Đưa minibot từ *Lưu trữ* ra *Bảng chọn* ở tab LƯU TRỮ MINIBOT (nút "ĐƯA RA BẢNG CHỌN"), làm được ở mọi nơi.
+- Đưa minibot từ *Lưu trữ* ra *Bảng chọn* ở tab LƯU TRỮ MINIBOT (nút "ĐƯA RA BẢNG CHỌN"), làm được ở mọi nơi. Bảng chọn (phím **H**) dùng bằng bàn phím: A/D chọn ô, S triệu hồi hoặc thu hồi.
 - Bấm minibot trong bảng chọn → **triệu hồi** (tối đa 2 con cùng lúc, `Max Summoned`). Minibot đi theo bạn, tự tấn công quái gần (Walker/Heavy/Rusher lao cận chiến, Flyer bay bắn đạn), **bị quái và bẫy gây sát thương như bạn** (bất tử 0.5s sau mỗi lần trúng). Mặc định minibot **không đánh trụ** (`Attack Towers`).
 - Minibot **chết** khi đang triệu hồi → biến mất và **rơi linh kiện** (`Death Parts Base + cấp độ × Per Level`).
 - **Thu hồi:** thoát giao tranh **5 giây** (không có quái trong `Combat Range` quanh bạn) rồi **bấm vào minibot** trong màn chơi (dòng chữ trên đầu hiện đếm ngược "GIAO TRANH 3s" → "[CLICK] THU HỒI"). Minibot về bảng chọn **giữ nguyên máu còn lại**.
-- **Cất về lưu trữ** (từ bảng chọn, tab LƯU TRỮ MINIBOT) để **hồi máu dần** (`Storage Heal Pct Per Sec`, 3%/giây). Quy định chỉ làm được ở **căn cứ**: khái niệm căn cứ chưa có nên hiện tại `Anywhere Is Base` = bật (làm được ở mọi nơi). Khi có căn cứ thật: tắt ô này rồi sửa `SkillSystem.AtBase`.
+- **Cất về lưu trữ** (từ bảng chọn, tab LƯU TRỮ MINIBOT) để **hồi máu dần** (`Storage Heal Pct Per Sec`, 3%/giây). Việc này **chỉ làm được ở căn cứ**: khi Scene `Base` đã có trong Build Settings thì `SkillSystem.AtBase` chỉ đúng ở căn cứ (ô `Anywhere Is Base` chỉ còn tác dụng khi chưa có Scene Base, để bạn thử trong Scene Main).
 - **Độ trưởng thành:** +10 khi minibot kết liễu quái, +4 khi chỉ hỗ trợ (đã gây sát thương mà người khác hạ quái). Đầy thanh (`Maturity Base + (cấp-1) × Per Level`) thì bấm **TĂNG CẤP ĐỘ** (miễn phí; đặt `Level Up Coin Cost` > 0 để tính xu). Chỉ tăng **cấp độ** (1–200), **không** tăng cấp bậc. Cấp độ tăng máu (+6%/cấp) và sát thương (+5%/cấp) của minibot.
 - Chưa có hệ thống lưu game: kỹ năng, linh kiện, minibot **reset khi chơi lại / thoát** (giống xu và kho đồ).
 
-**Hệ thống sức mạnh (chưa áp dụng).** `PowerSystem.cs`: **Cấp bậc** `Rank` F < D < C < B < A < S < SS < SSS và **Cấp độ** 1–200 (`PowerRules.MinLevel/MaxLevel`). Player và quái đã có ô `Power` (Rank + Level) để sẵn nhưng **chưa ảnh hưởng chỉ số** (đúng yêu cầu "chưa setup"); minibot lấy cấp bậc từ quái gốc, cấp độ riêng. Hàm `PowerRules.RankMul` là chỗ cắm hệ số cấp bậc về sau.
+**Hệ thống sức mạnh.** `PowerSystem.cs`: **Cấp bậc** `Rank` F < D < C < B < A < S < SS < SSS và **Cấp độ** 1–200 (`PowerRules.MinLevel/MaxLevel`). **Cấp độ đã ảnh hưởng chỉ số quái** (mục 4); cấp bậc hiện chỉ quyết định loại linh kiện rơi ra (mục 7c) và vẫn chưa nhân chỉ số (`PowerRules.RankMul` là chỗ cắm về sau). Chỉ số người chơi chưa scale theo cấp. Minibot lấy cấp bậc từ quái gốc, cấp độ riêng.
 
 **Bảng cấu hình `SkillConfig`:** kho (`Storage Slots`, `Panel Slots`, `Max Summoned`, `Storage Heal Pct Per Sec`, `Anywhere Is Base`), giao tranh (`Recall Delay`=5, `Combat Range`), chỉ số theo cấp (`Hp/Damage Per Level`, `Follow Distance`, `Engage Range`, `Attack Towers`), trưởng thành (`Maturity Kill/Assist/Base/Per Level`, `Level Up Coin Cost`), khi chết (`Death Parts Base/Per Level`).
+
+## 7c. Linh kiện theo bậc, ghép linh kiện, dầu
+
+- **Bậc linh kiện:** F, D, C, B, A, S. Quái bậc nào rơi **linh kiện đúng bậc đó** (Walker/Flyer → D, Heavy/Rusher → C). Quái bậc **SS / SSS** (boss) **không rơi** linh kiện. Linh kiện hiển thị trong kho kèm nhãn bậc.
+- **Ghép linh kiện** (chỉ ở **căn cứ**, máy ghép): 3 linh kiện bậc thấp + **dầu** + xu = 1 linh kiện bậc kế tiếp. Mặc định (`BaseConfig ▸ Fusion`): F→D = 3 mảnh + 10 dầu + 20 xu · D→C = 3 mảnh + 20 dầu + 50 xu · C→B = 3 mảnh + 40 dầu + 120 xu. **Không ghép lên A và S** (chỉ rơi từ quái mạnh). **May mắn:** `Luck Chance` (mặc định 15%) → nhận thêm `Luck Bonus Parts` (2) mảnh thành phẩm.
+- **Dầu** là nhiên liệu cho cả ghép linh kiện và chế tác. Nhặt giọt dầu quái rơi ra, thùng dầu nằm trên đường (bấm **F**), hoặc trong rương. Số thùng / nguyên liệu rải mỗi lần vào màn: `Level ▸ Scatter Oil Cans / Scatter Materials`; lượng dầu mỗi thùng và bảng vật phẩm rải: `BaseConfig ▸ Oil Can Amount / Scatter`.
+- **Nguyên liệu chế tác** (4 loại: Sắt vụn, Dây đồng, Bo mạch, Gel năng lượng): nằm trong rương hoặc rải trên đường, nhặt bằng **F**. Thêm nguyên liệu mới: tạo `Item` loại `Material` rồi thêm vào `BaseConfig ▸ Scatter` và bảng rơi của rương.
+
+## 7d. Cinematic
+
+Điều khiển cảnh: **Enter** tiếp / **Esc** bỏ qua. Kịch bản nằm ở `Core/CineScripts.cs` (lời thoại, thời gian, **tên vật phẩm SS bị cướp**: `StolenItemVi/En` — hiện là tên tạm "LÕI TỐI THƯỢNG"/"PRIME CORE", bạn đổi ở đó). Công cụ dựng cảnh: `Cine` (thanh đen, màn đen, camera bay, chờ), `PixelDissolve` (tan / ghép từng điểm ảnh), `RobotBit` (mảnh linh kiện bay). Tắt cảnh mở đầu: `Systems ▸ GameManager ▸ Play Intro`. Trong cảnh, quái / trụ / HUD tạm dừng.
+- **Mở đầu** khi bấm Chơi; **boss phase 3** (gục → đầy máu → nổ 3 lần → choáng người chơi → đứng dậy); **chết** (gục, tan ra lộ bộ khung robot, tối dần rồi sang căn cứ).
+- Thông số phase 3 của boss ở `Boss ▸ P3 …` (máu `P3 Hp`, tốc độ, sát thương `P3 Damage Mul`, hút máu `P3 Lifesteal`, thời gian choáng `Stun Time`, bão sét `Thunder …`).
+
+## 7e. Căn cứ của Albert (Scene `Base`)
+
+Hầm công nghệ cũ pha đá / đất, dài ~120 đơn vị, đèn trần chập chờn, nhiều phát minh của Albert. Có 2 điểm: **lồng kính hồi sinh** (xuất hiện) và **cửa ra**.
+- **Hồi sinh:** sét giáng từ trên xuống lồng kính, lồng toả sét, người chơi được ghép lại từ vô số mảnh linh kiện robot.
+- **Lần đầu về căn cứ:** hội thoại Albert ↔ XbAst-013 (lời thoại ở `BaseManager.FirstArrivalLines`), sau đó đi lại tự do.
+- **Albert** (áo choàng trắng, kính tròn): đi lại quanh căn cứ, thỉnh thoảng dừng lại ngắm một phát minh (kéo công trình vào `AlbertNpc ▸ Interest Points`). **F** để nói chuyện: kể cốt truyện (lần đầu), **giao nhiệm vụ** / nhận thưởng (6 nhiệm vụ trong `BaseMissions.cs`: hạ quái, phá trụ, ghép linh kiện, chế tác, hạ boss…), mẹo chơi.
+- **Bàn chế tác** (F): chọn công thức (W/S, Enter chế tác) — nguyên liệu + dầu (+ xu). Công thức ở `BaseConfig ▸ Recipes`.
+- **Máy ghép** (F): 3 ô xếp **tam giác** + 1 ô giữa là thành phẩm; chọn bậc bằng A/D, bấm GHÉP (mục 7c).
+- **Cửa ra** (F): mở **bản đồ**. Bản đồ hiện đang đen; `BaseConfig ▸ Map Test Destination` bật = có 1 điểm "KHU THỬ NGHIỆM — Thành phố Neon" để quay lại màn chơi (tắt = bản đồ đen hoàn toàn).
+- Dữ liệu (xu, kho đồ, skill, minibot, nhiệm vụ) được giữ khi chuyển Main ↔ Base (`GameFlow.Carry`). Khi thua game / chơi lại từ menu thì reset như cũ.
+- Trong Scene `Base`, mọi thứ là object thật để bạn kéo thả: `BaseManager` (giới hạn trái/phải, lồng, Albert, cửa), `Props` (phát minh, máy), `Lamps`, `Environment`. Muốn đổi lời thoại / nhiệm vụ: `BaseManager.cs`, `BaseMissions.cs`.
 
 ## 8. Cấu trúc thư mục
 
 ```
 Assets/
-├─ Editor/                    NeonArtImporter (import PNG), NeonBuilder + NeonBuilderExtras + NeonBuilderSkill (menu Tools ▸ Neon Breaker)
+├─ Editor/                    NeonArtImporter (import PNG), NeonBuilder + NeonBuilderExtras + NeonBuilderSkill + NeonBuilderBase + NeonBuilderBaseScene (menu Tools ▸ Neon Breaker)
 ├─ Shaders/                   NeonAdditive (phát sáng), NeonFlash (chớp trắng khi trúng đòn)
 ├─ NeonBreaker/
 │  ├─ Art/                    PNG pixel art + manifest.json (PPU, pivot, tile)
 │  ├─ Audio/  Materials/  Prefabs/  Scenes/  Items/ (vật phẩm)  Skills/ (kỹ năng)
-├─ Resources/NeonBreaker/     ArtBank, AudioBank, SkillConfig
+├─ Resources/NeonBreaker/     ArtBank, AudioBank, SkillConfig, BaseConfig
 └─ Scripts/
-   ├─ Core/                   Cfg, GameManager, GameInput, PixelScreen, SpriteAnimator, Fx, Sfx, ...
-   ├─ Gameplay/               Player, Enemy, Walker, Flyer, Boss, Tower, Projectile, Pickup, Level, Trap*, Coin, Chest, Inventory, ItemData, SkillSystem, SkillConfig, SkillNodeData, Minibot, PartDrop, PowerSystem ...
-   └─ UI/                     Hud.cs (HUD / menu / màn thắng-thua, IMGUI), InventoryUi.cs (kho đồ), SkillUi.cs (menu Skill, bảng minibot H)
+   ├─ Core/                   Cfg, GameManager, GameFlow (Main ↔ Base), GameInput, PixelScreen, SpriteAnimator, Fx, Sfx, Cine, CineScripts, PixelDissolve, ...
+   ├─ Gameplay/               Player, Enemy, Walker, Flyer, Boss, Tower, Projectile, Pickup, Level, Trap*, Coin, Chest, Inventory, ItemData, SkillSystem, SkillConfig, SkillNodeData, Minibot, PartDrop, PowerSystem, WorldItem, OilDrop, PartFusion, BaseConfig, BaseManager, BaseMissions, BaseCrafting, BaseStation, AlbertNpc, ResurrectionCapsule, LampFlicker, RobotBit ...
+   └─ UI/                     Hud.cs (HUD / menu / màn thắng-thua, IMGUI), InventoryUi.cs (kho đồ), SkillUi.cs (menu Skill, bảng minibot H), BaseUi / DialogueUi / CraftUi / FusionUi / MapUi (căn cứ)
 Tools/PixelArt/gen_art.py       Sinh toàn bộ PNG (tuỳ chọn)
 Tools/PixelArt/gen_enemies2.py  Sinh sprite Heavy + Rusher, CẬP NHẬT manifest.json không ghi đè
 Tools/PixelArt/gen_extras.py    Sinh sprite bẫy, xu, rương, icon vật phẩm, CẬP NHẬT manifest.json không ghi đè
 Tools/PixelArt/gen_skill.py     Sinh sprite linh kiện + 9 icon kỹ năng, CẬP NHẬT manifest.json không ghi đè
+Tools/PixelArt/gen_stage2.py    Sinh sprite dầu, nguyên liệu, icon linh kiện theo bậc
+Tools/PixelArt/gen_cine.py      Sinh bộ khung robot + mảnh linh kiện cho cinematic
+Tools/PixelArt/gen_base.py      Sinh art căn cứ: gạch tường/sàn/trần, đèn, Albert, lồng kính, máy ghép, bàn chế tác, cửa, phát minh
 ```
 
 `Cfg.cs` chỉ còn giữ: ngôn ngữ, layer, mốc chiều dài màn, bảng màu. Mốc cổng/boss/bàn thờ chỉnh bằng object `Level` trong Scene.
@@ -190,6 +231,8 @@ Tools/PixelArt/gen_skill.py     Sinh sprite linh kiện + 9 icon kỹ năng, C�
 | Đổi **âm thanh / nhạc** | `Resources/NeonBreaker/AudioBank` → kéo AudioClip vào Id tương ứng. |
 | Thêm **loại quái mới** | Duplicate Prefab `Heavy` hoặc `Rusher`, đổi chỉ số và sprite, kéo vào `Spawn Table` của trụ. |
 | Thêm **kỹ năng / loại minibot** | Kỹ năng: tạo `Skill Node`, kéo vào `SkillConfig ▸ Nodes`. Loại minibot: thêm một dòng vào `SkillConfig ▸ Craftables` (kéo Prefab quái vào `Enemy Prefab`). |
+| Thêm / dời **phát minh, máy** trong căn cứ | Mở `Base.unity`: kéo Prefab / object trong `Props`; muốn Albert ngắm nó thì kéo vào `AlbertNpc ▸ Interest Points`. |
+| Đổi **cấp độ quái** theo trụ | `Level ▸ Tower Levels` (hoặc `Tower ▸ Level Override`); độ tăng mỗi cấp: `PowerRules` trong `PowerSystem.cs`. |
 | Tắt hiệu ứng pixel | `Main Camera ▸ Pixel Screen ▸ Enable Pixel Render` = tắt. |
 
 Sprite pixel art: 16 pixel = 1 đơn vị thế giới, màn hình tham chiếu 480×270.
@@ -200,12 +243,15 @@ Sprite pixel art: 16 pixel = 1 đơn vị thế giới, màn hình tham chiếu 
 - **Quái đứng yên, không đánh được / "The referenced script ... is missing":** mỗi class MonoBehaviour phải nằm trong file trùng tên (Walker.cs, Flyer.cs...). Sau khi code biên dịch xong chạy *Chỉ tạo lại Prefab*.
 - **Heavy/Rusher không xuất hiện:** chạy menu *Thêm quái Heavy + Rusher*; kiểm tra Prefab `Tower` → `Spawn Table` có đủ dòng; nhớ `Min Power` của Heavy (1.3) và Rusher (1.1) — trụ có `Power` thấp hơn sẽ không ra loại đó.
 - **Không thấy xu rơi / rương / bẫy:** chạy hai menu ở mục 1 (bản có bẫy + kho đồ) theo đúng thứ tự; kiểm tra `ArtBank ▸ Coin Prefab` đã có Prefab `Coin` (nếu trống, xu được cộng thẳng vào ví thay vì rơi ra).
-- **Bấm B / T không có phản ứng:** bấm vào cửa sổ Game trước; T chỉ mở được khi đứng trong tầm rương (xem gợi ý "[T] MỞ RƯƠNG").
+- **Bấm B / F không có phản ứng:** bấm vào cửa sổ Game trước; F chỉ dùng được khi đứng trong tầm vật / rương / máy (xem gợi ý "[F] …").
 - **Heavy/Rusher hiện ô vuông/không có hình:** Unity chưa import xong PNG mới trong `Art/` — bấm Assets ▸ Refresh rồi chạy lại menu.
 - **Bấm N / H không thấy gì, hoặc menu Skill báo "Chưa có dữ liệu Skill":** chạy menu *Thêm hệ thống Skill (không đụng Scene)* (mục 1). Bấm H chỉ mở bảng khi có ≥ 1 minibot.
 - **Quái chết nhưng linh kiện cộng thẳng vào kho thay vì rơi ra:** `ArtBank ▸ Part Prefab` đang trống — chạy lại menu *Thêm hệ thống Skill*.
 - **Không chế tạo được:** cần mở kỹ năng "Thu thập linh kiện", đã hạ loại quái đó ít nhất 1 lần và đủ linh kiện (cả ba điều kiện hiện trong tab CHẾ TẠO).
 - **Thiếu dòng Heavy/Rusher trong tab CHẾ TẠO:** tạo Prefab Heavy/Rusher (menu *Thêm quái Heavy + Rusher*) rồi chạy lại menu *Thêm hệ thống Skill*.
+- **Chết xong game không chuyển sang căn cứ / bấm cửa không đi đâu:** Scene `Base` chưa có trong Build Settings — chạy menu *Cập nhật cấp bậc + dầu + căn cứ* (hoặc *Tạo lại Scene Căn cứ Base*); nếu thiếu Scene Base game vẫn chơi bình thường như trước.
+- **Menu căn cứ báo "Thiếu sprite":** chạy `python3 Tools/PixelArt/gen_stage2.py`, `gen_cine.py`, `gen_base.py` (hoặc kéo đủ thư mục `Art/`) rồi chạy lại menu.
+- **Bấm F không thấy gợi ý:** đứng sát vật / máy / Albert hơn; gợi ý "[F] …" chỉ hiện khi không đang mở bảng nào.
 - **Màn hình đen khi Play lần 2:** đã xử lý bằng `Bootstrap` (reset static, hỗ trợ tắt Reload Domain).
 - **Báo "Scene không có GameManager":** mở `Main.unity`.
 - Các menu tạo lại: *Chỉ tạo lại Prefab / Chỉ tạo lại Scene Main / Xuất lại âm thanh WAV* (tạo lại Scene Main cũng mở rộng map + đặt bẫy + rương như menu ở mục 1). **Cảnh báo:** các menu này ghi đè bản Prefab/Scene bạn đã chỉnh.

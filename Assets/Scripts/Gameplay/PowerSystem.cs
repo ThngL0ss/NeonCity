@@ -10,7 +10,8 @@ namespace NeonBreaker
 
     /// <summary>
     /// Cấp bậc + cấp độ (1..200) của một nhân vật. Gắn vào Player và Enemy (Inspector: "Power").
-    /// CHƯA áp dụng vào chỉ số chiến đấu của người chơi / quái - hiện chỉ lưu dữ liệu.
+    /// QUÁI: cấp độ làm quái khoẻ hơn (máu, sát thương, tốc độ, xu rơi - xem PowerRules.HpMul...), cấp bậc quyết định loại linh kiện rơi ra.
+    /// NGƯỜI CHƠI: chưa áp dụng vào chỉ số chiến đấu.
     /// Với minibot thì cấp độ ảnh hưởng máu và sát thương (xem SkillConfig).
     /// </summary>
     [System.Serializable]
@@ -42,6 +43,41 @@ namespace NeonBreaker
 
         /// <summary>Hệ số sức mạnh theo cấp bậc. Tạm thời = 1 (chưa áp dụng); chỉnh ở đây khi muốn cấp bậc ảnh hưởng chỉ số.</summary>
         public static float RankMul(Rank r) { return 1f; }
+
+        // ------------------------------------------------------------ độ mạnh theo CẤP ĐỘ của quái (cấp 1 = chỉ số gốc ghi trên Prefab)
+        // Mỗi cấp chỉ chênh nhau vài % nên cấp 5, 7, 10 không khác nhau quá xa. Muốn quái khoẻ lên nhanh hơn: tăng các số này.
+        /// <summary>Máu thêm mỗi cấp (0.05 = +5% máu gốc mỗi cấp: cấp 5 = x1.20, cấp 10 = x1.45, cấp 200 = x10.95).</summary>
+        public static float HpPerLevel = 0.05f;
+        /// <summary>Sát thương thêm mỗi cấp (cấp 5 = x1.12, cấp 10 = x1.27).</summary>
+        public static float DamagePerLevel = 0.03f;
+        /// <summary>Tốc độ thêm mỗi cấp (cấp 10 = x1.05). Thời gian báo hiệu đòn không đổi nên vẫn công bằng.</summary>
+        public static float SpeedPerLevel = 0.006f;
+        /// <summary>Xu rơi thêm mỗi cấp.</summary>
+        public static float RewardPerLevel = 0.04f;
+
+        public static float HpMul(int level) { return 1f + (ClampLevel(level) - 1) * HpPerLevel; }
+        public static float DamageMul(int level) { return 1f + (ClampLevel(level) - 1) * DamagePerLevel; }
+        public static float SpeedMul(int level) { return 1f + (ClampLevel(level) - 1) * SpeedPerLevel; }
+        public static float RewardMul(int level) { return 1f + (ClampLevel(level) - 1) * RewardPerLevel; }
+
+        // ------------------------------------------------------------ linh kiện theo cấp bậc
+        /// <summary>Cấp bậc cao nhất của LINH KIỆN (S). Quái SS và SSS không rơi linh kiện.</summary>
+        public const Rank MaxPartRank = Rank.S;
+
+        /// <summary>Quái cấp bậc này có rơi linh kiện không (F..S có, SS và SSS không).</summary>
+        public static bool DropsParts(Rank r) { return r <= MaxPartRank; }
+
+        /// <summary>Cấp bậc linh kiện nâng lên khi ghép. Chỉ ghép được F->D, D->C, C->B (không ghép lên A và S). Trả về false nếu không ghép được.</summary>
+        public static bool FusionTarget(Rank from, out Rank to)
+        {
+            to = from;
+            if (from == Rank.F) { to = Rank.D; return true; }
+            if (from == Rank.D) { to = Rank.C; return true; }
+            if (from == Rank.C) { to = Rank.B; return true; }
+            return false;
+        }
+
+        public const int PartRankCount = 6;     // F, D, C, B, A, S
 
         public static Color RankColor(Rank r)
         {

@@ -15,9 +15,13 @@ namespace NeonBreaker
         [Tooltip("Xác suất rơi xu khi bị hạ (1 = luôn rơi)"), Range(0f, 1f)] public float coinChance = 0.9f;
         [Tooltip("Số xu rơi ra ít nhất / nhiều nhất (quái do trụ mạnh sinh ra rơi nhiều hơn theo Power)")] public int coinMin = 1;
         public int coinMax = 3;
+        [Header("Rơi dầu (nhiên liệu chế tác ở căn cứ)")]
+        [Tooltip("Xác suất rơi dầu khi bị hạ (1 = luôn rơi)"), Range(0f, 1f)] public float oilChance = 0.35f;
+        [Tooltip("Số dầu rơi ra ít nhất / nhiều nhất")] public int oilMin = 1;
+        public int oilMax = 3;
         [Header("Hệ thống Skill / sức mạnh")]
-        [Tooltip("Mã loại quái dùng cho linh kiện và chế tạo minibot. Để trống = tên Prefab (Walker, Flyer, Heavy, Rusher...)")] public string typeId = "";
-        [Tooltip("Cấp bậc (F..SSS) và cấp độ (1..200). CHƯA áp dụng vào chỉ số quái; minibot chế tạo từ quái này có cấp bậc giống vậy, cấp độ 1")] public PowerInfo power = new PowerInfo();
+        [Tooltip("Mã loại quái dùng cho chế tạo minibot. Để trống = tên Prefab (Walker, Flyer, Heavy, Rusher...)")] public string typeId = "";
+        [Tooltip("CẤP BẬC (F..SSS): quyết định bậc linh kiện rơi ra (SS / SSS không rơi) và bậc của minibot chế tạo từ quái này. CẤP ĐỘ (1..200) do trụ triệu hồi đặt khi sinh quái; cấp càng cao quái càng khoẻ")] public PowerInfo power = new PowerInfo();
         protected Flasher flasher;
         protected float flashT;
         protected Color accent = Cfg.Orange;
@@ -43,7 +47,7 @@ namespace NeonBreaker
         public virtual Color AccentColor { get { return Cfg.Orange; } }
 
         /// <summary>Sinh một quái từ Prefab bất kỳ (dùng cho bảng triệu hồi của trụ). power = hệ số sức mạnh.</summary>
-        public static Enemy Spawn(GameObject prefab, Vector2 pos, Tower owner, float power)
+        public static Enemy Spawn(GameObject prefab, Vector2 pos, Tower owner, int level)
         {
             if (prefab == null) return null;
             var go = Instantiate(prefab, new Vector3(pos.x, pos.y, 0f), Quaternion.identity, Level.Sub("Enemies"));
@@ -51,23 +55,25 @@ namespace NeonBreaker
             var e = go.GetComponent<Enemy>();
             if (e == null) { Debug.LogError("Neon Breaker: Prefab " + prefab.name + " không có script quái (Walker/Flyer)."); Destroy(go); return null; }
             e.owner = owner;
-            e.ApplyPower(power);
+            e.ApplyLevel(level);
             return e;
         }
 
         /// <summary>
-        /// Làm quái mạnh hơn. power = 1 là chỉ số gốc trên Prefab; 1.5 = máu x1.5, sát thương x1.3, nhanh hơn ~15%.
-        /// Quái mạnh hơn sẽ ngả đỏ dần để người chơi nhận ra. Thời gian báo hiệu đòn giữ nguyên để vẫn công bằng.
+        /// Đặt CẤP ĐỘ cho quái (1..200). Cấp 1 = chỉ số gốc trên Prefab; mỗi cấp thêm vài % máu / sát thương / tốc độ / xu rơi
+        /// (xem PowerRules.HpMul, DamageMul, SpeedMul, RewardMul). Quái cấp cao ngả đỏ dần. Thời gian báo hiệu đòn giữ nguyên để vẫn công bằng.
         /// </summary>
-        public void ApplyPower(float power)
+        public void ApplyLevel(int level)
         {
-            power = Mathf.Max(0.2f, power);
-            maxHp *= power;
+            level = PowerRules.ClampLevel(level);
+            if (power == null) power = new PowerInfo();
+            power.level = level;
+            maxHp *= PowerRules.HpMul(level);
             hp = maxHp;
-            dmgMul = 1f + (power - 1f) * 0.6f;
-            spdMul = 1f + (power - 1f) * 0.3f;
-            coinScale = Mathf.Max(1f, power);
-            float k = Mathf.Clamp01((power - 1f) * 0.9f);
+            dmgMul = PowerRules.DamageMul(level);
+            spdMul = PowerRules.SpeedMul(level);
+            coinScale = PowerRules.RewardMul(level);
+            float k = Mathf.Clamp01((level - 1) / 24f);
             if (k > 0.001f)
             {
                 var tint = Color.Lerp(Color.white, new Color(1f, 0.5f, 0.5f, 1f), k);
@@ -120,6 +126,11 @@ namespace NeonBreaker
             Sfx.PlayAt("enemyDie", transform.position, 0.9f);
             GameManager.Kills++;
             if (Random.value < Cfg.DropChance * dropChanceMul) Pickup.Drop(Center);
+            if (Random.value < oilChance)
+            {
+                int olo = Mathf.Max(0, Mathf.Min(oilMin, oilMax)), ohi = Mathf.Max(olo, Mathf.Max(oilMin, oilMax));
+                OilDrop.Drop(Center, Random.Range(olo, ohi + 1));
+            }
             if (Random.value < coinChance)
             {
                 int lo = Mathf.Max(0, Mathf.Min(coinMin, coinMax)), hi = Mathf.Max(lo, Mathf.Max(coinMin, coinMax));

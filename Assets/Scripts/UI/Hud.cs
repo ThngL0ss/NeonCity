@@ -26,15 +26,19 @@ namespace NeonBreaker
 
             var pl = Player.Instance;
 
+            bool cinema = GameManager.State == GameState.Cinematic;
             DrawFloatTexts();
-            DrawWorldIndicators();
-            DrawChestPrompt();
+            if (!cinema)
+            {
+                DrawWorldIndicators();
+                DrawInteractPrompt();
+            }
 
-            if (pl != null && GameManager.State != GameState.Menu) { DrawPlayerHud(pl); DrawCoinHud(); }
+            if (pl != null && GameManager.State != GameState.Menu && !cinema) { DrawPlayerHud(pl); DrawCoinHud(); }
             if (GameManager.State == GameState.Playing || GameManager.State == GameState.Won || GameManager.State == GameState.Lost)
             {
                 DrawTopCenter();
-                DrawTopRight();
+                if (!GameFlow.InBase) DrawTopRight();
                 DrawBossBar();
             }
             if (GameManager.State == GameState.Playing)
@@ -43,7 +47,7 @@ namespace NeonBreaker
                 SkillUi.DrawWorld(this);      // nhãn + bấm vào minibot để thu hồi
             }
             DrawBanner();
-            DrawCheatLabel();
+            if (!cinema) DrawCheatLabel();
             DrawScreenFx(pl);
 
             switch (GameManager.State)
@@ -52,11 +56,37 @@ namespace NeonBreaker
                 case GameState.Won: DrawResult(true); break;
                 case GameState.Lost: DrawResult(false); break;
                 case GameState.Playing:
-                    if (SkillSystem.MenuOpen) SkillUi.DrawMenu(this);
+                    if (BaseUi.IsOpen) BaseUi.Draw(this);
+                    else if (SkillSystem.MenuOpen) SkillUi.DrawMenu(this);
                     else if (Inventory.IsOpen) InventoryUi.Draw(this);
                     else if (GameManager.Paused) DrawPause();
                     break;
             }
+            DrawCine();
+        }
+
+        /// <summary>Cinematic: thanh đen trên / dưới, thoại gõ chữ, gợi ý phím, màn đen mờ dần. Vẽ sau cùng, đè lên mọi thứ.</summary>
+        void DrawCine()
+        {
+            const float barH = 94f;                       // 13% chiều cao màn hình chuẩn 720
+            if (Cine.Bars > 0.001f)
+            {
+                float bh = barH * Cine.Bars * s;
+                Fill(new Rect(0f, 0f, Screen.width, bh), Color.black);
+                Fill(new Rect(0f, Screen.height - bh, Screen.width, bh), Color.black);
+            }
+            if (Cine.Active && Cine.Bars > 0.6f)
+            {
+                if (!string.IsNullOrEmpty(Cine.Text))
+                {
+                    float y = 720f - barH + 6f;
+                    if (!string.IsNullOrEmpty(Cine.Speaker)) Txt(R(140, y, 1000, 22), Cine.Speaker, 17, Cfg.Cyan, TextAnchor.UpperLeft);
+                    TxtWrap(R(140, y + 24f, 1000, 64), Cine.TypedText, 22, Color.white, TextAnchor.UpperLeft);
+                }
+                if (Cine.CanSkip)
+                    Txt(R(700, 8, 560, 22), Cfg.L("[ENTER] TIẾP     [ESC] BỎ QUA", "[ENTER] NEXT     [ESC] SKIP"), 14, Cfg.A(Color.white, 0.55f), TextAnchor.UpperRight, false);
+            }
+            if (Cine.Fade > 0.001f) Fill(new Rect(0f, 0f, Screen.width, Screen.height), new Color(0f, 0f, 0f, Cine.Fade));
         }
 
         // ------------------------------------------------------------ primitives
@@ -165,7 +195,12 @@ namespace NeonBreaker
             Color c = Cfg.Cyan;
             int left = Tower.Remaining;
             int total = GameManager.TowerTotal;
-            if (!GameManager.BossSpawned)
+            if (GameFlow.InBase)
+            {
+                msg = Cfg.L("CĂN CỨ CỦA ALBERT", "ALBERT'S BASE");
+                c = Cfg.Orange;
+            }
+            else if (!GameManager.BossSpawned)
             {
                 if (left > 0)
                 {
@@ -180,7 +215,7 @@ namespace NeonBreaker
             }
             else
             {
-                msg = Boss.Instance != null && Boss.Instance.phase == 2 ? Cfg.L("TIÊU DIỆT BOSS — PHASE 2", "DESTROY THE BOSS — PHASE 2") : Cfg.L("TIÊU DIỆT BOSS", "DESTROY THE BOSS");
+                msg = Boss.Instance != null && Boss.Instance.phase >= 2 ? Cfg.L("TIÊU DIỆT BOSS — PHASE ", "DESTROY THE BOSS — PHASE ") + Boss.Instance.phase : Cfg.L("TIÊU DIỆT BOSS", "DESTROY THE BOSS");
                 c = Cfg.Red;
             }
             Rect r = R(390, 14, 500, 30);
@@ -189,7 +224,7 @@ namespace NeonBreaker
             Txt(r, msg, 17, c, TextAnchor.MiddleCenter);
 
             // mũi tên chỉ tới trụ gần nhất ngoài màn hình
-            if (!GameManager.BossSpawned && Player.Instance != null && GameManager.State == GameState.Playing)
+            if (!GameFlow.InBase && !GameManager.BossSpawned && Player.Instance != null && GameManager.State == GameState.Playing)
             {
                 float px = Player.Instance.Position.x;
                 Vector2 target = Vector2.zero;
@@ -230,18 +265,23 @@ namespace NeonBreaker
             if (b == null || b.Intro) return;
             if (GameManager.State == GameState.Lost && b.dead) return;
             bossShown = Mathf.Lerp(bossShown, b.TotalFrac, 0.15f);
-            bool p2 = b.phase == 2;
-            Color c = p2 ? Cfg.Red : Cfg.Magenta;
+            bool p2 = b.phase >= 2;
+            Color c = b.phase == 3 ? Cfg.Orange : (b.phase == 2 ? Cfg.Red : Cfg.Magenta);
 
             float w = 760f;
             float x = (1280f - w) * 0.5f;
             Rect bar = R(x, 676, w, 20);
-            Txt(R(x, 646, w, 26), (p2 ? "OVERLORD — PHASE 2" : "OVERLORD — PHASE 1"), 18, c, TextAnchor.MiddleLeft);
+            Txt(R(x, 646, w, 26), "OVERLORD — PHASE " + b.phase, 18, c, TextAnchor.MiddleLeft);
             Fill(bar, new Color(0f, 0f, 0f, 0.75f));
             Fill(new Rect(bar.x, bar.y, bar.width * Mathf.Clamp01(bossShown), bar.height), Cfg.A(Color.white, 0.5f));
             NeonBar(bar, b.TotalFrac, c, new Color(0f, 0f, 0f, 0f));
             float mx = bar.x + bar.width * b.PhaseMarker;
             Fill(new Rect(mx - 1.5f * s, bar.y - 5f * s, 3f * s, bar.height + 10f * s), Cfg.A(Color.white, 0.9f));
+            if (b.PhaseMarker2 > 0f)
+            {
+                float mx2 = bar.x + bar.width * b.PhaseMarker2;
+                Fill(new Rect(mx2 - 1.5f * s, bar.y - 5f * s, 3f * s, bar.height + 10f * s), Cfg.A(Color.white, 0.9f));
+            }
             if (p2) Txt(R(x, 646, w, 26), Cfg.L("HÚT MÁU", "LIFESTEAL"), 14, Cfg.Lime, TextAnchor.MiddleRight);
         }
 
@@ -280,7 +320,7 @@ namespace NeonBreaker
             else { Fill(ic, Cfg.A(Cfg.Yellow, 0.9f)); Fill(new Rect(ic.x + 6f * s, ic.y + 6f * s, 12f * s, 12f * s), new Color(0.5f, 0.35f, 0f, 1f)); }
             Txt(R(56, 127, 70, 28), Cfg.L("XU", "COINS"), 15, Cfg.A(Cfg.Yellow, 0.95f), TextAnchor.MiddleLeft);
             Txt(R(110, 127, 120, 28), Mathf.RoundToInt(coinShown).ToString(), 22, Color.white, TextAnchor.MiddleRight);
-            Txt(R(240, 127, 118, 28), Cfg.L("[B] KHO ĐỒ", "[B] BAG"), 13, Cfg.A(Color.white, 0.65f), TextAnchor.MiddleRight, false);
+            Txt(R(236, 127, 122, 28), Cfg.L("DẦU ", "OIL ") + Inventory.Oil, 16, new Color(0.95f, 0.75f, 0.25f, 1f), TextAnchor.MiddleRight);
 
             // dòng phím tắt Skill + minibot + linh kiện
             Rect sk = R(14, 160, 352, 24);
@@ -298,18 +338,20 @@ namespace NeonBreaker
             }
         }
 
-        /// <summary>Nhãn "[T] MỞ RƯƠNG" bay trên rương khi đứng gần.</summary>
-        void DrawChestPrompt()
+        /// <summary>Nhãn gợi ý "[F] ..." bay trên vật tương tác gần nhất (rương, cửa, NPC, máy...).</summary>
+        void DrawInteractPrompt()
         {
-            if (GameManager.State != GameState.Playing || GameManager.Paused) return;
-            var c = Chest.Nearest();
-            if (c == null) return;
-            Vector2 sp = PixelScreen.WorldToGui(c.PromptPos);
+            if (GameManager.State != GameState.Playing || GameManager.Paused || GameManager.PlayerLocked || Cine.Active || SkillSystem.PanelOpen) return;
+            var it = Interactor.Nearest();
+            if (it == null) return;
+            Vector2 sp = PixelScreen.WorldToGui(it.PromptPos);
             float pulse = 0.75f + 0.25f * Mathf.Sin(Time.unscaledTime * 6f);
-            Rect r = new Rect(sp.x - 95f * s, sp.y - 14f * s, 190f * s, 28f * s);
+            string t = it.PromptText;
+            float w = Mathf.Max(190f, 24f + t.Length * 10.5f);
+            Rect r = new Rect(sp.x - w * 0.5f * s, sp.y - 14f * s, w * s, 28f * s);
             Fill(r, new Color(0.01f, 0.02f, 0.06f, 0.78f));
             Outline(r, Cfg.A(Cfg.Yellow, pulse), 1.5f);
-            Txt(r, "[T] " + Cfg.L("MỞ ", "OPEN ") + c.DisplayName, 16, Cfg.A(Cfg.Yellow, pulse), TextAnchor.MiddleCenter);
+            Txt(r, t, 16, Cfg.A(Cfg.Yellow, pulse), TextAnchor.MiddleCenter);
         }
 
         /// <summary>Nhãn nhỏ góc trái dưới HUD khi đang bật chế độ thử nghiệm (phím P).</summary>
@@ -398,33 +440,34 @@ namespace NeonBreaker
             Txt(R(0, 84, 1280, 110), "NEON BREAKER", 96, Cfg.A(Cfg.Cyan, pulse), TextAnchor.MiddleCenter);
             Txt(R(0, 190, 1280, 30), Cfg.L("PHÁ TRỤ  •  HIT & RUN  •  HẠ BOSS", "BREAK TOWERS  •  HIT & RUN  •  SLAY THE BOSS"), 20, Cfg.A(Color.white, 0.85f), TextAnchor.MiddleCenter);
 
-            Rect panel = R(380, 228, 520, 338);
+            Rect panel = R(380, 222, 520, 388);
             Fill(panel, new Color(0.01f, 0.02f, 0.06f, 0.7f));
             Outline(panel, Cfg.A(Cfg.Cyan, 0.6f), 2f);
-            string[] k = { "A / D", "SPACE", "J", "I", "K", "L", "B", "T", "N", "H" };
+            string[] k = { "A / D", "SPACE", "J", "K", "I", "L", "F", "B", "N", "M", "H" };
             string[] d =
             {
                 Cfg.L("Di chuyển", "Move"),
                 Cfg.L("Nhảy (giữ = cao hơn, S + Space = xuyên bục)", "Jump (hold = higher, S + Space = drop)"),
-                Cfg.L("Chém cận chiến", "Melee slash"),
+                Cfg.L("Đánh gần", "Melee slash"),
+                Cfg.L("Đánh xa (ném phi tiêu)", "Ranged (throw shuriken)"),
                 Cfg.L("Lướt — bất tử trong lúc lướt", "Dash — invulnerable while dashing"),
-                Cfg.L("Ném phi tiêu", "Throw shuriken"),
                 Cfg.L("Hồi máu (giới hạn lượt, nhặt thêm từ quái)", "Heal (limited, pick up more)"),
+                Cfg.L("Tương tác: mở rương, cửa, nói chuyện, dùng máy", "Interact: chests, doors, talk, use machines"),
                 Cfg.L("Mở / đóng kho đồ", "Open / close inventory"),
-                Cfg.L("Mở rương khi đứng gần", "Open a chest when standing near it"),
                 Cfg.L("Mục Skill: cây skill, chế tạo, lưu trữ minibot", "Skill menu: skill tree, crafting, minibot storage"),
-                Cfg.L("Bảng chọn minibot (bấm minibot để triệu hồi)", "Minibot panel (click a minibot to summon)")
+                Cfg.L("Bản đồ", "Map"),
+                Cfg.L("Bảng chọn minibot (A D chọn, S triệu hồi / thu hồi)", "Minibot panel (A D select, S summon / recall)")
             };
-            Color[] cs = { Cfg.White, Cfg.White, Cfg.Cyan, Cfg.Magenta, Cfg.Yellow, Cfg.Lime, Cfg.Yellow, Cfg.Yellow, Cfg.Magenta, Cfg.Cyan };
+            Color[] cs = { Cfg.White, Cfg.White, Cfg.Cyan, Cfg.Yellow, Cfg.Magenta, Cfg.Lime, Cfg.Yellow, Cfg.Yellow, Cfg.Magenta, Cfg.Cyan, Cfg.Cyan };
             for (int i = 0; i < k.Length; i++)
             {
-                float y = 238f + i * 32f;
+                float y = 230f + i * 32f;
                 Txt(R(400, y, 110, 30), k[i], 20, cs[i], TextAnchor.MiddleLeft);
                 Txt(R(520, y, 370, 30), d[i], 15, Cfg.A(Color.white, 0.9f), TextAnchor.MiddleLeft, false);
             }
 
-            if (Button(R(490, 580, 300, 52), Cfg.L("BẮT ĐẦU  [ENTER]", "START  [ENTER]"), Cfg.Cyan, 26)) GameManager.Inst.StartGame();
-            Txt(R(0, 646, 1280, 24), Cfg.L("ESC = tạm dừng     P = chế độ thử nghiệm     V = đổi ngôn ngữ (VI/EN)", "ESC = pause     P = test mode     V = switch language (VI/EN)"), 14, Cfg.A(Color.white, 0.6f), TextAnchor.MiddleCenter, false);
+            if (Button(R(490, 624, 300, 52), Cfg.L("BẮT ĐẦU  [ENTER]", "START  [ENTER]"), Cfg.Cyan, 26)) GameManager.Inst.StartGame();
+            Txt(R(0, 686, 1280, 24), Cfg.L("ESC = tạm dừng     P = chế độ thử nghiệm     V = đổi ngôn ngữ (VI/EN)", "ESC = pause     P = test mode     V = switch language (VI/EN)"), 14, Cfg.A(Color.white, 0.6f), TextAnchor.MiddleCenter, false);
         }
 
         void DrawPause()

@@ -19,6 +19,8 @@ namespace NeonBreaker
     {
         public static readonly List<InvSlot> Slots = new List<InvSlot>();
         public static int Coins;
+        /// <summary>Dầu: nhiên liệu dùng để chế tác vật phẩm và ghép linh kiện ở căn cứ.</summary>
+        public static int Oil;
         public static bool IsOpen;
         public static int Sel;
         public static string Msg = "";
@@ -45,6 +47,7 @@ namespace NeonBreaker
             System.Array.Clear(perm, 0, perm.Length);
             System.Array.Clear(total, 0, total.Length);
             Coins = GameManager.Inst != null ? Mathf.Max(0, GameManager.Inst.startCoins) : 0;
+            Oil = 0;
             pendingCoins = 0;
             coinTextT = 0f;
             IsOpen = false;
@@ -128,6 +131,20 @@ namespace NeonBreaker
             return c;
         }
 
+        /// <summary>Lấy đi n vật phẩm loại it (từ nhiều ô nếu cần). false nếu không đủ (không lấy gì cả).</summary>
+        public static bool RemoveItem(ItemData it, int n)
+        {
+            if (it == null || n <= 0 || Count(it) < n) return false;
+            for (int i = Slots.Count - 1; i >= 0 && n > 0; i--)
+            {
+                if (Slots[i].item != it) continue;
+                int k = Mathf.Min(n, Slots[i].count);
+                Remove(i, k);
+                n -= k;
+            }
+            return n == 0;
+        }
+
         public static void Remove(int index, int n = 1)
         {
             if (index < 0 || index >= Slots.Count) return;
@@ -171,6 +188,7 @@ namespace NeonBreaker
             if (it == null) return false;
             if (it.kind == ItemKind.Passive) { Say(Cfg.L("Trang bị có tác dụng khi mang theo — không cần dùng.", "Gear works while carried — no need to use it.")); return false; }
             if (it.kind == ItemKind.Valuable) { Say(Cfg.L("Vật phẩm giá trị — bán cho thương nhân để lấy xu.", "Valuable — sell it to a merchant for coins.")); return false; }
+            if (it.kind == ItemKind.Material) { Say(Cfg.L("Nguyên liệu — dùng ở bàn chế tác trong căn cứ.", "Material — used at the crafting bench in the base.")); return false; }
             if (pl == null || pl.Dead) return false;
 
             bool effect = false;
@@ -225,6 +243,23 @@ namespace NeonBreaker
         {
             if (amount < 0 || Coins < amount) return false;
             Coins -= amount;
+            return true;
+        }
+
+        /// <summary>Cộng dầu. announce = hiện chữ nổi trên đầu người chơi.</summary>
+        public static void AddOil(int amount, bool announce = true)
+        {
+            if (amount <= 0) return;
+            Oil += amount;
+            var pl = Player.Instance;
+            if (announce && pl != null)
+                Fx.Text(pl.Center + new Vector2(0f, 1.9f), "+" + amount + Cfg.L(" dầu", " oil"), new Color(0.95f, 0.75f, 0.25f, 1f), 1f);
+        }
+
+        public static bool SpendOil(int amount)
+        {
+            if (amount < 0 || Oil < amount) return false;
+            Oil -= amount;
             return true;
         }
 

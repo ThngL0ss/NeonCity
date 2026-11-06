@@ -5,10 +5,13 @@ using UnityEngine;
 namespace NeonBreaker
 {
     /// <summary>
-    /// Boss cuối - 2 phase.
+    /// Boss cuối (OVERLORD, bậc SS, cấp 1) - 3 phase.
     ///  Phase 1 (chậm, máu trâu): 1 kỹ năng - NHẢY ĐẬP (có cảnh báo vùng rơi) + 2 sóng xung kích chạy sát đất.
     ///  Phase 2 (nhanh, máu ít hơn, HÚT MÁU khi đòn trúng người chơi), 3 kỹ năng:
     ///      1) Chớp bước chém   2) Chùm đạn quạt   3) Laser giáng từ trời
+    ///  Phase 3 (tái sinh): hạ phase 2 xong boss gục xuống, hồi đầy máu, bất động 2 giây rồi NỔ 3 LẦN (sát thương lớn + sóng xung kích
+    ///      làm người chơi choáng), sau đó đứng dậy chiến đấu với tốc độ + sát thương của phase 2, độ trâu của phase 1,
+    ///      dùng kỹ năng của cả 2 phase + kỹ năng mới BÃO SÉT (cột sét nổ lan ra / thu vào theo nhịp).
     /// </summary>
     public class Boss : Hittable
     {
@@ -16,7 +19,8 @@ namespace NeonBreaker
 
         public int phase = 1;
         public bool Intro = true;
-        bool invul = true, transitioning;
+        bool invul = true, transitioning, p3Seq;
+        float collapse;             // 0..1: mức gục xuống (phase 3)
         bool hidden;
         int facing = -1;
         float flashT, contactCd;
@@ -26,13 +30,21 @@ namespace NeonBreaker
         int lastSkill = -1;
 
         // ------------------------------------------------------------ chỉ số (chỉnh trong Inspector của Prefab Boss)
+        [Header("Cấp bậc")]
+        [Tooltip("Boss là bậc SS (không rơi linh kiện), cấp 1. Cấp độ nhân máu / sát thương / tốc độ của boss theo PowerRules (cấp 1 = không đổi)")]
+        public PowerInfo power = new PowerInfo(Rank.SS, 1);
+
         [Header("Máu & di chuyển")]
         [Tooltip("Máu phase 1 (chậm, máu trâu)")] public float p1Hp = 2800f;
         [Tooltip("Máu phase 2 (nhanh, máu ít hơn nhưng hút máu)")] public float p2Hp = 1500f;
+        [Tooltip("Máu phase 3 (độ trâu của phase 1)")] public float p3Hp = 2800f;
         public float p1Speed = 2.0f;
         public float p2Speed = 5.4f;
+        [Tooltip("Tốc độ phase 3 (bằng phase 2)")] public float p3Speed = 5.4f;
         [Tooltip("Hộp trúng đòn phase 1 / phase 2 (rộng, cao)")] public Vector2 p1HitSize = new Vector2(2.8f, 4.2f);
         public Vector2 p2HitSize = new Vector2(2.2f, 3.8f);
+        [Tooltip("Hộp trúng đòn phase 3")] public Vector2 p3HitSize = new Vector2(2.5f, 4.2f);
+        [Tooltip("Hình boss phase 3 to hơn phase 2 bao nhiêu lần")] public float p3Scale = 1.12f;
         [Tooltip("Phase 2 vào trạng thái nổi giận khi máu dưới tỉ lệ này (0.4 = 40%)")] public float enrageHpFrac = 0.4f;
 
         [Header("Sát thương")]
@@ -43,6 +55,8 @@ namespace NeonBreaker
         public float slashDamage = 24f;
         public float lanceDamage = 22f;
         [Tooltip("Hút bao nhiêu % sát thương gây ra thành máu (phase 2). 0.6 = 60%")] public float lifesteal = 0.60f;
+        [Tooltip("Phase 3: hệ số nhân sát thương so với phase 2 (1 = bằng phase 2)")] public float p3DamageMul = 1f;
+        [Tooltip("Phase 3: hút máu thấp hơn phase 2 vì máu đã rất trâu. 0 = không hút")] public float p3Lifesteal = 0.25f;
 
         [Header("Phase 1: nhảy đập")]
         [Tooltip("Thời gian đi bộ trước mỗi đòn (ngắn nhất, dài nhất)")] public Vector2 p1WalkTime = new Vector2(2.0f, 3.2f);
@@ -75,6 +89,31 @@ namespace NeonBreaker
         [Tooltip("Khoảng cách giữa các cột laser (có 5 cột)")] public float laserSpacing = 4f;
         public float laserWidth = 1.8f;
 
+        [Header("Phase 3: nhịp chiêu")]
+        [Tooltip("Thời gian đi bộ trước mỗi chiêu (ngắn nhất, dài nhất)")] public Vector2 p3WalkTime = new Vector2(0.7f, 1.3f);
+        [Tooltip("Thời gian nghỉ sau mỗi chiêu (bình thường, nổi giận)")] public Vector2 p3RestTime = new Vector2(0.7f, 0.4f);
+
+        [Header("Phase 3: gục xuống, tái sinh, nổ 3 lần")]
+        [Tooltip("Thời gian gục xuống sau khi hết máu phase 2 (giây)")] public float collapseTime = 1.2f;
+        [Tooltip("Thời gian hồi đầy máu (giây)")] public float refillTime = 1.4f;
+        [Tooltip("Thời gian bất động sau khi hồi đầy máu, trước khi nổ (giây)")] public float stillTime = 2f;
+        [Tooltip("Bán kính mỗi vụ nổ (vòng đỏ báo trước). Vụ nổ thứ 3 lớn hơn")] public float blastRadius = 8.5f;
+        [Tooltip("Sát thương mỗi vụ nổ")] public float blastDamage = 20f;
+        [Tooltip("Thời gian vòng đỏ báo trước mỗi vụ nổ (giây)")] public float blastWarn = 0.45f;
+        [Tooltip("Thời gian nghỉ giữa 2 vụ nổ (giây)")] public float blastGap = 0.5f;
+        [Tooltip("Vụ nổ thứ 3: bán kính x hệ số này, sát thương x hệ số kế bên và gây choáng")] public float finalBlastRadiusMul = 1.4f;
+        public float finalBlastDamageMul = 1.25f;
+        [Tooltip("Thời gian người chơi bị choáng bởi sóng xung kích cuối (giây)")] public float stunTime = 2.2f;
+        [Tooltip("Thời gian đứng dậy sau 3 vụ nổ (giây)")] public float standUpTime = 1.3f;
+
+        [Header("Phase 3: kỹ năng mới - Bão sét")]
+        [Tooltip("Số cột sét mỗi bên (mỗi cột báo trước rồi nổ lan theo nhịp)")] public int thunderSteps = 6;
+        public float thunderSpacing = 3.2f;
+        [Tooltip("Thời gian giữa 2 cột sét liên tiếp")] public float thunderGap = 0.2f;
+        [Tooltip("Thời gian cảnh báo mỗi cột trước khi sét giáng")] public float thunderTelegraph = 0.55f;
+        public float thunderWidth = 1.7f;
+        public float thunderDamage = 20f;
+
         [Header("Hình ảnh (object con của prefab Boss - tự tìm theo tên nếu để trống)")]
         public Transform vis;                       // "Visual": lật trái/phải bằng scale.x
         public SpriteAnimator animP1;               // "Visual/Phase1": clip idle, walk, crouch, air
@@ -85,22 +124,39 @@ namespace NeonBreaker
         Coroutine brain;
 
         public override bool Targetable { get { return !dead && !invul && !transitioning && !hidden; } }
-        public bool Enraged { get { return phase == 2 && hp < maxHp * enrageHpFrac; } }
-        /// <summary>Tỉ lệ máu gộp cả 2 phase (0..1) cho thanh máu HUD.</summary>
+        public bool Enraged { get { return phase >= 2 && hp < maxHp * enrageHpFrac; } }
+        /// <summary>Tỉ lệ máu gộp cả 3 phase (0..1) cho thanh máu HUD (phase 1 ở bên phải, phase 3 ở bên trái).</summary>
         public float TotalFrac
         {
             get
             {
-                float total = p1Hp + p2Hp;
-                float cur = phase == 1 ? hp + p2Hp : hp;
+                float total = p1Hp + p2Hp + p3Hp;
+                float cur = phase == 1 ? hp + p2Hp + p3Hp : (phase == 2 ? hp + p3Hp : hp);
                 return Mathf.Clamp01(cur / total);
             }
         }
-        public float PhaseMarker { get { return p2Hp / (p1Hp + p2Hp); } }
+        /// <summary>Vạch chia phase 3 | phase 2 trên thanh máu (0..1 tính từ trái).</summary>
+        public float PhaseMarker { get { return p3Hp / (p1Hp + p2Hp + p3Hp); } }
+        /// <summary>Vạch chia phase 2 | phase 1.</summary>
+        public float PhaseMarker2 { get { return (p3Hp + p2Hp) / (p1Hp + p2Hp + p3Hp); } }
+        float Lifesteal { get { return phase == 2 ? lifesteal : (phase == 3 ? p3Lifesteal : 0f); } }
+
+        /// <summary>Cấp độ boss nhân máu / sát thương / tốc độ (cấp 1 = nhân 1, không đổi gì).</summary>
+        void ApplyLevel()
+        {
+            int lv = power != null ? power.level : 1;
+            float hm = PowerRules.HpMul(lv), dm = PowerRules.DamageMul(lv), sm = PowerRules.SpeedMul(lv);
+            p1Hp *= hm; p2Hp *= hm; p3Hp *= hm;
+            slamDamage *= dm; touchDamage *= dm; boltDamage *= dm; slashDamage *= dm; lanceDamage *= dm;
+            thunderDamage *= dm; blastDamage *= dm;
+            p1Speed *= sm; p2Speed *= sm; p3Speed *= sm;
+        }
 
         void Awake()
         {
             Instance = this;
+            if (power == null) power = new PowerInfo(Rank.SS, 1);
+            ApplyLevel();
             maxHp = hp = p1Hp;
             hitSize = p1HitSize;
             hitOffset = new Vector2(0f, hitSize.y * 0.5f);
@@ -121,9 +177,9 @@ namespace NeonBreaker
         void ApplyPhaseLook()
         {
             if (animP1 != null) animP1.gameObject.SetActive(phase == 1);
-            if (animP2 != null) animP2.gameObject.SetActive(phase == 2);
-            if (aura != null) aura.color = Cfg.A(phase == 1 ? Cfg.Purple : Cfg.Red, 0.3f);
-            hitSize = phase == 1 ? p1HitSize : p2HitSize;
+            if (animP2 != null) animP2.gameObject.SetActive(phase >= 2);
+            if (aura != null) aura.color = Cfg.A(phase == 1 ? Cfg.Purple : (phase == 2 ? Cfg.Red : Cfg.Orange), 0.3f);
+            hitSize = phase == 1 ? p1HitSize : (phase == 2 ? p2HitSize : p3HitSize);
             hitOffset = new Vector2(0f, hitSize.y * 0.5f);
             if (flasher != null) flasher.Capture(gameObject);
         }
@@ -196,6 +252,21 @@ namespace NeonBreaker
                     if (!PlayerAlive) continue;
                     yield return Slam();
                     yield return new WaitForSeconds(p1RecoverTime);       // hở sườn: cửa sổ phản công
+                }
+                else if (phase == 3)
+                {
+                    float rush3 = Enraged ? enragedWalkMul : 1f;
+                    yield return Walk(Random.Range(p3WalkTime.x, p3WalkTime.y) * rush3, p3Speed);
+                    if (!PlayerAlive) continue;
+                    int pick3;
+                    do { pick3 = Random.Range(0, 5); } while (pick3 == lastSkill);
+                    lastSkill = pick3;
+                    if (pick3 == 0) yield return Slam();
+                    else if (pick3 == 1) yield return BlinkSlash();
+                    else if (pick3 == 2) yield return BoltFan();
+                    else if (pick3 == 3) yield return SkyLasers();
+                    else yield return ThunderSweep();
+                    yield return new WaitForSeconds(Enraged ? p3RestTime.y : p3RestTime.x);
                 }
                 else
                 {
@@ -407,19 +478,201 @@ namespace NeonBreaker
             pose = "";
         }
 
+        // ---- Phase 3 skill mới: BÃO SÉT - cột sét báo trước rồi nổ lan ra (hoặc thu vào) hai bên boss theo nhịp
+        IEnumerator ThunderSweep()
+        {
+            pose = "cast";
+            FacePlayer();
+            Sfx.Play("charge", 0.9f, 0.7f);
+            float t = 0f;
+            while (t < 0.5f)
+            {
+                t += Time.deltaTime;
+                FacePlayer();
+                Fx.Trail(Center + new Vector2(0f, 1.2f), Cfg.A(Cfg.Cyan, 0.8f), 0.4f + 1.4f * t, 0.12f);
+                if (Random.value < 0.5f) Fx.Sparks(Center + new Vector2(0f, 1.5f), Vector2.up, Cfg.Cyan, 2, 8f, 80f, 0.3f);
+                yield return null;
+            }
+            float cx = transform.position.x;
+            bool outward = Random.value < 0.6f;
+            int n = Mathf.Max(2, thunderSteps + (Enraged ? 2 : 0));
+            float gap = Enraged ? thunderGap * 0.8f : thunderGap;
+            Sfx.Play("warn", 0.8f, 1.5f);
+            for (int i = 0; i < n; i++)
+            {
+                if (dead) yield break;
+                int k = outward ? i : (n - 1 - i);
+                float d = 2.4f + k * thunderSpacing;
+                for (int side = -1; side <= 1; side += 2)
+                {
+                    float x = cx + side * d;
+                    if (x < Cfg.GateX + 1f || x > Cfg.LevelMaxX - 1f) continue;
+                    StartCoroutine(ThunderColumn(x, thunderTelegraph));
+                }
+                yield return new WaitForSeconds(gap);
+            }
+            yield return new WaitForSeconds(thunderTelegraph + 0.4f);
+            pose = "";
+        }
+
+        IEnumerator ThunderColumn(float x, float tel)
+        {
+            Rect zone = new Rect(x - thunderWidth * 0.5f, 0f, thunderWidth, 16f);
+            Telegraph.Zone(zone, Cfg.Cyan, tel);
+            yield return new WaitForSeconds(tel);
+            if (dead || !GameManager.Active) yield break;
+            Fx.Beam(new Vector2(x, 16f), new Vector2(x, 0f), Cfg.Cyan, 1.3f, 0.28f);
+            Fx.Beam(new Vector2(x, 16f), new Vector2(x, 0f), Cfg.White, 0.45f, 0.2f);
+            Fx.Sparks(new Vector2(x, 0.3f), Vector2.up, Cfg.Cyan, 10, 14f, 50f);
+            Fx.Explosion(new Vector2(x, 0.4f), Cfg.Cyan, false);
+            Fx.Shake(0.25f);
+            Sfx.PlayAt("laser", new Vector2(x, 1f), 0.55f, 1.6f);
+            if (PlayerAlive && zone.Overlaps(P.HurtRect)) Strike(thunderDamage, 9f, new Vector2(x, 0f));
+            Minibot.HurtInRect(zone, thunderDamage, new Vector2(x, 0f), 9f);
+        }
+
+        // ---- Chuyển phase 2 -> 3: gục xuống, hồi đầy máu, bất động, nổ 3 lần (choáng người chơi), đứng dậy
+        IEnumerator Transition3()
+        {
+            transitioning = true;
+            p3Seq = true;
+            if (brain != null) StopCoroutine(brain);
+            hidden = false;
+            crouch = 0f;
+            pose = ""; moving = false;
+            SetPos(transform.position.x, 0f);
+            Projectile.ClearHostile();
+            Sfx.Play("phase", 1f, 0.6f);
+            Fx.Flash(Cfg.White, 0.5f);
+            Fx.Shake(1f);
+
+            // 1) gục xuống
+            float t = 0f;
+            float fall = Mathf.Max(0.2f, collapseTime);
+            while (t < fall)
+            {
+                t += Time.deltaTime;
+                float u = Mathf.Clamp01(t / fall);
+                collapse = u * u * (3f - 2f * u);
+                if (Random.value < 0.35f) Fx.Explosion(Center + new Vector2(Random.Range(-1.2f, 1.2f), Random.Range(-1f, 1.5f)), Cfg.Orange, false);
+                yield return null;
+            }
+            collapse = 1f;
+            Fx.Explosion(Center, Cfg.Magenta, true);
+            Fx.Ring(new Vector2(transform.position.x, 0.2f), Cfg.White, 1f, 14f, 0.6f);
+            Sfx.Play("slam", 1f, 0.7f);
+            Fx.Shake(0.9f);
+            yield return new WaitForSeconds(0.35f);
+
+            // 2) sang phase 3 và hồi đầy máu
+            phase = 3;
+            maxHp = p3Hp;
+            hp = 0f;
+            ApplyPhaseLook();
+            GameManager.OnBossPhase3();
+            Sfx.Play("charge", 1f, 0.5f);
+            t = 0f;
+            float refill = Mathf.Max(0.2f, refillTime);
+            while (t < refill)
+            {
+                t += Time.deltaTime;
+                hp = Mathf.Lerp(0f, maxHp, t / refill);
+                Vector2 from = Center + new Vector2(Random.Range(-7f, 7f), Random.Range(0f, 6f));
+                if (Random.value < 0.6f) Fx.Beam(from, Center, Cfg.A(Cfg.Lime, 0.8f), 0.12f, 0.25f);
+                if (Random.value < 0.5f) Fx.Burst(Center, Cfg.Lime, 3, 5f, 0.4f, 0.3f);
+                yield return null;
+            }
+            hp = maxHp;
+
+            // 3) bất động tụ năng lượng
+            t = 0f;
+            float still = Mathf.Max(0.1f, stillTime);
+            float ringT = 0f;
+            Sfx.Play("warn", 0.9f, 0.6f);
+            while (t < still)
+            {
+                t += Time.deltaTime;
+                float u = Mathf.Clamp01(t / still);
+                ringT -= Time.deltaTime;
+                if (ringT <= 0f)
+                {
+                    ringT = Mathf.Lerp(0.5f, 0.15f, u);
+                    Fx.Ring(Center, Cfg.A(Cfg.Orange, 0.9f), 8f, 1f, 0.45f);
+                    Sfx.Play("charge", 0.4f, 0.8f + u);
+                }
+                Fx.Shake(0.12f + 0.3f * u);
+                if (aura != null) aura.color = Cfg.A(Color.Lerp(Cfg.Orange, Cfg.White, u), 0.35f + 0.5f * u);
+                Fx.Emit(Fx.S_Glow, Center + Random.insideUnitCircle.normalized * Random.Range(4f, 7f), Vector2.zero, new Vector2(0.4f, 0.4f), Vector2.zero,
+                        Cfg.A(Cfg.Orange, 0.9f), Cfg.A(Cfg.White, 0f), 0.4f);
+                yield return null;
+            }
+
+            // 4) nổ 3 lần
+            for (int i = 0; i < 3; i++)
+            {
+                bool last = i == 2;
+                float radius = blastRadius * (last ? finalBlastRadiusMul : 1f);
+                float dmg = blastDamage * (last ? finalBlastDamageMul : 1f);
+                Fx.Ring(Center, Cfg.A(Cfg.Red, 0.95f), 0.5f, radius * 2f, Mathf.Max(0.1f, blastWarn));
+                Sfx.Play("warn", 0.9f, 1f + 0.2f * i);
+                yield return new WaitForSeconds(Mathf.Max(0.1f, blastWarn));
+
+                Vector2 c = Center;
+                Fx.Explosion(c, last ? Cfg.White : Cfg.Orange, true);
+                Fx.Explosion(c + new Vector2(2f, 1f), Cfg.Magenta, true);
+                Fx.Explosion(c + new Vector2(-2f, 0.5f), Cfg.Orange, true);
+                Fx.Ring(c, Cfg.White, 1f, radius * 2.4f, 0.6f);
+                Fx.Ring(c, Cfg.A(Cfg.Orange, 0.8f), 1f, radius * 1.6f, 0.45f);
+                Fx.Flash(Cfg.White, last ? 0.7f : 0.45f);
+                Fx.Shake(last ? 1f : 0.8f);
+                Fx.HitStop(0.05f);
+                Sfx.Play(last ? "towerDie" : "slam", 1f, last ? 0.7f : 0.85f);
+                if (PlayerAlive && Geo.CircleRect(c, radius, P.HurtRect))
+                {
+                    P.Hurt(dmg * p3DamageMul, c, 16f);
+                    if (last && !P.Dead) P.Stun(stunTime);          // sóng xung kích cuối làm người chơi choáng
+                }
+                Minibot.HurtInRect(new Rect(c.x - radius, 0f, radius * 2f, radius), dmg, c, 12f);
+                if (!last) yield return new WaitForSeconds(Mathf.Max(0.05f, blastGap));
+            }
+            yield return new WaitForSeconds(0.5f);
+
+            // 5) đứng dậy
+            t = 0f;
+            float up = Mathf.Max(0.2f, standUpTime);
+            Sfx.Play("bossRoar", 1f, 0.9f);
+            while (t < up)
+            {
+                t += Time.deltaTime;
+                float u = Mathf.Clamp01(t / up);
+                collapse = 1f - u * u * (3f - 2f * u);
+                if (Random.value < 0.4f) Fx.Sparks(Center, Vector2.up, Cfg.Orange, 3, 10f, 70f);
+                yield return null;
+            }
+            collapse = 0f;
+            Fx.Ring(Center, Cfg.Orange, 1f, 18f, 0.6f);
+            Fx.Shake(0.7f);
+            if (aura != null) aura.color = Cfg.A(Cfg.Orange, 0.3f);
+            p3Seq = false;
+            transitioning = false;
+            brain = StartCoroutine(Brain());
+        }
+
         // ------------------------------------------------------------ damage out / drain
         /// <summary>Gây sát thương lên người chơi; ở phase 2 hút máu theo tỉ lệ sát thương thực gây ra.</summary>
         void Strike(float dmg, float knock, Vector2? from = null)
         {
             Vector2 src = from.HasValue ? from.Value : (Vector2)transform.position;
+            if (phase == 3) dmg *= p3DamageMul;
             float dealt = P.Hurt(dmg, src, knock);
             if (dealt > 0f) Drain(dealt);
         }
 
         public void Drain(float dealt)
         {
-            if (phase != 2 || dead || P == null) return;
-            float heal = dealt * lifesteal;
+            float ls = Lifesteal;
+            if (ls <= 0f || dead || P == null) return;
+            float heal = dealt * ls;
             hp = Mathf.Min(maxHp, hp + heal);
             Fx.Beam(P.Center, Center, Cfg.Lime, 0.18f, 0.35f);
             Fx.Burst(Center, Cfg.Lime, 10, 6f, 0.5f, 0.35f);
@@ -441,6 +694,7 @@ namespace NeonBreaker
             {
                 hp = 0f;
                 if (phase == 1) StartCoroutine(Transition());
+                else if (phase == 2) StartCoroutine(Transition3());
                 else StartCoroutine(DeathSequence());
             }
         }
@@ -515,8 +769,9 @@ namespace NeonBreaker
             if (vis != null)
             {
                 float breathe = 1f + 0.015f * Mathf.Sin(Time.time * 2.5f);
-                float sy = (1f - crouch) * breathe;
-                float sx = 1f + crouch * 0.4f;
+                float bodyScale = phase == 3 ? p3Scale : 1f;
+                float sy = (1f - crouch) * breathe * (1f - 0.5f * collapse) * bodyScale;
+                float sx = (1f + crouch * 0.4f + 0.25f * collapse) * bodyScale;
                 vis.localScale = new Vector3(facing * sx, sy, 1f);
 
                 bool air = transform.position.y > 0.3f;
@@ -539,9 +794,10 @@ namespace NeonBreaker
                 }
             }
 
-            float alpha = hidden ? 0.0f : (transitioning ? 0.65f + 0.35f * Mathf.Sin(Time.time * 30f) : 1f);
+            bool flick = transitioning && !p3Seq;
+            float alpha = hidden ? 0.0f : (flick ? 0.65f + 0.35f * Mathf.Sin(Time.time * 30f) : 1f);
             if (Intro && transform.position.y > 15f) alpha = 0.3f;
-            if (flasher != null) flasher.Apply(flashT > 0f || (transitioning && Mathf.Sin(Time.time * 24f) > 0.6f), Mathf.Clamp01(alpha));
+            if (flasher != null) flasher.Apply(flashT > 0f || (flick && Mathf.Sin(Time.time * 24f) > 0.6f), Mathf.Clamp01(alpha));
 
             // sát thương khi chạm thân
             if (!dead && !invul && !transitioning && !hidden && PlayerAlive && contactCd <= 0f)
@@ -559,7 +815,7 @@ namespace NeonBreaker
             // hạt khí lơ lửng
             if (!dead && Random.value < 0.3f)
             {
-                Color c = phase == 1 ? Cfg.Purple : Cfg.Red;
+                Color c = phase == 1 ? Cfg.Purple : (phase == 2 ? Cfg.Red : Cfg.Orange);
                 Fx.Emit(Fx.S_Glow, (Vector2)transform.position + new Vector2(Random.Range(-1.4f, 1.4f), Random.Range(0.3f, 3.6f)),
                         new Vector2(0f, Random.Range(0.5f, 2f)), new Vector2(0.4f, 0.4f), Vector2.zero, Cfg.A(c, 0.7f), Cfg.A(c, 0f), 0.6f);
             }

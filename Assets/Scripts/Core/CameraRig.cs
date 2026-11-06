@@ -48,6 +48,14 @@ namespace NeonBreaker
 
             float tx = target.position.x + lookX;
             float ty = Mathf.Max(size - groundMargin, target.position.y + 1.4f);
+            float sm = 1f;
+            if (Cine.HasFocus)
+            {
+                // cinematic: camera bay tới điểm chỉ định
+                tx = Cine.FocusPos.x;
+                ty = Mathf.Max(size - groundMargin, Cine.FocusPos.y);
+                sm = Cine.CamSmooth;
+            }
 
             float minX = Cfg.LevelMinX + halfW;
             float maxX = Cfg.LevelMaxX - halfW;
@@ -61,8 +69,8 @@ namespace NeonBreaker
             }
             else
             {
-                pos.x = Mathf.SmoothDamp(pos.x, tx, ref velX, 0.16f, Mathf.Infinity, Time.unscaledDeltaTime);
-                pos.y = Mathf.SmoothDamp(pos.y, ty, ref velY, 0.22f, Mathf.Infinity, Time.unscaledDeltaTime);
+                pos.x = Mathf.SmoothDamp(pos.x, tx, ref velX, 0.16f * sm, Mathf.Infinity, Time.unscaledDeltaTime);
+                pos.y = Mathf.SmoothDamp(pos.y, ty, ref velY, 0.22f * sm, Mathf.Infinity, Time.unscaledDeltaTime);
             }
             Apply(pos);
         }

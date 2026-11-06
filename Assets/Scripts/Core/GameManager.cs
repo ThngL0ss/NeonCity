@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 namespace NeonBreaker
 {
-    public enum GameState { Menu, Playing, Won, Lost }
+    public enum GameState { Menu, Playing, Won, Lost, Cinematic }
 
     /// <summary>
     /// Điều phối toàn bộ game: trạng thái, kích hoạt boss, thắng / thua, tạm dừng, hit-stop.
@@ -51,6 +51,10 @@ namespace NeonBreaker
         [Tooltip("Prefab boss. Để trống = lấy trong ArtBank.")]
         public GameObject bossPrefab;
 
+        [Header("Cinematic")]
+        [Tooltip("Bật = bấm Chơi sẽ chạy cảnh mở đầu (camera bay tới địa bàn boss + thoại). Bấm ESC để bỏ qua.")]
+        public bool playIntro = true;
+
         Transform runtime;
 
         /// <summary>Đưa mọi biến static về trạng thái ban đầu (Bootstrap gọi trước mỗi lần Play, kể cả khi tắt Reload Domain).</summary>
@@ -71,6 +75,7 @@ namespace NeonBreaker
             BannerMax = 1f;
             Inventory.ResetAll();
             SkillSystem.ResetAll();
+            GameFlow.ResetStatics();
         }
 
         public static void Banner(string text, Color c, float dur = 3f)
@@ -86,8 +91,22 @@ namespace NeonBreaker
         {
             Inst = this;
             Time.timeScale = 1f;
-            Inventory.ResetAll();
-            SkillSystem.ResetAll();
+            if (!GameFlow.Carry)
+            {
+                Inventory.ResetAll();
+                SkillSystem.ResetAll();
+                GameFlow.ResetStatics();      // chơi lại từ đầu: nhiệm vụ + cốt truyện căn cứ cũng về ban đầu
+            }
+            else
+            {
+                // chuyển cảnh Main <-> Base: giữ kho đồ / skill / minibot, chỉ đóng các bảng đang mở
+                Inventory.IsOpen = false;
+                SkillSystem.MenuOpen = false;
+                SkillSystem.PanelOpen = false;
+            }
+            Cine.NewScene(GameFlow.Carry);      // chuyển cảnh: giữ màn đen để mờ dần vào Scene mới
+            GameFlow.Carry = false;
+            GameFlow.InBase = false;
 
             Cfg.Vietnamese = startVietnamese;
 
@@ -121,7 +140,7 @@ namespace NeonBreaker
             var cam = Camera.main;
             if (cam != null) Sfx.Listener = cam.transform;
             Sfx.Music(0);
-            if (State == GameState.Playing)
+            if (State == GameState.Playing && !GameFlow.InBase)
                 Banner(Cfg.L("PHÁ HỦY TẤT CẢ TRỤ TRIỆU HỒI", "DESTROY ALL SUMMON TOWERS"), Cfg.Cyan, 4f);
             AutoStart = false;
         }
@@ -132,9 +151,19 @@ namespace NeonBreaker
         public void StartGame()
         {
             if (State != GameState.Menu) return;
-            State = GameState.Playing;
             Sfx.Play("click", 1f);
             Sfx.Music(0);
+            if (playIntro && !GameFlow.InBase) { StartCoroutine(IntroRoutine()); return; }
+            State = GameState.Playing;
+            Banner(Cfg.L("PHÁ HỦY TẤT CẢ TRỤ TRIỆU HỒI", "DESTROY ALL SUMMON TOWERS"), Cfg.Cyan, 4f);
+        }
+
+        IEnumerator IntroRoutine()
+        {
+            State = GameState.Cinematic;
+            Cine.Play(CineScripts.Intro());
+            while (Cine.Active) yield return null;
+            State = GameState.Playing;
             Banner(Cfg.L("PHÁ HỦY TẤT CẢ TRỤ TRIỆU HỒI", "DESTROY ALL SUMMON TOWERS"), Cfg.Cyan, 4f);
         }
 
@@ -143,6 +172,7 @@ namespace NeonBreaker
         {
             Time.timeScale = 1f;
             AutoStart = true;
+            GameFlow.Carry = false;       // chơi lại từ đầu: xoá sạch dữ liệu (kho, skill, minibot)
             Sfx.Play("click", 1f);
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
@@ -210,6 +240,7 @@ namespace NeonBreaker
             }
 
             if (BannerT > 0f) BannerT -= Time.unscaledDeltaTime;
+            Cine.Tick();
 
             switch (State)
             {
@@ -217,7 +248,12 @@ namespace NeonBreaker
                     if (GameInput.ConfirmDown) StartGame();
                     break;
                 case GameState.Playing:
-                    if (SkillSystem.MenuOpen)
+                    if (BaseUi.IsOpen)
+                    {
+                        // hội thoại / bàn chế tác / máy ghép / bản đồ: người chơi đứng yên, thế giới vẫn chạy
+                        BaseUi.UpdateInput();
+                    }
+                    else if (SkillSystem.MenuOpen)
                     {
                         if (GameInput.PauseDown || GameInput.SkillMenuDown) CloseSkillMenu();
                         else SkillUi.UpdateInput();
@@ -227,12 +263,19 @@ namespace NeonBreaker
                         if (GameInput.PauseDown || GameInput.InventoryDown) CloseInventory();
                         else InventoryUi.UpdateInput();
                     }
+                    else if (SkillSystem.PanelOpen)
+                    {
+                        // bảng chọn minibot (H): đứng yên, A / D chọn ô, S triệu hồi / thu hồi, H hoặc Esc đóng
+                        if (GameInput.PauseDown || GameInput.MinibotPanelDown) SkillSystem.TogglePanel();
+                        else SkillUi.UpdatePanelInput();
+                    }
                     else if (GameInput.PauseDown) TogglePause();
                     else if (Paused && GameInput.ConfirmDown) TogglePause();
                     else if (!Paused && GameInput.InventoryDown) OpenInventory();
                     else if (!Paused && GameInput.SkillMenuDown) OpenSkillMenu();
                     else if (!Paused && GameInput.MinibotPanelDown) SkillSystem.TogglePanel();
-                    else if (!Paused && GameInput.InteractDown) Chest.TryOpenNearest();
+                    else if (!Paused && !PlayerLocked && GameInput.MapDown) BaseUi.Open(BaseMode.Map);
+                    else if (!Paused && !PlayerLocked && GameInput.InteractDown) Interactor.TryInteract();
                     if (!Paused)
                     {
                         PlayTime += Time.deltaTime;
@@ -259,6 +302,7 @@ namespace NeonBreaker
         void CheckBossTrigger()
         {
             if (BossSpawned) return;
+            if (GameFlow.InBase) return;
             var p = Player.Instance;
             if (p == null || p.Dead) return;
             if (Tower.Remaining > 0) return;
@@ -308,10 +352,16 @@ namespace NeonBreaker
             Banner(Cfg.L("PHASE 2 — NÓ ĐANG HÚT MÁU BẠN!", "PHASE 2 — IT DRAINS YOUR LIFE!"), Cfg.Red, 4f);
         }
 
+        public static void OnBossPhase3()
+        {
+            Banner(Cfg.L("PHASE 3 — NÓ ĐÃ TÁI SINH, MẠNH HƠN BAO GIỜ HẾT!", "PHASE 3 — IT HAS REBORN, STRONGER THAN EVER!"), Cfg.Orange, 4.5f);
+        }
+
         public static void OnBossDead()
         {
             Sfx.StopMusic();
             Sfx.Play("victory", 1f);
+            BaseMissions.BossKills++;
             Banner(Cfg.L("BOSS ĐÃ BỊ TIÊU DIỆT", "BOSS DESTROYED"), Cfg.Cyan, 3f);
             if (Inst != null) Inst.StartCoroutine(Inst.EndRoutine(GameState.Won, 2.6f));
         }
@@ -320,7 +370,29 @@ namespace NeonBreaker
         {
             Sfx.StopMusic();
             Sfx.Play("defeat", 1f);
-            if (Inst != null) Inst.StartCoroutine(Inst.EndRoutine(GameState.Lost, 1.8f));
+            GameFlow.Deaths++;
+            if (Inst != null) Inst.StartCoroutine(Inst.DeathRoutine());
+        }
+
+        /// <summary>Cinematic chết (gục xuống, tan thành linh kiện, tối dần) rồi chuyển sang Scene Base. Chưa có Scene Base thì hiện màn thua cũ.</summary>
+        IEnumerator DeathRoutine()
+        {
+            Paused = false;
+            PlayerLocked = false;
+            Inventory.IsOpen = false;
+            SkillSystem.MenuOpen = false;
+            SkillSystem.PanelOpen = false;
+            State = GameState.Cinematic;          // quái, trụ, bẫy đứng yên trong lúc quay
+            Projectile.ClearHostile();
+            Cine.Play(CineScripts.Death());
+            while (Cine.Active) yield return null;
+            if (GameFlow.BaseAvailable)
+            {
+                GameFlow.GoToBase();
+                yield break;
+            }
+            Cine.SetFade(0f, 0.8f);               // chưa có Scene Base: về màn thua cũ
+            State = GameState.Lost;
         }
 
         IEnumerator EndRoutine(GameState result, float delay)

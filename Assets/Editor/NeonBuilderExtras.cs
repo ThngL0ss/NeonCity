@@ -639,7 +639,7 @@ namespace NeonBreaker.EditorTools
             nChests++;
 
             rep.AppendLine("• Bẫy: " + nTraps + " cái trong Level/Traps (6 gai, 3 cưa, 3 mìn, 3 laser, 3 súng).");
-            rep.AppendLine("• Rương: " + nChests + " cái trong Level/Chests (bấm T khi đứng gần). Chỉnh bảng vật phẩm: chọn rương ▸ Chest ▸ Loot Table.");
+            rep.AppendLine("• Rương: " + nChests + " cái trong Level/Chests (bấm F khi đứng gần). Chỉnh bảng vật phẩm: chọn rương ▸ Chest ▸ Loot Table.");
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);

@@ -33,7 +33,7 @@ namespace NeonBreaker.EditorTools
                 Debug.Log("Neon Breaker: đã thêm hệ thống Skill.\n" + report);
                 EditorUtility.DisplayDialog("Neon Breaker",
                     "Xong! Hệ thống Skill đã sẵn sàng.\n\n" + report +
-                    "\n\nScene của bạn không bị thay đổi. Bấm Play: phím N mở menu Skill, phím H mở bảng minibot.\n" +
+                    "\n\nScene của bạn không bị thay đổi. Bấm Play: phím B mở menu (mục Skill = phím 2), phím H mở bảng minibot.\n" +
                     "Mẹo: bật chế độ thử nghiệm (P) để mở khoá kỹ năng chưa có điều kiện.", "OK");
             }
             catch (System.Exception e)

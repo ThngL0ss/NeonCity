@@ -3,9 +3,9 @@ using UnityEngine;
 namespace NeonBreaker
 {
     /// <summary>
-    /// Giao diện kho đồ (phím B). Vẽ bằng IMGUI qua các hàm của Hud (không cần Canvas).
-    /// Phím: A/D/W/S hoặc mũi tên = chọn ô · Enter = dùng · X = vứt 1 · B hoặc Esc = đóng. Chuột: bấm chọn, bấm đúp để dùng.
-    /// Khi mở kho game tạm dừng.
+    /// Mục KHO ĐỒ của menu B (khung + thẻ mục + ví tiền do GameMenu vẽ). Vẽ bằng IMGUI qua các hàm của Hud (không cần Canvas).
+    /// Phím: A/D/W/S hoặc mũi tên = chọn ô · Enter = dùng (đồ tiêu hao) / trang bị (đồ trang bị) · X = vứt 1 · B hoặc Esc = đóng.
+    /// Chuột: bấm chọn, bấm đúp để dùng / trang bị. Khi mở menu game tạm dừng.
     /// </summary>
     public static class InventoryUi
     {
@@ -37,28 +37,13 @@ namespace NeonBreaker
             Sfx.Play("click", 0.6f, 0.7f);
         }
 
-        public static void Draw(Hud h)
+        public static void DrawContent(Hud h)
         {
             float s = h.s;
-            h.Dim(0.74f);
-            Rect panel = h.R(150, 50, 980, 620);
-            h.Fill(panel, new Color(0.01f, 0.02f, 0.06f, 0.94f));
-            h.Outline(panel, Cfg.A(Cfg.Cyan, 0.75f), 2f);
-
             int cap = Inventory.Capacity;
-            h.Txt(h.R(176, 58, 380, 44), Cfg.L("KHO ĐỒ", "INVENTORY"), 34, Cfg.Cyan);
-            h.Txt(h.R(178, 104, 380, 22), Inventory.Slots.Count + " / " + cap + Cfg.L(" ô", " slots"), 14, Cfg.A(Color.white, 0.7f), TextAnchor.UpperLeft, false);
-
-            // ---- ví tiền
-            Rect coinBox = h.R(850, 62, 258, 40);
-            h.Fill(coinBox, new Color(0.02f, 0.03f, 0.09f, 0.9f));
-            h.Outline(coinBox, Cfg.A(Cfg.Yellow, 0.6f), 1.5f);
-            Rect ic = h.R(858, 68, 28, 28);
-            var coinSpr = Art.Bank != null ? Art.Bank.coinIcon : null;
-            if (coinSpr != null) h.DrawSprite(coinSpr, ic, Color.white);
-            else h.Fill(ic, Cfg.A(Cfg.Yellow, 0.9f));
-            h.Txt(h.R(892, 62, 70, 40), Cfg.L("XU", "COINS"), 15, Cfg.A(Cfg.Yellow, 0.95f), TextAnchor.MiddleLeft);
-            h.Txt(h.R(940, 62, 160, 40), Inventory.Coins.ToString(), 24, Color.white, TextAnchor.MiddleRight);
+            h.Txt(h.R(178, 104, 380, 22), Inventory.Slots.Count + " / " + cap + Cfg.L(" ô", " slots") + "   ·   "
+                  + Cfg.L("Trang bị ", "Equipped ") + Inventory.EquippedCount + "/" + Inventory.EquipSlots,
+                  14, Cfg.A(Color.white, 0.7f), TextAnchor.UpperLeft, false);
 
             // ---- lưới ô
             int rows = Mathf.CeilToInt(cap / (float)Cols);
@@ -104,7 +89,7 @@ namespace NeonBreaker
 
             // ---- tổng chỉ số từ vật phẩm
             float sy = gy + rows * pitch + 10f;
-            h.Txt(h.R(176, sy, 440, 22), Cfg.L("CHỈ SỐ TỪ VẬT PHẨM", "BONUSES FROM ITEMS"), 14, Cfg.A(Cfg.Cyan, 0.9f));
+            h.Txt(h.R(176, sy, 440, 22), Cfg.L("CHỈ SỐ TỪ TRANG BỊ & BUFF", "BONUSES FROM GEAR & BUFFS"), 14, Cfg.A(Cfg.Cyan, 0.9f));
             int lines = 0;
             var stats = (ItemStat[])System.Enum.GetValues(typeof(ItemStat));
             for (int i = 0; i < stats.Length; i++)
@@ -124,8 +109,8 @@ namespace NeonBreaker
             h.Txt(h.R(660, 602, 446, 20), Cfg.L("Tổng giá trị đồ trong kho: ", "Total value in bag: ") + Inventory.TotalSellValue() + Cfg.L(" xu", " coins"),
                   13, Cfg.A(Cfg.Yellow, 0.75f), TextAnchor.UpperLeft, false);
             h.Txt(h.R(176, 644, 940, 20),
-                  Cfg.L("[B / ESC] đóng   ·   [A D W S / mũi tên] chọn   ·   [ENTER] dùng   ·   [X] vứt 1   ·   chuột: bấm chọn, bấm đúp = dùng",
-                        "[B / ESC] close   ·   [A D W S / arrows] select   ·   [ENTER] use   ·   [X] drop 1   ·   mouse: click select, double-click = use"),
+                  Cfg.L(GameMenu.CommonHintVi + "   ·   [A D W S] chọn   ·   [ENTER] dùng / trang bị   ·   [X] vứt 1   ·   chuột: bấm đúp = dùng / trang bị",
+                        GameMenu.CommonHintEn + "   ·   [A D W S] select   ·   [ENTER] use / equip   ·   [X] drop 1   ·   mouse: double-click = use / equip"),
                   13, Cfg.A(Color.white, 0.6f), TextAnchor.UpperLeft, false);
         }
 
@@ -163,6 +148,10 @@ namespace NeonBreaker
             if (it.kind == ItemKind.Consumable)
             {
                 if (h.Button(h.R(676, 484, 200, 42), Cfg.L("DÙNG  [ENTER]", "USE  [ENTER]"), Cfg.Lime, 20)) Inventory.Use(sel);
+            }
+            else if (it.kind == ItemKind.Passive)
+            {
+                if (h.Button(h.R(676, 484, 200, 42), Cfg.L("TRANG BỊ  [ENTER]", "EQUIP  [ENTER]"), Cfg.Cyan, 20)) Inventory.Equip(sel);
             }
             if (h.Button(h.R(890, 484, 200, 42), Cfg.L("VỨT 1  [X]", "DROP 1  [X]"), Cfg.Red, 20)) Discard(sel);
         }

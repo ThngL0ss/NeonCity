@@ -42,7 +42,7 @@ namespace NeonBreaker
         static readonly Dictionary<string, Sprite> icons = new Dictionary<string, Sprite>();
 
         public static int CraftedTotal, PartsCollected;
-        public static bool MenuOpen, PanelOpen;
+        public static bool PanelOpen;
         public static int Tab, SelBot, PanelSel;
         public static string Msg = "";
         public static float MsgT;
@@ -79,7 +79,7 @@ namespace NeonBreaker
             levels.Clear();
             icons.Clear();
             CraftedTotal = 0; PartsCollected = 0; PartFusion.ResetAll();
-            MenuOpen = false; PanelOpen = false;
+            PanelOpen = false;
             Tab = 0; SelBot = 0; PanelSel = 0;
             Msg = ""; MsgT = 0f;
             lastCombat = -999f; unlockT = 0f; uidCounter = 0;
@@ -165,7 +165,7 @@ namespace NeonBreaker
             if (!Has(IdParts)) return;
             if (en != null && !en.craftable) return;
             if (first && en != null && en.enemyPrefab != null)
-                GameManager.Banner(Cfg.L("ĐÃ GHI NHẬN: ", "RECORDED: ") + en.DisplayName + Cfg.L(" — có thể chế tạo minibot [N]", " — minibot can be crafted [N]"), Cfg.Cyan, 3f);
+                GameManager.Banner(Cfg.L("ĐÃ GHI NHẬN: ", "RECORDED: ") + en.DisplayName + Cfg.L(" — có thể chế tạo minibot [B ▸ Skill]", " — minibot can be crafted [B ▸ Skill]"), Cfg.Cyan, 3f);
             Rank rk = e.power != null ? e.power.rank : Rank.F;
             if (!PowerRules.DropsParts(rk)) return;                 // quái bậc SS / SSS không rơi linh kiện
             float chance = en != null ? en.partsDropChance : 1f;
@@ -528,12 +528,12 @@ namespace NeonBreaker
             if (!Has(IdMinibot)) return;
             if (Bots.Count == 0)
             {
-                GameManager.Banner(Cfg.L("CHƯA CÓ MINIBOT — hạ quái lấy linh kiện rồi chế tạo trong mục Skill [N]", "NO MINIBOT YET — collect parts, then craft in the Skill menu [N]"), Cfg.Yellow, 3f);
+                GameManager.Banner(Cfg.L("CHƯA CÓ MINIBOT — hạ quái lấy linh kiện rồi chế tạo trong mục Skill [B]", "NO MINIBOT YET — collect parts, then craft in the Skill tab [B]"), Cfg.Yellow, 3f);
                 return;
             }
             if (PanelUsed == 0)
             {
-                GameManager.Banner(Cfg.L("BẢNG CHỌN TRỐNG — mở Skill [N] > Lưu trữ để đưa minibot ra bảng chọn", "SELECTION PANEL EMPTY — open Skill [N] > Storage to move a minibot out"), Cfg.Yellow, 3f);
+                GameManager.Banner(Cfg.L("BẢNG CHỌN TRỐNG — mở [B] ▸ Skill ▸ Lưu trữ để đưa minibot ra bảng chọn", "SELECTION PANEL EMPTY — open [B] ▸ Skill ▸ Storage to move a minibot out"), Cfg.Yellow, 3f);
                 return;
             }
             PanelOpen = true;

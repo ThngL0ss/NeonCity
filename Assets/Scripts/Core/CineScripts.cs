@@ -190,8 +190,8 @@ namespace NeonBreaker
                 while (t < dur && !Cine.Skipping)
                 {
                     t += Dt;
-                    dSkin.Step(t / dur, 2, 3.2f, true);
-                    if (Random.value < 0.35f) Fx.Sparks(dSkin.RandomPoint(), Vector2.up, Cfg.Cyan, 1, 5f, 90f, 0.3f);
+                    dSkin.Step(t / dur, 9, 3.0f, true);        // cứ 9 điểm ảnh mới rơi 1 hạt (trước đây 2: quá nhiều)
+                    if (Random.value < 0.2f) Fx.Sparks(dSkin.RandomPoint(), Vector2.up, Cfg.Cyan, 1, 5f, 90f, 0.3f);
                     yield return null;
                 }
                 dSkin.Step(1f, 0);
@@ -221,14 +221,17 @@ namespace NeonBreaker
                 Fx.Explosion(pl.Center, Cfg.Cyan, false);
                 const float dur2 = 1.3f;
                 t = 0f;
+                float bitT = 0f;
                 while (t < dur2 && !Cine.Skipping)
                 {
                     t += Dt;
-                    if (dSkel != null) dSkel.Step(t / dur2, 1, 5f, false);
-                    for (int i = 0; i < 2; i++)
+                    if (dSkel != null) dSkel.Step(t / dur2, 6, 4.5f, false);          // ít hạt rơi hơn trước
+                    bitT -= Dt;
+                    if (bitT <= 0f)                                                   // chỉ vài mảnh linh kiện lớn (~12 mảnh), không còn mưa mảnh
                     {
+                        bitT = 0.11f;
                         Vector2 p = dSkel != null ? dSkel.RandomPoint() : pl.Center;
-                        RobotBit.Spawn(p, new Vector2(Random.Range(-4f, 4f), Random.Range(2f, 8f)), Random.Range(1.2f, 2.0f));
+                        RobotBit.Spawn(p, new Vector2(Random.Range(-3.5f, 3.5f), Random.Range(2f, 7f)), Random.Range(1.2f, 2.0f));
                     }
                     yield return null;
                 }

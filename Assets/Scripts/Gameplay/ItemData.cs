@@ -7,7 +7,7 @@ namespace NeonBreaker
     /// <summary>Loại vật phẩm.</summary>
     public enum ItemKind
     {
-        Passive,      // trang bị: mang theo trong kho là có tác dụng (không cần dùng)
+        Passive,      // trang bị: gắn vào 1 trong 8 ô trang bị (phím B ▸ Player) thì mới có tác dụng
         Consumable,   // tiêu hao: bấm DÙNG trong kho -> hồi máu / thêm lượt hồi / buff tạm hoặc vĩnh viễn rồi biến mất
         Valuable,     // chỉ có giá trị, để bán cho thương nhân
         Material      // nguyên liệu: dùng ở bàn chế tác trong căn cứ (nhặt trên đường / trong rương)
@@ -55,7 +55,7 @@ namespace NeonBreaker
         [Tooltip("Số lượng tối đa xếp chung một ô")] public int maxStack = 99;
         [Tooltip("Giá bán cho thương nhân (1 cái)")] public int sellValue = 10;
 
-        [Header("Hiệu ứng (Passive: có tác dụng khi mang theo · Consumable: khi dùng)")]
+        [Header("Hiệu ứng (Passive: có tác dụng khi được trang bị · Consumable: khi dùng)")]
         public List<ItemStatBonus> bonuses = new List<ItemStatBonus>();
 
         [Header("Chỉ dành cho Consumable")]
@@ -117,7 +117,7 @@ namespace NeonBreaker
             {
                 switch (kind)
                 {
-                    case ItemKind.Passive: return Cfg.L("TRANG BỊ — có tác dụng khi mang theo", "GEAR — active while carried");
+                    case ItemKind.Passive: return Cfg.L("TRANG BỊ — gắn vào ô trang bị (B ▸ Player)", "GEAR — equip it in a slot (B ▸ Player)");
                     case ItemKind.Consumable: return Cfg.L("TIÊU HAO — bấm DÙNG", "CONSUMABLE — press USE");
                     case ItemKind.Material: return Cfg.L("NGUYÊN LIỆU — dùng ở bàn chế tác (căn cứ)", "MATERIAL — used at the crafting bench (base)");
                     default: return Cfg.L("VẬT PHẨM GIÁ TRỊ — bán cho thương nhân", "VALUABLE — sell to a merchant");

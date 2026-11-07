@@ -57,8 +57,7 @@ namespace NeonBreaker
                 case GameState.Lost: DrawResult(false); break;
                 case GameState.Playing:
                     if (BaseUi.IsOpen) BaseUi.Draw(this);
-                    else if (SkillSystem.MenuOpen) SkillUi.DrawMenu(this);
-                    else if (Inventory.IsOpen) InventoryUi.Draw(this);
+                    else if (GameMenu.IsOpen) GameMenu.Draw(this);
                     else if (GameManager.Paused) DrawPause();
                     break;
             }
@@ -324,7 +323,7 @@ namespace NeonBreaker
             Rect sk = R(14, 160, 352, 24);
             Fill(sk, new Color(0.01f, 0.02f, 0.06f, 0.55f));
             Outline(sk, Cfg.A(Cfg.Cyan, 0.3f), 1.5f);
-            Txt(R(22, 160, 200, 24), "[N] SKILL   [H] MINIBOT " + SkillSystem.SummonedCount + "/" + SkillSystem.MaxSummoned, 12, Cfg.A(Cfg.Cyan, 0.9f), TextAnchor.MiddleLeft, true);
+            Txt(R(22, 160, 200, 24), "[B] MENU   [H] MINIBOT " + SkillSystem.SummonedCount + "/" + SkillSystem.MaxSummoned, 12, Cfg.A(Cfg.Cyan, 0.9f), TextAnchor.MiddleLeft, true);
             Txt(R(222, 160, 138, 24), Cfg.L("Linh kiện ", "Parts ") + SkillSystem.PartsTotal, 12, Cfg.A(Color.white, 0.8f), TextAnchor.MiddleRight, false);
 
             // buff tạm đang chạy

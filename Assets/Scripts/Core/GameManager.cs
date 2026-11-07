@@ -357,6 +357,11 @@ namespace NeonBreaker
             Banner(Cfg.L("PHASE 3 — NÓ ĐÃ TÁI SINH, MẠNH HƠN BAO GIỜ HẾT!", "PHASE 3 — IT HAS REBORN, STRONGER THAN EVER!"), Cfg.Orange, 4.5f);
         }
 
+        public static void OnBossDoom()
+        {
+            Banner(Cfg.L("BOSS ĐANG TỰ HUỶ — KHÔNG THỂ NÉ!", "THE BOSS IS SELF-DESTRUCTING — YOU CAN'T DODGE IT!"), Cfg.Red, 5f);
+        }
+
         public static void OnBossDead()
         {
             Sfx.StopMusic();

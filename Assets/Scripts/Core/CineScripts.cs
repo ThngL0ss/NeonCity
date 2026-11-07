@@ -19,7 +19,7 @@ namespace NeonBreaker
         static float Dt { get { return Time.unscaledDeltaTime; } }
 
         // ================================================================ MỞ ĐẦU
-        /// <summary>Cảnh mở đầu: camera bay tới địa bàn boss (hình bóng boss + linh kiện SS bị cướp phát sáng), thoại mục đích, rồi quay về người chơi.</summary>
+        /// <summary>Cảnh mở đầu: camera bay tới địa bàn boss (chỉ một bóng đen của boss + linh kiện SS bị cướp phát sáng), thoại mục đích, rồi quay về người chơi.</summary>
         public static IEnumerator Intro()
         {
             var pl = Player.Instance;
@@ -69,8 +69,6 @@ namespace NeonBreaker
             var root = new GameObject("BossSilhouette").transform;
             root.SetParent(parent, false);
             root.position = new Vector3(pos.x, pos.y, 0f);
-            Art.Spr(root, "Aura", Art.Glow, new Vector2(0f, 2.4f), new Vector2(11f, 11f), Cfg.A(Cfg.Purple, 0.35f), 28, true);
-
             Sprite s = null;
             Vector3 lp = Vector3.zero, ls = Vector3.one;
             var prefab = GameManager.Inst != null ? GameManager.Inst.bossPrefab : null;
@@ -90,16 +88,10 @@ namespace NeonBreaker
             }
             if (s != null)
             {
-                var sr = Art.Spr(root, "Body", s, new Vector2(lp.x, lp.y), new Vector2(-ls.x, ls.y), new Color(0.03f, 0.015f, 0.07f, 1f), 30);
+                var sr = Art.Spr(root, "Body", s, new Vector2(lp.x, lp.y), new Vector2(-ls.x, ls.y), Color.black, 30);
                 sr.transform.localScale = new Vector3(-Mathf.Abs(ls.x), ls.y, 1f);   // quay mặt về phía người chơi (bên trái)
-                // viền sáng tím phía sau
-                var rim = Art.Spr(root, "Rim", s, new Vector2(lp.x, lp.y), new Vector2(-Mathf.Abs(ls.x) * 1.06f, ls.y * 1.04f), Cfg.A(Cfg.Purple, 0.8f), 29, true);
-                rim.transform.localPosition += new Vector3(0f, -0.05f, 0f);
             }
-            // hai đốm mắt đỏ
-            Art.Spr(root, "EyeA", Art.Glow, new Vector2(-0.45f, 3.1f), new Vector2(0.9f, 0.9f), Cfg.A(Cfg.Red, 0.95f), 32, true);
-            Art.Spr(root, "EyeB", Art.Glow, new Vector2(0.25f, 3.1f), new Vector2(0.9f, 0.9f), Cfg.A(Cfg.Red, 0.95f), 32, true);
-            return root;
+            return root;      // chỉ có MỘT bóng đen (không vầng sáng, không viền, không mắt)
         }
 
         static Transform BuildStolenCore(Transform parent, Vector2 pos)

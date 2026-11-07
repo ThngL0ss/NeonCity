@@ -275,12 +275,10 @@ namespace NeonBreaker
             Fill(bar, new Color(0f, 0f, 0f, 0.75f));
             Fill(new Rect(bar.x, bar.y, bar.width * Mathf.Clamp01(bossShown), bar.height), Cfg.A(Color.white, 0.5f));
             NeonBar(bar, b.TotalFrac, c, new Color(0f, 0f, 0f, 0f));
-            float mx = bar.x + bar.width * b.PhaseMarker;
-            Fill(new Rect(mx - 1.5f * s, bar.y - 5f * s, 3f * s, bar.height + 10f * s), Cfg.A(Color.white, 0.9f));
-            if (b.PhaseMarker2 > 0f)
+            if (b.PhaseMarker > 0f)       // thanh phase 1 + 2 có một vạch chia; phase 3 thanh hồi đầy và không có vạch
             {
-                float mx2 = bar.x + bar.width * b.PhaseMarker2;
-                Fill(new Rect(mx2 - 1.5f * s, bar.y - 5f * s, 3f * s, bar.height + 10f * s), Cfg.A(Color.white, 0.9f));
+                float mx = bar.x + bar.width * b.PhaseMarker;
+                Fill(new Rect(mx - 1.5f * s, bar.y - 5f * s, 3f * s, bar.height + 10f * s), Cfg.A(Color.white, 0.9f));
             }
             if (p2) Txt(R(x, 646, w, 26), Cfg.L("HÚT MÁU", "LIFESTEAL"), 14, Cfg.Lime, TextAnchor.MiddleRight);
         }

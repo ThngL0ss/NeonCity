@@ -1,7 +1,7 @@
 # NEON BREAKER — Cốt truyện (nguồn chung)
 
 > Do tác giả dự án cung cấp. Mọi lời thoại, nhiệm vụ, tên gọi, mô tả vật phẩm / quái / cảnh trong game phải **khớp với file này**.
-> Mục "Chưa chốt" ở cuối ghi những chỗ còn để ngỏ — chưa tự quyết thay tác giả.
+> Mục "Đã chốt" và "Chưa chốt" ở cuối ghi các quyết định của tác giả và những chỗ còn để ngỏ — chưa tự quyết thay tác giả.
 
 ## 1. Bối cảnh
 
@@ -22,11 +22,12 @@
 
 ## 2. Nhân vật
 
-### Player — XbAst_013
+### Player — XbAst-013
 - Một **con người được số hóa bộ não vào vi máy tính**.
+- **Có liên kết với Albert** — không chỉ là "cỗ máy do Albert chế tạo". (Lời thoại không được gọi player đơn thuần là cỗ máy / sản phẩm của Albert.)
 - Nhờ **Albert**, anh **tái tạo cơ thể bất cứ khi nào** (cơ chế chết → hồi sinh trong lồng kính ở căn cứ).
 - **Rất khó tái tạo ký ức**, nên **mỗi lần tái sinh mất một phần ký ức** (khớp lời Albert: "dữ liệu của cậu mờ đi mỗi lần tái tạo").
-- Cần **item bậc SS** để cải tiến vi máy tính và **lưu trữ vĩnh viễn ký ức** (gần như bất tử).
+- Cần **item bậc SS** (các lõi tên **Core-Txx**) để cải tiến vi máy tính và **lưu trữ vĩnh viễn ký ức** (gần như bất tử).
 
 ### Albert
 - Được cho là **hậu duệ của một trong 54 nhà khoa học** đã ngăn kế hoạch của nhà khoa học điên.
@@ -35,9 +36,9 @@
 - Hiện là **cố vấn của phe Pyber**; **đồng sáng lập Pyber năm 2082**.
 
 ## 3. Dòng thời gian trong game (mở đầu)
-- Player tìm ra nơi có **item SS bị mất của chính mình** (còn **rất nhiều item SS khác rải rác** nơi khác). Nơi đó là lãnh địa của **một Boss thuộc phe Dyber** (phe thiện chiến, công nghệ).
+- Player tìm ra nơi có **item SS bị mất của chính mình — lõi `Core-T04`** (còn **rất nhiều lõi SS khác rải rác** nơi khác, cùng kiểu tên, chỉ khác số: `Core-T03`, `Core-T06`, ...). Nơi đó là lãnh địa của **một Boss thuộc phe Dyber** (phe thiện chiến, công nghệ).
 - Do **chênh lệch sức mạnh**, player **thất bại** lần đầu.
-- Hiện tại player cần: **tìm các mảnh item SS khác của mình**, **thăng tiến sức mạnh**, **tìm hiểu những ký ức bị mất**.
+- Hiện tại player cần: **tìm các lõi SS khác của mình** (Core-T03, Core-T06, ...), **thăng tiến sức mạnh**, **tìm hiểu những ký ức bị mất**.
 
 ## 4. Các phe phái
 
@@ -61,10 +62,14 @@
 - Dù đối lập và thù nhau, các phe có **hiệp ước ngầm: không ai được xen vào sự tồn tại của phe khác** ("hiệp ước đình chiến").
 - Tuy vậy, **việc chống đối và phá hủy hiệp ước vẫn thường xảy ra trong bóng tối**.
 
-## 5. Chưa chốt (hỏi tác giả trước khi dùng)
-- **Tên nhân vật chính:** tác giả viết `XbAst_013` (gạch dưới); code hiện dùng `XbAst-013` (gạch ngang, ~10 chỗ: `CineScripts.HeroName`, `BaseManager`, ...). Chờ tác giả chọn.
-- **Tên boss:** code đang dùng tên tạm **OVERLORD** (do trợ lý đặt, không phải cốt truyện). Boss thuộc Dyber; tên chính thức chờ tác giả.
-- **Tên item SS bị cướp:** đang là tên tạm "LÕI TỐI THƯỢNG" / "PRIME CORE" (`CineScripts.StolenItemVi/En`). Cốt truyện nói có nhiều item SS.
-- **"Earth-01836" vs năm 2036:** hai con số lệch nhau (1836 / 2036); chờ tác giả xác nhận mã đúng.
+## 5. Đã chốt (tác giả xác nhận)
+- **Tên nhân vật chính: `XbAst-013`** (gạch ngang, đúng như code hiện tại). Không dùng `XbAst_013`.
+- **Tên boss: giữ nguyên `OVERLORD`** (boss thuộc Dyber).
+- **Item SS bị cướp: `Core-T04`.** Các lõi SS rải rác cùng kiểu tên, chỉ khác số (ví dụ `Core-T03`, `Core-T06`). Trong code: `CineScripts.StolenItemVi/En`.
+- **`Earth-01836` là đúng**; dãy số chỉ là ngẫu nhiên, **không phải năm** (dòng thời gian hiện tại vẫn là năm 2036).
+- **Player liên kết với Albert**, không chỉ là cỗ máy do Albert chế tạo.
+
+## 6. Chưa chốt (hỏi tác giả trước khi dùng)
+- **Các phe phái và cách đề cập trong game** (tên phe, lời thoại nhắc tới Pyber / Dyber / hiệp ước, ...): tác giả sẽ yêu cầu chỉnh sửa sau. Hiện lời thoại trong game **chưa** nhắc tên phe nào — không tự thêm.
 - **Người sáng lập Dyber** ("?") — bí ẩn, chưa tiết lộ.
-- Lời thoại hiện có gọi player là "cỗ máy chiến đấu ta chế tạo" — lệch với "con người được số hóa"; cần sửa khi tác giả yêu cầu viết lại thoại.
+- Bản chất mối liên kết giữa player và Albert — chưa nói rõ; chỉ viết chung chung "có liên kết", không tự bịa chi tiết.

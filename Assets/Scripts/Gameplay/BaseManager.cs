@@ -117,8 +117,8 @@ namespace NeonBreaker
             if (!BaseMissions.StoryTold)
             {
                 BaseMissions.StoryTold = true;
-                lines.Add(new DlgLine("ALBERT", Cfg.L("Để ta nhắc lại cho cậu, phòng khi dữ liệu lại mờ thêm: cậu là XbAst-013, cỗ máy chiến đấu ta chế tạo.",
-                                                      "Let me remind you, in case your data blurred again: you are XbAst-013, the fighting machine I built."), a));
+                lines.Add(new DlgLine("ALBERT", Cfg.L("Để ta nhắc lại cho cậu, phòng khi dữ liệu lại mờ thêm: cậu là XbAst-013 — bộ não của cậu được số hóa vào vi máy tính, và giữa cậu với ta có một mối liên kết mà không cỗ máy nào thay thế được.",
+                                                      "Let me remind you, in case your data blurred again: you are XbAst-013 — your brain was digitized into a micro-computer, and there is a bond between you and me that no machine could replace."), a));
                 lines.Add(new DlgLine("ALBERT", Cfg.L("Linh kiện bậc SS — " + CineScripts.StolenItem + " — là lõi của cậu. OVERLORD đã cướp nó và giam mình trong khu boss cuối thành phố.",
                                                       "Your SS-rank part — the " + CineScripts.StolenItem + " — is your core. OVERLORD stole it and locked itself in the boss zone at the far end of the city."), a));
                 lines.Add(new DlgLine("ALBERT", Cfg.L("Đường tới đó bị 6 trụ triệu hồi chặn lại. Hạ quái để lấy linh kiện, nhặt dầu, rồi quay về đây — ta ghép và chế tác giúp cậu.",

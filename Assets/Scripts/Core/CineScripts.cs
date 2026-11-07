@@ -9,9 +9,10 @@ namespace NeonBreaker
     /// </summary>
     public static class CineScripts
     {
-        // ====== TÊN VẬT PHẨM BẬC SS (bạn có thể đổi) ======
-        public const string StolenItemVi = "LÕI TỐI THƯỢNG";
-        public const string StolenItemEn = "PRIME CORE";
+        // ====== TÊN VẬT PHẨM BẬC SS ======
+        // Lõi SS của người chơi tên Core-T04. Các lõi SS khác rải rác trong thế giới đặt tên cùng kiểu, chỉ khác số (Core-T03, Core-T06, ...).
+        public const string StolenItemVi = "Core-T04";
+        public const string StolenItemEn = "Core-T04";
         public const string HeroName = "XbAst-013";
 
         public static string StolenItem { get { return Cfg.L(StolenItemVi, StolenItemEn); } }

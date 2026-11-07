@@ -19,6 +19,8 @@ namespace NeonBreaker
 
         public Vector2 Center { get { return (Vector2)transform.position + centerOffset; } }
         public Vector2 Top { get { return (Vector2)transform.position + topOffset; } }
+        /// <summary>Mức năng lượng hiện tại 0..1 (cao khi đang hồi sinh) — máy tính khổng lồ bên cạnh đọc giá trị này để nhấp nháy theo.</summary>
+        public float Charge { get { return charge; } }
 
         void Awake()
         {

@@ -14,6 +14,7 @@ namespace NeonBreaker
     /// Kho đồ + ví tiền của người chơi (lớp static, không cần gắn vào object nào trong Scene).
     /// Số ô của kho chỉnh ở GameManager ▸ Inventory Slots; số xu ban đầu: GameManager ▸ Start Coins.
     /// Chỉ số buff của vật phẩm được cộng dồn ở đây rồi Player đọc qua Inventory.Mul(...) / Inventory.Stat(...).
+    /// Vật phẩm loại Passive (trang bị) chỉ có tác dụng khi được GẮN vào một trong 8 ô trang bị (phím B ▸ Player).
     /// </summary>
     public static class Inventory
     {
@@ -21,10 +22,14 @@ namespace NeonBreaker
         public static int Coins;
         /// <summary>Dầu: nhiên liệu dùng để chế tác vật phẩm và ghép linh kiện ở căn cứ.</summary>
         public static int Oil;
-        public static bool IsOpen;
         public static int Sel;
         public static string Msg = "";
         public static float MsgT;
+
+        /// <summary>Số ô trang bị của người chơi (mục Player trong menu B).</summary>
+        public const int EquipSlots = 8;
+        /// <summary>Các ô trang bị (null = ô trống). Chỉ vật phẩm loại Passive gắn được.</summary>
+        public static readonly ItemData[] Equipped = new ItemData[EquipSlots];
 
         class TimedBuff { public ItemData src; public float left; }
 
@@ -43,6 +48,7 @@ namespace NeonBreaker
         public static void ResetAll()
         {
             Slots.Clear();
+            System.Array.Clear(Equipped, 0, Equipped.Length);
             timed.Clear();
             System.Array.Clear(perm, 0, perm.Length);
             System.Array.Clear(total, 0, total.Length);
@@ -50,7 +56,6 @@ namespace NeonBreaker
             Oil = 0;
             pendingCoins = 0;
             coinTextT = 0f;
-            IsOpen = false;
             Sel = 0;
             Msg = "";
             MsgT = 0f;
@@ -73,8 +78,8 @@ namespace NeonBreaker
         static void Recompute()
         {
             System.Array.Copy(perm, total, perm.Length);
-            for (int i = 0; i < Slots.Count; i++)
-                if (Slots[i].item != null && Slots[i].item.kind == ItemKind.Passive) AddBonuses(Slots[i].item, Slots[i].count);
+            for (int i = 0; i < Equipped.Length; i++)
+                if (Equipped[i] != null && Equipped[i].kind == ItemKind.Passive) AddBonuses(Equipped[i], 1f);
             for (int i = 0; i < timed.Count; i++) AddBonuses(timed[i].src, 1f);
             var pl = Player.Instance;
             if (pl != null) pl.RecalcStats();
@@ -173,6 +178,62 @@ namespace NeonBreaker
             return v;
         }
 
+        // ------------------------------------------------------------ trang bị (8 ô)
+        public static int EquippedCount
+        {
+            get
+            {
+                int c = 0;
+                for (int i = 0; i < Equipped.Length; i++) if (Equipped[i] != null) c++;
+                return c;
+            }
+        }
+
+        /// <summary>Gắn 1 cái của ô kho index vào ô trang bị trống đầu tiên. Chỉ vật phẩm loại Passive. Trả về true nếu gắn được.</summary>
+        public static bool Equip(int index)
+        {
+            if (index < 0 || index >= Slots.Count) return false;
+            var it = Slots[index].item;
+            if (it == null) return false;
+            if (it.kind != ItemKind.Passive)
+            {
+                Say(Cfg.L("Chỉ vật phẩm loại TRANG BỊ mới gắn được vào ô trang bị.", "Only GEAR items can be placed in an equipment slot."));
+                return false;
+            }
+            int free = -1;
+            for (int i = 0; i < Equipped.Length; i++) if (Equipped[i] == null) { free = i; break; }
+            if (free < 0)
+            {
+                Say(Cfg.L("Đã đủ " + EquipSlots + " ô trang bị — gỡ bớt ở mục Player (phím B ▸ 3).", "All " + EquipSlots + " equipment slots are full — remove one in the Player tab (B ▸ 3)."));
+                return false;
+            }
+            Equipped[free] = it;
+            Remove(index, 1);                    // lấy khỏi kho và tính lại chỉ số
+            Say(Cfg.L("Đã trang bị: ", "Equipped: ") + it.DisplayName);
+            Sfx.Play("heal", 0.6f, 1.5f);
+            return true;
+        }
+
+        /// <summary>Gỡ trang bị ở ô equipIndex và trả về kho. Kho đầy thì không gỡ được.</summary>
+        public static bool Unequip(int equipIndex)
+        {
+            if (equipIndex < 0 || equipIndex >= Equipped.Length) return false;
+            var it = Equipped[equipIndex];
+            if (it == null) return false;
+            var one = new List<KeyValuePair<ItemData, int>> { new KeyValuePair<ItemData, int>(it, 1) };
+            if (!CanAddAll(one))
+            {
+                Say(Cfg.L("Kho đầy — không có chỗ để cất trang bị này.", "Bag is full — no room for this gear."));
+                return false;
+            }
+            Equipped[equipIndex] = null;
+            AddTo(Slots, it, 1);
+            Recompute();
+            Say(Cfg.L("Đã gỡ: ", "Removed: ") + it.DisplayName);
+            Sfx.Play("click", 0.6f, 0.8f);
+            return true;
+        }
+
         // ------------------------------------------------------------ dùng vật phẩm
         public static void Say(string msg)
         {
@@ -186,7 +247,7 @@ namespace NeonBreaker
             var it = Slots[index].item;
             var pl = Player.Instance;
             if (it == null) return false;
-            if (it.kind == ItemKind.Passive) { Say(Cfg.L("Trang bị có tác dụng khi mang theo — không cần dùng.", "Gear works while carried — no need to use it.")); return false; }
+            if (it.kind == ItemKind.Passive) return Equip(index);       // trang bị: Enter / bấm đúp = gắn vào ô trang bị
             if (it.kind == ItemKind.Valuable) { Say(Cfg.L("Vật phẩm giá trị — bán cho thương nhân để lấy xu.", "Valuable — sell it to a merchant for coins.")); return false; }
             if (it.kind == ItemKind.Material) { Say(Cfg.L("Nguyên liệu — dùng ở bàn chế tác trong căn cứ.", "Material — used at the crafting bench in the base.")); return false; }
             if (pl == null || pl.Dead) return false;

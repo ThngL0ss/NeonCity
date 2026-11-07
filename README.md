@@ -23,6 +23,9 @@ Game 2D platformer đồ họa **pixel art neon tương lai**. Scene, Prefab, Sp
   2. **Tools ▸ Neon Breaker ▸ Cập nhật cấp bậc + dầu + căn cứ (không đụng Scene Main)** — gán bậc cho quái (Walker/Flyer = D, Heavy/Rusher = C, Boss = SS cấp 1), tạo Prefab `Oil` + `WorldItem`, 4 nguyên liệu, `BaseConfig.asset` (công thức chế tác, luật ghép linh kiện, bảng vật phẩm rải đường), thêm nguyên liệu vào rương, và **tạo Scene `Base.unity`** (nếu chưa có) + thêm vào Build Settings. Scene Main không bị đụng.
   3. Mở `Main.unity` và `Base.unity`, bấm Play thử, rồi commit các file `.meta`, Prefab, asset, Scene mới.
   Muốn dựng lại căn cứ từ đầu: **Tools ▸ Neon Breaker ▸ Tạo lại Scene Căn cứ Base (GHI ĐÈ Base.unity)**.
+- **Bản chỉnh boss / UI / menu B / máy tính khổng lồ** (nhánh `claude/boss-ui-polish`): chỉ có code + sprite mới, **không đụng Scene / Prefab của bạn** (chỉnh thông số vẫn do bạn). Sau khi kéo về và Unity biên dịch xong:
+  1. Chạy **Tools ▸ Neon Breaker ▸ Thêm máy tính khổng lồ vào Scene Base (giữ nguyên chỉnh sửa của bạn)** — thêm đúng 1 object `ResurrectionComputer` (máy + màn hình động + 2 bó dây cáp) cạnh lồng hồi sinh trong `Base.unity`; chạy lại thì báo "đã có", không thêm lần nữa. Nên commit git trước khi chạy. Nếu Base đang mở trong Unity thì nhớ **Ctrl+S**.
+  2. Bấm Play thử rồi commit các file `.meta`, PNG `bigpc_*`, Scene Unity vừa tạo / sửa.
 - Ảnh PNG tự được cài đặt pixel art (Point filter, không nén, PPU, pivot) nhờ `Assets/Editor/NeonArtImporter.cs`.
 
 ## 2. Điều khiển
@@ -35,24 +38,28 @@ Game 2D platformer đồ họa **pixel art neon tương lai**. Scene, Prefab, Sp
 | I | Lướt (bất tử trong lúc lướt) |
 | K | Ném phi tiêu |
 | L | Hồi máu (bắt đầu 3 lượt, tối đa 5; nhặt vật phẩm xanh để cộng dồn) |
-| **B** | **Mở / đóng kho đồ** (game tạm dừng khi mở) |
+| **B** | **Mở / đóng menu nhân vật** gồm 3 mục: **Kho đồ · Skill · Player** (game tạm dừng khi mở). Đổi mục: bấm chuột vào thẻ phía trên, phím **1 / 2 / 3** hoặc **Tab** |
 | **F** | **Tương tác**: nhặt vật phẩm nằm trên đường (thùng dầu, nguyên liệu), mở rương, nói chuyện với Albert, dùng bàn chế tác / máy ghép / cửa căn cứ. Đứng gần là hiện gợi ý "[F] …" |
 | **M** | **Bản đồ** (hiện chỉ là màn đen; ở căn cứ có thêm điểm "khu thử nghiệm" để quay lại màn chơi) |
-| **N** | **Mở / đóng menu Skill** (cây kỹ năng, chế tạo, lưu trữ minibot; game tạm dừng). **Q / E**: đổi tab |
 | **H** | **Bảng chọn minibot**: khi mở, người chơi đứng yên; **A / D** đổi ô, **S** triệu hồi (hoặc thu hồi nếu đang triệu hồi); bấm chuột vào ô cũng được |
 | **P** | **Chế độ thử nghiệm (bật/tắt)**: không thể chết · sát thương ×3 · không hồi chiêu · hồi máu không tốn lượt |
 | Esc | Tạm dừng · Enter: bắt đầu / tiếp tục · R: chơi lại · V: đổi ngôn ngữ |
 
 Xu, linh kiện và giọt dầu vẫn tự hút về khi lại gần (không cần bấm F).
 
-Trong kho đồ: **A D W S / mũi tên** chọn ô · **Enter** dùng · **X** vứt 1 · **chuột**: bấm chọn, bấm đúp = dùng · **B / Esc** đóng.
+Phím **N cũ đã được gộp vào B**. Trong menu B:
+- **Kho đồ** [1]: **A D W S / mũi tên** chọn ô · **Enter** dùng (đồ tiêu hao) hoặc **trang bị** (đồ trang bị) · **X** vứt 1 · **chuột**: bấm chọn, bấm đúp = dùng / trang bị.
+- **Skill** [2]: cây kỹ năng, chế tạo, lưu trữ minibot — **Q / E** đổi tab con (xem 7b).
+- **Player** [3]: bên trái là **hình nhân vật** (cấp bậc + cấp độ ở góc) và **8 ô trang bị** bên dưới (chỉ nhận đồ loại TRANG BỊ, không có đồ tiêu hao); bên phải là **thông tin**: máu, cấp bậc, cấp độ, sát thương chém / phi tiêu, tốc độ chạy, hồi chiêu lướt, lượng hồi máu, sát thương nhận vào (đã tính trang bị). **A / D** chọn ô trang bị · **Enter / X** hoặc bấm đúp = gỡ.
+- **B / Esc** đóng.
 
 Hệ số sát thương của chế độ thử nghiệm chỉnh ở `Systems ▸ GameManager ▸ Cheat Damage Mul` (mặc định 3). Khi bật, trên màn hình có nhãn vàng "[P] CHẾ ĐỘ THỬ NGHIỆM".
 
 ## 3. Luồng chơi (~10 phút)
 
 Bấm **Chơi** → **cảnh mở đầu** (camera bay tới địa bàn boss: bạn đến lấy lại linh kiện bậc SS bị cướp; Enter = tiếp, Esc = bỏ qua) → phá hết **các trụ triệu hồi** (mỗi trụ sinh quái khi bạn lại gần) → cổng khu boss mở → vào khu boss → boss xuất hiện.
-Boss (bậc **SS**, cấp 1): **Phase 1** chậm, máu trâu, 1 kỹ năng (nhảy đập + sóng xung kích). **Phase 2** nhanh, máu ít hơn, 3 kỹ năng (chớp bước chém, chùm đạn quạt, laser giáng từ trời) và **hút máu**. **Phase 3** (mới): khi hạ phase 2, boss gục, hồi **đầy máu**, đứng im 2 giây rồi **tự nổ 3 lần** (sát thương lớn + sóng xung kích làm bạn choáng), rồi đứng dậy đánh tiếp với tốc độ/sát thương phase 2, độ trâu phase 1, dùng kỹ năng cả hai phase + 1 kỹ năng mới (**Bão sét**: các cột sét giáng lan ra hai bên).
+Boss (bậc **SS**, cấp 1): **Phase 1** chậm, máu trâu, 1 kỹ năng (nhảy đập + sóng xung kích). **Phase 2** nhanh, máu ít hơn, 3 kỹ năng (chớp bước chém, chùm đạn quạt, laser giáng từ trời) và **hút máu**. **Phase 3:** khi hạ phase 2, boss gục, hồi **đầy máu** (thanh máu đầy lại 100% như phase 1), đứng im 2 giây rồi **tự nổ 3 lần** (sát thương lớn + sóng xung kích làm bạn choáng), rồi đứng dậy đánh tiếp với tốc độ/sát thương phase 2, độ trâu phase 1, dùng kỹ năng cả hai phase + 1 kỹ năng mới (**Bão sét**: các cột sét giáng lan ra hai bên).
+**Thanh máu boss chỉ có 2 mốc** (phase 1 → phase 2, có 1 vạch đánh dấu trên thanh); sang phase 3 thanh đầy lại và không còn vạch. **Bảo hiểm:** nếu người chơi vẫn đánh hết máu phase 3, boss **dừng lại, nhấp nháy 7 màu rồi phát nổ** thật lớn (sát thương cả đấu trường, chắc chắn hạ người chơi) — cảnh báo "BOSS ĐANG TỰ HUỶ" hiện trên màn hình. Boss vẫn được tính là đã hạ (nhiệm vụ của Albert). Ở chế độ thử nghiệm **[P]** người chơi không chết, boss thua bình thường.
 **Khi chết:** cảnh người chơi gục, cơ thể tan ra lộ bộ khung robot, màn hình tối rồi chuyển về **căn cứ của Albert** (mục 7e), hồi sinh trong lồng kính. Ra khỏi căn cứ bằng cửa → bản đồ → quay lại màn chơi.
 Quái nhỏ rơi vật phẩm hồi máu (mặc định 20%) — nhặt = +1 lượt hồi. Quái bị hạ còn **rơi xu** (mục 9).
 Map dài ~260 đơn vị: 6 trụ cách nhau ~43 đơn vị, bục 3 tầng, **5 loại bẫy** (mục 8), rương rải rác (mục 9).
@@ -132,7 +139,7 @@ Mọi bẫy kế thừa `Trap` (chung: `Damage`, `Knockback`, `Active Range` —
 **Xu:** quái bị hạ rơi xu (`Enemy ▸ Coin Chance / Coin Min / Coin Max`; quái do trụ mạnh sinh ra rơi nhiều hơn theo Power). Xu rơi xuống sàn, hút về phía bạn khi lại gần. UI xu nằm ngay dưới thanh máu (có danh sách buff tạm thời). Ví tiền khởi đầu chỉnh ở `GameManager ▸ Start Coins`; số ô kho ở `GameManager ▸ Inventory Slots` (mặc định 24).
 
 **Vật phẩm (`ItemData`)** — file ScriptableObject trong `Assets/NeonBreaker/Items/`. Tạo mới: chuột phải trong Project ▸ **Create ▸ Neon Breaker ▸ Item**. Ba loại (`Kind`):
-- **Passive (trang bị):** có tác dụng chỉ cần nằm trong kho (cộng dồn theo số lượng), tính qua danh sách `Bonuses`.
+- **Passive (trang bị):** chỉ có tác dụng khi được **gắn vào 1 trong 8 ô trang bị** (menu **B ▸ Player**, hoặc chọn trong Kho đồ rồi bấm **TRANG BỊ / Enter**); món gắn vào được lấy khỏi kho, gỡ ra thì trả về kho (kho đầy thì không gỡ được). Chỉ số tính qua danh sách `Bonuses`; có thể gắn nhiều món giống nhau. Số ô trang bị: hằng số `Inventory.EquipSlots` (8).
 - **Consumable (tiêu hao):** bấm DÙNG. Hồi máu (`Heal Hp`), cộng lượt hồi (`Heal Charges`), hoặc `Bonuses` — nếu `Buff Duration` > 0 là buff tạm thời, = 0 là tăng VĨNH VIỄN.
 - **Valuable (đồ giá trị):** chỉ để bán (`Sell Value` xu / cái). Chưa có cửa hàng — thương nhân sẽ làm sau; hàm `Inventory.Sell` đã sẵn.
 
@@ -148,7 +155,7 @@ Sửa Prefab `Chest` = đổi bảng mặc định cho mọi rương chưa ghi �
 
 ## 7b. Hệ thống Skill (cây kỹ năng · chế tạo · minibot)
 
-Phím **N** mở menu **Skill** gồm các tab: **CÂY SKILL**, **CHẾ TẠO**, **LƯU TRỮ MINIBOT** (và một tab trống dành cho mục sau). Toàn bộ thông số nằm ở một file: `Assets/Resources/NeonBreaker/SkillConfig.asset` (chỉnh trong Inspector).
+Mục **Skill** của menu **B** (phím **2**) gồm các tab: **CÂY SKILL**, **CHẾ TẠO**, **LƯU TRỮ MINIBOT** (và một tab trống dành cho mục sau). Toàn bộ thông số nằm ở một file: `Assets/Resources/NeonBreaker/SkillConfig.asset` (chỉnh trong Inspector).
 
 **Cây kỹ năng — 2 nhánh.** *Nhánh bị động* (xanh lá) và *nhánh chủ động* (hồng). Mỗi kỹ năng là một file `SkillNodeData` (Create ▸ Neon Breaker ▸ Skill Node) trong `Assets/NeonBreaker/Skills/`: nhánh (`Branch`), kỹ năng cha (`Parent` — phải mở cha trước), `Start Unlocked`, `Conditions` (điều kiện mở khoá), `Max Level` + giá nâng cấp bằng xu (`Upgrade Cost Base/Growth`), `Effects` (chỉ số cộng thêm mỗi cấp). Kỹ năng khởi đầu: **Thu thập linh kiện** (bị động) và **Triệu hồi minibot** (chủ động), có sẵn từ đầu. 7 kỹ năng mẫu còn lại (Nhặt nhạnh, Chế tạo tiết kiệm, Biên đội, Bảng chọn mở rộng, Rút lui chiến thuật, Huấn luyện, Sửa chữa nhanh) đang để điều kiện **"sẽ được bổ sung sau"** → hiện KHOÁ; bật **chế độ thử nghiệm (P)** để thấy nút "MỞ (THỬ NGHIỆM)".
 - Loại điều kiện (`UnlockType`): `Manual` (chưa có điều kiện), `None`, `KillCount` (tổng số quái đã hạ), `DefeatedEnemy` (đã hạ loại quái `Enemy Id`), `MinibotsCrafted`, `PartsCollected`. Kỹ năng tự mở khi **mọi** điều kiện thoả và kỹ năng cha đã mở. Thêm loại điều kiện mới: thêm vào enum `UnlockType` rồi viết nhánh `case` trong `SkillSystem.ConditionMet` + `ConditionText`.
@@ -179,13 +186,16 @@ Phím **N** mở menu **Skill** gồm các tab: **CÂY SKILL**, **CHẾ TẠO**,
 ## 7d. Cinematic
 
 Điều khiển cảnh: **Enter** tiếp / **Esc** bỏ qua. Kịch bản nằm ở `Core/CineScripts.cs` (lời thoại, thời gian, **tên vật phẩm SS bị cướp**: `StolenItemVi/En` — hiện là tên tạm "LÕI TỐI THƯỢNG"/"PRIME CORE", bạn đổi ở đó). Công cụ dựng cảnh: `Cine` (thanh đen, màn đen, camera bay, chờ), `PixelDissolve` (tan / ghép từng điểm ảnh), `RobotBit` (mảnh linh kiện bay). Tắt cảnh mở đầu: `Systems ▸ GameManager ▸ Play Intro`. Trong cảnh, quái / trụ / HUD tạm dừng.
-- **Mở đầu** khi bấm Chơi; **boss phase 3** (gục → đầy máu → nổ 3 lần → choáng người chơi → đứng dậy); **chết** (gục, tan ra lộ bộ khung robot, tối dần rồi sang căn cứ).
-- Thông số phase 3 của boss ở `Boss ▸ P3 …` (máu `P3 Hp`, tốc độ, sát thương `P3 Damage Mul`, hút máu `P3 Lifesteal`, thời gian choáng `Stun Time`, bão sét `Thunder …`).
+- **Mở đầu** khi bấm Chơi (hình ảnh boss lúc đầu chỉ là **một bóng đen**); **boss phase 3** (gục → đầy máu → nổ 3 lần → choáng người chơi → đứng dậy); **chết** (gục, tan ra lộ bộ khung robot — số mảnh rơi ra đã **giảm đi nhiều**, tối dần rồi sang căn cứ).
+- Thông số phase 3 của boss ở `Boss ▸ P3 …` (máu `P3 Hp`, tốc độ, sát thương `P3 Damage Mul`, hút máu `P3 Lifesteal`, thời gian choáng `Stun Time`, bão sét `Thunder …`). Màn tự huỷ khi phase 3 hết máu: `Boss ▸ Phase 3: tự huỷ ▸ Doom Charge Time` (thời gian nhấp nháy 7 màu) và `Doom Radius` (bán kính nổ).
+- **Boss phase 2/3 từng bị trong suốt:** do `Flasher` ghi nhớ nhầm màu đang mờ làm màu gốc khi đổi phase — đã sửa (nhớ màu / material gốc đúng 1 lần; nhấp nháy 7 màu dùng `Flasher.Tint`, shader `NeonFlash` có thêm `_Tint`).
 
 ## 7e. Căn cứ của Albert (Scene `Base`)
 
 Hầm công nghệ cũ pha đá / đất, dài ~120 đơn vị, đèn trần chập chờn, nhiều phát minh của Albert. Có 2 điểm: **lồng kính hồi sinh** (xuất hiện) và **cửa ra**.
 - **Hồi sinh:** sét giáng từ trên xuống lồng kính, lồng toả sét, người chơi được ghép lại từ vô số mảnh linh kiện robot.
+- **Máy tính khổng lồ** (`ResurrectionComputer`, cao ~7 đơn vị) đứng cạnh lồng (mặc định bên trái; sát mép trái thì sang bên phải), nối với lồng bằng 2 bó dây cáp (cáp thấp vào chân lồng, cáp cao vòng lên khung lồng). Màn hình động: quét cơ thể, sóng tim, thanh tiến độ, đèn nhấp nháy. Khi lồng nạp điện hồi sinh, vầng sáng màn hình mạnh lên, dây cáp sáng lên và phóng tia lửa điện. Thêm vào Scene có sẵn bằng menu *Thêm máy tính khổng lồ vào Scene Base*; sau đó kéo object `ResurrectionComputer` (dây cáp là object con nên đi theo) để chỉnh vị trí. Thông số: `Idle Glow`, `Charged Glow`.
+- **Hội thoại:** khi Albert ↔ người chơi nói chuyện, camera **zoom vào người đang nói** (mức zoom `BaseConfig ▸ Dialogue Zoom`, mặc định 2) và khung thoại nhỏ gọn hơn ở đáy màn hình, không che nhân vật.
 - **Lần đầu về căn cứ:** hội thoại Albert ↔ XbAst-013 (lời thoại ở `BaseManager.FirstArrivalLines`), sau đó đi lại tự do.
 - **Albert** (áo choàng trắng, kính tròn): đi lại quanh căn cứ, thỉnh thoảng dừng lại ngắm một phát minh (kéo công trình vào `AlbertNpc ▸ Interest Points`). **F** để nói chuyện: kể cốt truyện (lần đầu), **giao nhiệm vụ** / nhận thưởng (6 nhiệm vụ trong `BaseMissions.cs`: hạ quái, phá trụ, ghép linh kiện, chế tác, hạ boss…), mẹo chơi.
 - **Bàn chế tác** (F): chọn công thức (W/S, Enter chế tác) — nguyên liệu + dầu (+ xu). Công thức ở `BaseConfig ▸ Recipes`.
@@ -206,8 +216,8 @@ Assets/
 ├─ Resources/NeonBreaker/     ArtBank, AudioBank, SkillConfig, BaseConfig
 └─ Scripts/
    ├─ Core/                   Cfg, GameManager, GameFlow (Main ↔ Base), GameInput, PixelScreen, SpriteAnimator, Fx, Sfx, Cine, CineScripts, PixelDissolve, ...
-   ├─ Gameplay/               Player, Enemy, Walker, Flyer, Boss, Tower, Projectile, Pickup, Level, Trap*, Coin, Chest, Inventory, ItemData, SkillSystem, SkillConfig, SkillNodeData, Minibot, PartDrop, PowerSystem, WorldItem, OilDrop, PartFusion, BaseConfig, BaseManager, BaseMissions, BaseCrafting, BaseStation, AlbertNpc, ResurrectionCapsule, LampFlicker, RobotBit ...
-   └─ UI/                     Hud.cs (HUD / menu / màn thắng-thua, IMGUI), InventoryUi.cs (kho đồ), SkillUi.cs (menu Skill, bảng minibot H), BaseUi / DialogueUi / CraftUi / FusionUi / MapUi (căn cứ)
+   ├─ Gameplay/               Player, Enemy, Walker, Flyer, Boss, Tower, Projectile, Pickup, Level, Trap*, Coin, Chest, Inventory, ItemData, SkillSystem, SkillConfig, SkillNodeData, Minibot, PartDrop, PowerSystem, WorldItem, OilDrop, PartFusion, BaseConfig, BaseManager, BaseMissions, BaseCrafting, BaseStation, AlbertNpc, ResurrectionCapsule, ResurrectionComputer, LampFlicker, RobotBit ...
+   └─ UI/                     Hud.cs (HUD / menu / màn thắng-thua, IMGUI), GameMenu.cs (menu B: khung + 3 thẻ mục), InventoryUi.cs (mục Kho đồ), SkillUi.cs (mục Skill, bảng minibot H), PlayerUi.cs (mục Player: hình + 8 ô trang bị + thông tin), BaseUi / DialogueUi / CraftUi / FusionUi / MapUi (căn cứ)
 Tools/PixelArt/gen_art.py       Sinh toàn bộ PNG (tuỳ chọn)
 Tools/PixelArt/gen_enemies2.py  Sinh sprite Heavy + Rusher, CẬP NHẬT manifest.json không ghi đè
 Tools/PixelArt/gen_extras.py    Sinh sprite bẫy, xu, rương, icon vật phẩm, CẬP NHẬT manifest.json không ghi đè
@@ -215,6 +225,7 @@ Tools/PixelArt/gen_skill.py     Sinh sprite linh kiện + 9 icon kỹ năng, C�
 Tools/PixelArt/gen_stage2.py    Sinh sprite dầu, nguyên liệu, icon linh kiện theo bậc
 Tools/PixelArt/gen_cine.py      Sinh bộ khung robot + mảnh linh kiện cho cinematic
 Tools/PixelArt/gen_base.py      Sinh art căn cứ: gạch tường/sàn/trần, đèn, Albert, lồng kính, máy ghép, bàn chế tác, cửa, phát minh
+Tools/PixelArt/gen_bigpc.py     Sinh sprite máy tính khổng lồ cạnh lồng hồi sinh (thân, 4 khung màn hình, 2 bó dây cáp), CẬP NHẬT manifest.json không ghi đè
 ```
 
 `Cfg.cs` chỉ còn giữ: ngôn ngữ, layer, mốc chiều dài màn, bảng màu. Mốc cổng/boss/bàn thờ chỉnh bằng object `Level` trong Scene.
@@ -245,7 +256,10 @@ Sprite pixel art: 16 pixel = 1 đơn vị thế giới, màn hình tham chiếu 
 - **Không thấy xu rơi / rương / bẫy:** chạy hai menu ở mục 1 (bản có bẫy + kho đồ) theo đúng thứ tự; kiểm tra `ArtBank ▸ Coin Prefab` đã có Prefab `Coin` (nếu trống, xu được cộng thẳng vào ví thay vì rơi ra).
 - **Bấm B / F không có phản ứng:** bấm vào cửa sổ Game trước; F chỉ dùng được khi đứng trong tầm vật / rương / máy (xem gợi ý "[F] …").
 - **Heavy/Rusher hiện ô vuông/không có hình:** Unity chưa import xong PNG mới trong `Art/` — bấm Assets ▸ Refresh rồi chạy lại menu.
-- **Bấm N / H không thấy gì, hoặc menu Skill báo "Chưa có dữ liệu Skill":** chạy menu *Thêm hệ thống Skill (không đụng Scene)* (mục 1). Bấm H chỉ mở bảng khi có ≥ 1 minibot.
+- **Bấm H không thấy gì, hoặc mục Skill (B ▸ 2) báo "Chưa có dữ liệu Skill":** chạy menu *Thêm hệ thống Skill (không đụng Scene)* (mục 1). Bấm H chỉ mở bảng khi có ≥ 1 minibot.
+- **Đồ trang bị không còn cộng chỉ số khi chỉ để trong kho:** đúng thiết kế mới — phải gắn vào ô trang bị (B ▸ Player, hoặc chọn món trong Kho đồ rồi bấm TRANG BỊ).
+- **Menu *Thêm máy tính khổng lồ* báo thiếu sprite `bigpc_…`:** Unity chưa import PNG mới — bấm Assets ▸ Refresh (hoặc chạy `python3 Tools/PixelArt/gen_bigpc.py`) rồi chạy lại menu.
+- **Nền Scene Main vẫn sáng:** chỉnh `Parallax ▸ Darken` (0 = giữ nguyên, 0.45 mặc định, tối đa 0.9) trên từng lớp nền; bản làm tối chỉ áp dụng khi chạy, không sửa Scene của bạn.
 - **Quái chết nhưng linh kiện cộng thẳng vào kho thay vì rơi ra:** `ArtBank ▸ Part Prefab` đang trống — chạy lại menu *Thêm hệ thống Skill*.
 - **Không chế tạo được:** cần mở kỹ năng "Thu thập linh kiện", đã hạ loại quái đó ít nhất 1 lần và đủ linh kiện (cả ba điều kiện hiện trong tab CHẾ TẠO).
 - **Thiếu dòng Heavy/Rusher trong tab CHẾ TẠO:** tạo Prefab Heavy/Rusher (menu *Thêm quái Heavy + Rusher*) rồi chạy lại menu *Thêm hệ thống Skill*.

@@ -476,6 +476,21 @@ namespace NeonBreaker
             return dmg;
         }
 
+        /// <summary>
+        /// Giết người chơi bất kể đang né / có giáp / vừa bị đánh (dùng cho vụ nổ tự huỷ của boss).
+        /// Chế độ thử nghiệm (phím P) vẫn bảo vệ người chơi. Trả về true nếu người chơi đã chết.
+        /// </summary>
+        public bool Kill(Vector2 from)
+        {
+            if (Dead) return true;
+            if (!GameManager.Active || GameManager.Cheat) return false;
+            hp = 0f;
+            flashT = 0.2f;
+            Fx.Text(Center + new Vector2(0f, 1.2f), "-9999", Cfg.Red, 1.6f);
+            Die();
+            return true;
+        }
+
         void Die()
         {
             Dead = true;

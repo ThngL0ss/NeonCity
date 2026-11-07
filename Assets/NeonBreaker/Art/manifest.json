@@ -259,6 +259,96 @@
   "tile": false,
   "w": 480
  },
+ "bigpc_body.png": {
+  "h": 112,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 80
+ },
+ "bigpc_cable_high_0.png": {
+  "h": 28,
+  "pivot": [
+   0.0,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 28
+ },
+ "bigpc_cable_high_1.png": {
+  "h": 28,
+  "pivot": [
+   0.0,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 28
+ },
+ "bigpc_cable_low_0.png": {
+  "h": 22,
+  "pivot": [
+   0.0,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 28
+ },
+ "bigpc_cable_low_1.png": {
+  "h": 22,
+  "pivot": [
+   0.0,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 28
+ },
+ "bigpc_screen_0.png": {
+  "h": 112,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 80
+ },
+ "bigpc_screen_1.png": {
+  "h": 112,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 80
+ },
+ "bigpc_screen_2.png": {
+  "h": 112,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 80
+ },
+ "bigpc_screen_3.png": {
+  "h": 112,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 80
+ },
  "boss1_air.png": {
   "h": 90,
   "pivot": [

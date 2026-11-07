@@ -5,7 +5,7 @@ namespace NeonBreaker
 {
     /// <summary>
     /// Giao diện hệ thống Skill (IMGUI, vẽ qua các hàm của Hud):
-    ///  • Mục Skill (phím N): tab CÂY SKILL · CHẾ TẠO · LƯU TRỮ MINIBOT. Q / E chuyển tab, chuột bấm các nút.
+    ///  • Mục Skill của menu B (phím 2): tab CÂY SKILL · CHẾ TẠO · LƯU TRỮ MINIBOT. Q / E chuyển tab, chuột bấm các nút.
     ///  • Bảng chọn minibot (phím H): hiện ngay trên màn chơi, KHÔNG tạm dừng game. Bấm vào minibot để triệu hồi.
     ///  • Nhãn trên đầu minibot đang triệu hồi: bấm vào minibot để thu hồi (sau khi hết giao tranh đủ lâu).
     /// </summary>
@@ -102,15 +102,8 @@ namespace NeonBreaker
         }
 
         // ============================================================ MỤC SKILL
-        public static void DrawMenu(Hud h)
+        public static void DrawContent(Hud h)
         {
-            h.Dim(0.74f);
-            Rect panel = h.R(150, 50, 980, 620);
-            h.Fill(panel, new Color(0.01f, 0.02f, 0.06f, 0.94f));
-            h.Outline(panel, Cfg.A(Cfg.Cyan, 0.75f), 2f);
-            h.Txt(h.R(176, 58, 300, 44), "SKILL", 34, Cfg.Cyan);
-
-            DrawWallet(h);
             DrawTabs(h);
 
             if (!SkillSystem.HasConfig)
@@ -133,23 +126,9 @@ namespace NeonBreaker
             if (SkillSystem.MsgT > 0f && !string.IsNullOrEmpty(SkillSystem.Msg))
                 h.Txt(h.R(176, 620, 928, 22), SkillSystem.Msg, 15, Cfg.Yellow, TextAnchor.UpperLeft, false);
             h.Txt(h.R(176, 644, 940, 20),
-                  Cfg.L("[N / ESC] đóng   ·   [Q / E] chuyển tab   ·   [A D W S] chọn minibot (tab Lưu trữ)   ·   chuột: bấm các nút",
-                        "[N / ESC] close   ·   [Q / E] switch tab   ·   [A D W S] select minibot (Storage tab)   ·   mouse: click buttons"),
+                  Cfg.L(GameMenu.CommonHintVi + "   ·   [Q / E] chuyển tab con   ·   [A D W S] chọn minibot (tab Lưu trữ)   ·   chuột: bấm các nút",
+                        GameMenu.CommonHintEn + "   ·   [Q / E] switch sub-tab   ·   [A D W S] select minibot (Storage tab)   ·   mouse: click buttons"),
                   13, Cfg.A(Color.white, 0.6f), TextAnchor.UpperLeft, false);
-        }
-
-        static void DrawWallet(Hud h)
-        {
-            Rect box = h.R(850, 62, 258, 40);
-            h.Fill(box, new Color(0.02f, 0.03f, 0.09f, 0.9f));
-            h.Outline(box, Cfg.A(Cfg.Yellow, 0.6f), 1.5f);
-            Rect ic = h.R(858, 68, 28, 28);
-            var coinSpr = Art.Bank != null ? Art.Bank.coinIcon : null;
-            if (coinSpr != null) h.DrawSprite(coinSpr, ic, Color.white);
-            else h.Fill(ic, Cfg.A(Cfg.Yellow, 0.9f));
-            h.Txt(h.R(892, 62, 70, 40), Cfg.L("XU", "COINS"), 15, Cfg.A(Cfg.Yellow, 0.95f), TextAnchor.MiddleLeft);
-            h.Txt(h.R(940, 62, 160, 40), Inventory.Coins.ToString(), 24, Color.white, TextAnchor.MiddleRight);
-            h.Txt(h.R(470, 62, 370, 40), Cfg.L("Linh kiện: ", "Parts: ") + SkillSystem.PartsSummary(), 15, Cfg.A(Cfg.Cyan, 0.9f), TextAnchor.MiddleRight, false);
         }
 
         static void DrawTabs(Hud h)

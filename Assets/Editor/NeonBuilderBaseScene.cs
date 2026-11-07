@@ -12,6 +12,7 @@ namespace NeonBreaker.EditorTools
     /// Tạo Scene Base (căn cứ ngầm của Albert) = Assets/NeonBreaker/Scenes/Base.unity.
     /// Dựng trong một Scene phụ rồi lưu ra file, nên Scene Main (và mọi Scene đang mở) KHÔNG bị đụng tới.
     /// Menu "Cập nhật cấp bậc + dầu + căn cứ" chỉ tạo Base.unity khi nó CHƯA có; muốn dựng lại từ đầu dùng menu "Tạo lại Scene Căn cứ".
+    /// Menu "Thêm máy tính khổng lồ vào Scene Base" chỉ thêm 1 object (ResurrectionComputer) vào Base.unity có sẵn, không đụng object nào khác.
     /// </summary>
     public static partial class NeonBuilder
     {
@@ -68,6 +69,125 @@ namespace NeonBreaker.EditorTools
             EditorBuildSettings.scenes = list.ToArray();
         }
 
+        [MenuItem("Tools/Neon Breaker/Thêm máy tính khổng lồ vào Scene Base (giữ nguyên chỉnh sửa của bạn)", false, 16)]
+        public static void AddComputerToBase()
+        {
+            root = null;
+            if (EditorApplication.isPlaying)
+            {
+                EditorUtility.DisplayDialog("Neon Breaker", "Đang ở chế độ Play. Hãy dừng Play rồi chạy lại.", "OK");
+                return;
+            }
+            if (!File.Exists(BaseScenePath))
+            {
+                EditorUtility.DisplayDialog("Neon Breaker", "Chưa có Scene Base. Hãy chạy menu \"Cập nhật cấp bậc + dầu + căn cứ\" trước.", "OK");
+                return;
+            }
+            try
+            {
+                Prepare();
+                missing.Clear();
+
+                // dùng luôn Scene Base nếu đang mở, không thì mở thêm (Additive) rồi đóng lại sau khi lưu
+                Scene sc = default(Scene);
+                bool wasOpen = false;
+                for (int i = 0; i < SceneManager.sceneCount; i++)
+                    if (SceneManager.GetSceneAt(i).path == BaseScenePath) { sc = SceneManager.GetSceneAt(i); wasOpen = true; }
+                if (!wasOpen) sc = EditorSceneManager.OpenScene(BaseScenePath, OpenSceneMode.Additive);
+
+                string report;
+                bool changed = false;
+                try { report = AddComputerToScene(sc, out changed); }
+                finally
+                {
+                    if (!wasOpen)
+                    {
+                        if (changed) EditorSceneManager.SaveScene(sc);
+                        EditorSceneManager.CloseScene(sc, true);
+                    }
+                }
+                if (wasOpen && changed)
+                {
+                    EditorSceneManager.MarkSceneDirty(sc);
+                    report += "\n(Scene Base đang mở: nhớ lưu bằng Ctrl+S.)";
+                }
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+                Debug.Log("Neon Breaker: " + report);
+                EditorUtility.DisplayDialog("Neon Breaker", report, "OK");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("Neon Breaker: lỗi khi thêm máy tính khổng lồ - " + e);
+                EditorUtility.DisplayDialog("Neon Breaker", "Lỗi: " + e.Message + "\n(xem Console)", "OK");
+            }
+        }
+
+        /// <summary>Thêm máy tính khổng lồ cạnh lồng hồi sinh của Scene sc (nếu chưa có). Không đụng bất kỳ object nào khác.</summary>
+        static string AddComputerToScene(Scene sc, out bool changed)
+        {
+            changed = false;
+            ResurrectionCapsule cap = null;
+            BaseManager bm = null;
+            Transform props = null;
+            foreach (var r in sc.GetRootGameObjects())
+            {
+                if (r.GetComponentInChildren<ResurrectionComputer>(true) != null)
+                    return "• Scene Base đã có máy tính khổng lồ (ResurrectionComputer) — giữ nguyên, bạn tự chỉnh vị trí / kích thước trong Scene.";
+                if (cap == null) cap = r.GetComponentInChildren<ResurrectionCapsule>(true);
+                if (bm == null) bm = r.GetComponentInChildren<BaseManager>(true);
+                if (props == null && r.name == "Props") props = r.transform;
+            }
+            if (cap == null) return "• Không tìm thấy ResurrectionCapsule trong Scene Base nên chưa thêm được máy tính.";
+
+            float limitLeft = bm != null && bm.limitLeft != null ? bm.limitLeft.position.x : BaseLeft;
+            var go = MakeResurrectionComputer(cap, limitLeft);
+            if (missing.Count > 0)
+            {
+                Object.DestroyImmediate(go);
+                throw new System.Exception("Thiếu sprite: " + string.Join(", ", missing.ToArray()) + ". Chạy: python3 Tools/PixelArt/gen_bigpc.py rồi để Unity import lại.");
+            }
+            SceneManager.MoveGameObjectToScene(go, sc);
+            if (props != null) go.transform.SetParent(props, true);
+            changed = true;
+            return "• Đã thêm máy tính khổng lồ \"ResurrectionComputer\" cạnh lồng hồi sinh (x = " + go.transform.position.x.ToString("0.0") + "), nối bằng 2 bó dây cáp.\n" +
+                   "  Chỉnh vị trí: kéo object ResurrectionComputer trong Scene Base (dây cáp đi theo vì là object con).";
+        }
+
+        /// <summary>
+        /// Máy tính khổng lồ nối với lồng hồi sinh: thân máy + màn hình động + vầng sáng + 2 bó dây cáp (cáp thấp nối chân lồng, cáp cao nối khung lồng).
+        /// Mặc định nằm bên TRÁI lồng; nếu sát mép trái căn cứ thì sang bên phải (lật hình). Toạ độ cổng cáp khớp với Tools/PixelArt/gen_bigpc.py.
+        /// </summary>
+        static GameObject MakeResurrectionComputer(ResurrectionCapsule cap, float limitLeftX)
+        {
+            const float half = 2.5f;          // nửa bề ngang máy (80 px / 16 / 2)
+            const float gap = 1.4f;           // khe hở giữa máy và lồng (dây cáp bắc qua)
+            const float capHalf = 1.5f;       // nửa bề ngang lồng (48 px / 16 / 2)
+            float dist = half + gap + capHalf;
+            Vector3 cp = cap.transform.position;
+            int side = (cp.x - dist - half >= limitLeftX) ? -1 : 1;
+
+            var go = new GameObject("ResurrectionComputer");
+            go.transform.position = new Vector3(cp.x + side * dist, cp.y, 0f);
+            go.transform.localScale = new Vector3(-side, 1f, 1f);          // sprite vẽ cáp ở bên PHẢI; máy bên phải lồng thì lật
+            var comp = go.AddComponent<ResurrectionComputer>();
+            comp.capsule = cap;
+
+            AddSr(Child(go, "Body", Vector2.zero), Spr("bigpc_body"), 10, false, Color.white);
+            Visual(go, "Screen", Vector2.zero, 11, "idle", Clip("idle", 4f, true, Fr("bigpc_screen_", 4)));
+            comp.screenGlow = Glow(go, "ScreenGlow", new Vector2(0f, 5.25f), new Vector2(5.6f, 3.4f), A(Cfg.Cyan, 0.16f), 12);
+
+            var low = Visual(go, "CableLow", new Vector2(half, 0f), 11, "idle", Clip("idle", 3f, true, Fr("bigpc_cable_low_", 2)));
+            var high = Visual(go, "CableHigh", new Vector2(half, 4.0f), 11, "idle", Clip("idle", 3f, true, Fr("bigpc_cable_high_", 2)));
+            comp.cables = new[] { low.GetComponent<SpriteRenderer>(), high.GetComponent<SpriteRenderer>() };
+            comp.sparkPoints = new[]
+            {
+                Child(go, "Spark_Low", new Vector2(half + 0.9f, 0.5f)).transform,
+                Child(go, "Spark_High", new Vector2(half + 0.9f, 5.0f)).transform
+            };
+            return go;
+        }
+
         // ================================================================ ĐIỂM VÀO
         /// <summary>Tạo Base.unity nếu chưa có (hoặc ghi đè nếu overwrite). Trả về dòng báo cáo.</summary>
         static string EnsureBaseScene(bool overwrite)
@@ -75,7 +195,7 @@ namespace NeonBreaker.EditorTools
             if (File.Exists(BaseScenePath) && !overwrite)
             {
                 AddSceneToBuildSettings(BaseScenePath);
-                return "• Scene Base đã có — giữ nguyên (muốn dựng lại: menu \"Tạo lại Scene Căn cứ Base\")";
+                return "• Scene Base đã có — giữ nguyên (muốn dựng lại: menu \"Tạo lại Scene Căn cứ Base\"; muốn chỉ thêm máy tính khổng lồ cạnh lồng hồi sinh: menu \"Thêm máy tính khổng lồ vào Scene Base\")";
             }
             if (IsSceneOpen(BaseScenePath))
                 return "• Scene Base đang mở nên chưa dựng lại — hãy đóng nó rồi chạy lại menu";
@@ -277,6 +397,9 @@ namespace NeonBreaker.EditorTools
             Prop(props, "Barrel_B", "prop_barrel", 102.5f, 10);
             Prop(props, "Rocks_A", "prop_rocks", 4f, 11);
             Prop(props, "Rocks_B", "prop_rocks", 116.5f, 11);
+
+            // máy tính khổng lồ nối với lồng hồi sinh
+            MakeResurrectionComputer(cap, BaseLeft).transform.SetParent(props, true);
 
             // cửa ra + biển chỉ lối
             var door = MakeStation(props, "ExitDoor", StationKind.Door, "station_door", 109f, new Vector2(0f, 2.2f), new Vector2(3.6f, 5f), new Color(0.45f, 1f, 0.4f), 5.1f, 10);

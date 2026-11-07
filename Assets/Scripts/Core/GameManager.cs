@@ -75,6 +75,7 @@ namespace NeonBreaker
             BannerMax = 1f;
             Inventory.ResetAll();
             SkillSystem.ResetAll();
+            GameMenu.ResetAll();
             GameFlow.ResetStatics();
         }
 
@@ -95,13 +96,13 @@ namespace NeonBreaker
             {
                 Inventory.ResetAll();
                 SkillSystem.ResetAll();
+                GameMenu.ResetAll();
                 GameFlow.ResetStatics();      // chơi lại từ đầu: nhiệm vụ + cốt truyện căn cứ cũng về ban đầu
             }
             else
             {
-                // chuyển cảnh Main <-> Base: giữ kho đồ / skill / minibot, chỉ đóng các bảng đang mở
-                Inventory.IsOpen = false;
-                SkillSystem.MenuOpen = false;
+                // chuyển cảnh Main <-> Base: giữ kho đồ / trang bị / skill / minibot, chỉ đóng các bảng đang mở
+                GameMenu.IsOpen = false;
                 SkillSystem.PanelOpen = false;
             }
             Cine.NewScene(GameFlow.Carry);      // chuyển cảnh: giữ màn đen để mờ dần vào Scene mới
@@ -177,43 +178,25 @@ namespace NeonBreaker
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
-        /// <summary>Mở kho đồ (phím B). Game tạm dừng trong lúc mở.</summary>
-        public static void OpenInventory()
+        /// <summary>Mở menu nhân vật (phím B): Kho đồ · Skill · Player. Game tạm dừng trong lúc mở. tab &lt; 0: mở lại mục lần trước.</summary>
+        public static void OpenMenu(int tab = -1)
         {
             if (State != GameState.Playing || Paused) return;
             var p = Player.Instance;
             if (p == null || p.Dead) return;
-            Inventory.IsOpen = true;
-            Inventory.Sel = Mathf.Clamp(Inventory.Sel, 0, Mathf.Max(0, Inventory.Capacity - 1));
-            Paused = true;
-            Sfx.Play("click", 0.8f, 1.2f);
-        }
-
-        public static void CloseInventory()
-        {
-            if (!Inventory.IsOpen) return;
-            Inventory.IsOpen = false;
-            Paused = false;
-            Sfx.Play("click", 0.8f, 0.9f);
-        }
-
-        /// <summary>Mở mục Skill (phím N): cây skill, chế tạo, lưu trữ minibot. Game tạm dừng trong lúc mở.</summary>
-        public static void OpenSkillMenu()
-        {
-            if (State != GameState.Playing || Paused) return;
-            var p = Player.Instance;
-            if (p == null || p.Dead) return;
-            SkillSystem.MenuOpen = true;
+            if (tab >= 0) GameMenu.Tab = Mathf.Clamp(tab, 0, GameMenu.TabCount - 1);
+            GameMenu.IsOpen = true;
             SkillSystem.PanelOpen = false;
+            Inventory.Sel = Mathf.Clamp(Inventory.Sel, 0, Mathf.Max(0, Inventory.Capacity - 1));
             SkillSystem.SelBot = Mathf.Clamp(SkillSystem.SelBot, 0, Mathf.Max(0, SkillSystem.Bots.Count - 1));
             Paused = true;
             Sfx.Play("click", 0.8f, 1.2f);
         }
 
-        public static void CloseSkillMenu()
+        public static void CloseMenu()
         {
-            if (!SkillSystem.MenuOpen) return;
-            SkillSystem.MenuOpen = false;
+            if (!GameMenu.IsOpen) return;
+            GameMenu.IsOpen = false;
             Paused = false;
             Sfx.Play("click", 0.8f, 0.9f);
         }
@@ -221,8 +204,7 @@ namespace NeonBreaker
         public void TogglePause()
         {
             if (State != GameState.Playing) return;
-            if (SkillSystem.MenuOpen) { CloseSkillMenu(); return; }
-            if (Inventory.IsOpen) { CloseInventory(); return; }
+            if (GameMenu.IsOpen) { CloseMenu(); return; }
             Paused = !Paused;
             Sfx.Play("click", 0.8f);
         }
@@ -253,15 +235,11 @@ namespace NeonBreaker
                         // hội thoại / bàn chế tác / máy ghép / bản đồ: người chơi đứng yên, thế giới vẫn chạy
                         BaseUi.UpdateInput();
                     }
-                    else if (SkillSystem.MenuOpen)
+                    else if (GameMenu.IsOpen)
                     {
-                        if (GameInput.PauseDown || GameInput.SkillMenuDown) CloseSkillMenu();
-                        else SkillUi.UpdateInput();
-                    }
-                    else if (Inventory.IsOpen)
-                    {
-                        if (GameInput.PauseDown || GameInput.InventoryDown) CloseInventory();
-                        else InventoryUi.UpdateInput();
+                        // menu B (Kho đồ / Skill / Player): B hoặc Esc đóng, 1 2 3 / Tab đổi mục
+                        if (GameInput.PauseDown || GameInput.InventoryDown) CloseMenu();
+                        else GameMenu.UpdateInput();
                     }
                     else if (SkillSystem.PanelOpen)
                     {
@@ -271,8 +249,7 @@ namespace NeonBreaker
                     }
                     else if (GameInput.PauseDown) TogglePause();
                     else if (Paused && GameInput.ConfirmDown) TogglePause();
-                    else if (!Paused && GameInput.InventoryDown) OpenInventory();
-                    else if (!Paused && GameInput.SkillMenuDown) OpenSkillMenu();
+                    else if (!Paused && GameInput.InventoryDown) OpenMenu();
                     else if (!Paused && GameInput.MinibotPanelDown) SkillSystem.TogglePanel();
                     else if (!Paused && !PlayerLocked && GameInput.MapDown) BaseUi.Open(BaseMode.Map);
                     else if (!Paused && !PlayerLocked && GameInput.InteractDown) Interactor.TryInteract();
@@ -357,6 +334,11 @@ namespace NeonBreaker
             Banner(Cfg.L("PHASE 3 — NÓ ĐÃ TÁI SINH, MẠNH HƠN BAO GIỜ HẾT!", "PHASE 3 — IT HAS REBORN, STRONGER THAN EVER!"), Cfg.Orange, 4.5f);
         }
 
+        public static void OnBossDoom()
+        {
+            Banner(Cfg.L("BOSS ĐANG TỰ HUỶ — KHÔNG THỂ NÉ!", "THE BOSS IS SELF-DESTRUCTING — YOU CAN'T DODGE IT!"), Cfg.Red, 5f);
+        }
+
         public static void OnBossDead()
         {
             Sfx.StopMusic();
@@ -379,8 +361,7 @@ namespace NeonBreaker
         {
             Paused = false;
             PlayerLocked = false;
-            Inventory.IsOpen = false;
-            SkillSystem.MenuOpen = false;
+            GameMenu.IsOpen = false;
             SkillSystem.PanelOpen = false;
             State = GameState.Cinematic;          // quái, trụ, bẫy đứng yên trong lúc quay
             Projectile.ClearHostile();
@@ -401,8 +382,7 @@ namespace NeonBreaker
             if (State == GameState.Playing)
             {
                 Paused = false;
-                Inventory.IsOpen = false;
-                SkillSystem.MenuOpen = false;
+                GameMenu.IsOpen = false;
                 SkillSystem.PanelOpen = false;
                 State = result;
             }

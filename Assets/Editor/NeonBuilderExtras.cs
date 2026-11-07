@@ -147,7 +147,7 @@ namespace NeonBreaker.EditorTools
             var legend = new Color(1f, 0.80f, 0.25f, 1f);
             var d = new Dictionary<string, ItemData>();
 
-            // ---- trang bị (Passive): có tác dụng khi mang trong kho
+            // ---- trang bị (Passive): có tác dụng khi được gắn vào ô trang bị (B ▸ Player)
             d["core_cell"] = MakeItem("core_cell", "Lõi năng lượng", "Energy Core", "Lõi pin dự phòng nuôi cơ thể bạn.", "A spare power core feeding your body.",
                 ItemKind.Passive, 1, 60, rare, it => it.bonuses.Add(Bn(ItemStat.MaxHealth, 20f)));
             d["neon_armor"] = MakeItem("neon_armor", "Giáp neon", "Neon Armor", "Tấm giáp phát sáng làm giảm sát thương nhận vào.", "A glowing plate that softens incoming damage.",

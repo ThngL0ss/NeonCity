@@ -57,8 +57,7 @@ namespace NeonBreaker
                 case GameState.Lost: DrawResult(false); break;
                 case GameState.Playing:
                     if (BaseUi.IsOpen) BaseUi.Draw(this);
-                    else if (SkillSystem.MenuOpen) SkillUi.DrawMenu(this);
-                    else if (Inventory.IsOpen) InventoryUi.Draw(this);
+                    else if (GameMenu.IsOpen) GameMenu.Draw(this);
                     else if (GameManager.Paused) DrawPause();
                     break;
             }
@@ -275,12 +274,10 @@ namespace NeonBreaker
             Fill(bar, new Color(0f, 0f, 0f, 0.75f));
             Fill(new Rect(bar.x, bar.y, bar.width * Mathf.Clamp01(bossShown), bar.height), Cfg.A(Color.white, 0.5f));
             NeonBar(bar, b.TotalFrac, c, new Color(0f, 0f, 0f, 0f));
-            float mx = bar.x + bar.width * b.PhaseMarker;
-            Fill(new Rect(mx - 1.5f * s, bar.y - 5f * s, 3f * s, bar.height + 10f * s), Cfg.A(Color.white, 0.9f));
-            if (b.PhaseMarker2 > 0f)
+            if (b.PhaseMarker > 0f)       // thanh phase 1 + 2 có một vạch chia; phase 3 thanh hồi đầy và không có vạch
             {
-                float mx2 = bar.x + bar.width * b.PhaseMarker2;
-                Fill(new Rect(mx2 - 1.5f * s, bar.y - 5f * s, 3f * s, bar.height + 10f * s), Cfg.A(Color.white, 0.9f));
+                float mx = bar.x + bar.width * b.PhaseMarker;
+                Fill(new Rect(mx - 1.5f * s, bar.y - 5f * s, 3f * s, bar.height + 10f * s), Cfg.A(Color.white, 0.9f));
             }
             if (p2) Txt(R(x, 646, w, 26), Cfg.L("HÚT MÁU", "LIFESTEAL"), 14, Cfg.Lime, TextAnchor.MiddleRight);
         }
@@ -326,7 +323,7 @@ namespace NeonBreaker
             Rect sk = R(14, 160, 352, 24);
             Fill(sk, new Color(0.01f, 0.02f, 0.06f, 0.55f));
             Outline(sk, Cfg.A(Cfg.Cyan, 0.3f), 1.5f);
-            Txt(R(22, 160, 200, 24), "[N] SKILL   [H] MINIBOT " + SkillSystem.SummonedCount + "/" + SkillSystem.MaxSummoned, 12, Cfg.A(Cfg.Cyan, 0.9f), TextAnchor.MiddleLeft, true);
+            Txt(R(22, 160, 200, 24), "[B] MENU   [H] MINIBOT " + SkillSystem.SummonedCount + "/" + SkillSystem.MaxSummoned, 12, Cfg.A(Cfg.Cyan, 0.9f), TextAnchor.MiddleLeft, true);
             Txt(R(222, 160, 138, 24), Cfg.L("Linh kiện ", "Parts ") + SkillSystem.PartsTotal, 12, Cfg.A(Color.white, 0.8f), TextAnchor.MiddleRight, false);
 
             // buff tạm đang chạy

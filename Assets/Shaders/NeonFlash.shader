@@ -4,6 +4,7 @@ Shader "NeonBreaker/SpriteFlash"
     Properties
     {
         _MainTex ("Sprite Texture", 2D) = "white" {}
+        _Tint ("Use sprite colour (0 = white, 1 = tinted)", Float) = 0
     }
     SubShader
     {
@@ -42,6 +43,7 @@ Shader "NeonBreaker/SpriteFlash"
             };
 
             sampler2D _MainTex;
+            float _Tint;
 
             v2f vert(appdata_t IN)
             {
@@ -55,7 +57,7 @@ Shader "NeonBreaker/SpriteFlash"
             fixed4 frag(v2f IN) : SV_Target
             {
                 fixed a = tex2D(_MainTex, IN.texcoord).a * IN.color.a;
-                return fixed4(1, 1, 1, a);
+                return fixed4(lerp(fixed3(1, 1, 1), IN.color.rgb, _Tint), a);
             }
             ENDCG
         }

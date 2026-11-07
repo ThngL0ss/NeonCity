@@ -22,6 +22,7 @@ namespace NeonBreaker
         float lookX, velX, velY;
         Vector2 pos;
         bool first = true;
+        float zoom = 1f;
 
         void Awake()
         {
@@ -37,7 +38,9 @@ namespace NeonBreaker
             if (target == null && Player.Instance != null) target = Player.Instance.transform;
             if (target == null) { Apply(pos); return; }
 
-            float size = PixelScreen.Inst != null ? PixelScreen.Inst.OrthoSize : cam.orthographicSize;
+            float baseSize = PixelScreen.Inst != null ? PixelScreen.Inst.OrthoSize : cam.orthographicSize;
+            zoom = Mathf.Max(1f, Cine.Zoom);
+            float size = baseSize / zoom;                       // phóng to khi thoại (Cine.SetZoom)
             cam.orthographicSize = size;
             float halfW = size * cam.aspect;
 
@@ -47,13 +50,14 @@ namespace NeonBreaker
             lookX = Mathf.Lerp(lookX, face, 1f - Mathf.Exp(-3.0f * Time.unscaledDeltaTime));
 
             float tx = target.position.x + lookX;
-            float ty = Mathf.Max(size - groundMargin, target.position.y + 1.4f);
+            float margin = groundMargin / zoom;                  // giữ chân nhân vật ở cùng vị trí trên màn hình khi zoom
+            float ty = Mathf.Max(size - margin, target.position.y + 1.4f);
             float sm = 1f;
             if (Cine.HasFocus)
             {
                 // cinematic: camera bay tới điểm chỉ định
                 tx = Cine.FocusPos.x;
-                ty = Mathf.Max(size - groundMargin, Cine.FocusPos.y);
+                ty = Mathf.Max(size - margin, Cine.FocusPos.y);
                 sm = Cine.CamSmooth;
             }
 
@@ -85,8 +89,9 @@ namespace NeonBreaker
                 off.x = (Mathf.PerlinNoise(t, 0.3f) - 0.5f) * 2f * tr * 1.1f;
                 off.y = (Mathf.PerlinNoise(0.7f, t) - 0.5f) * 2f * tr * 1.1f;
             }
-            float x = Mathf.Round((p.x + off.x) * 16f) / 16f;     // bám lưới pixel
-            float y = Mathf.Round((p.y + off.y) * 16f) / 16f;
+            float grid = 16f * Mathf.Max(1f, zoom);
+            float x = Mathf.Round((p.x + off.x) * grid) / grid;     // bám lưới pixel
+            float y = Mathf.Round((p.y + off.y) * grid) / grid;
             transform.position = new Vector3(x, y, -10f);
         }
 

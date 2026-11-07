@@ -16,14 +16,17 @@ namespace NeonBreaker
         public static bool JumpDown, JumpHeld, JumpUp;
         public static bool AttackDown, DashDown, ShurikenDown, HealDown;
         public static bool ConfirmDown, RestartDown, PauseDown, ClickDown, LangDown, CheatDown;
-        /// <summary>B: mở / đóng kho đồ · F: TƯƠNG TÁC (mở rương, cửa, nói chuyện, dùng máy...) · X: vứt vật phẩm (trong kho) · mũi tên / WASD: di chuyển ô chọn.</summary>
+        /// <summary>B: mở / đóng menu nhân vật (Kho đồ · Skill · Player) · F: TƯƠNG TÁC (mở rương, cửa, nói chuyện, dùng máy...) · X: vứt vật phẩm (trong kho) · mũi tên / WASD: di chuyển ô chọn.</summary>
         public static bool InventoryDown, InteractDown, DiscardDown, NavLeftDown, NavRightDown, NavUpDown, NavDownDown;
         /// <summary>M: mở / đóng bản đồ.</summary>
         public static bool MapDown;
-        /// <summary>N: mở / đóng mục Skill (cây skill, chế tạo, lưu trữ minibot) · H: mở / đóng bảng chọn minibot.</summary>
-        public static bool SkillMenuDown, MinibotPanelDown;
-        /// <summary>Q / E: chuyển tab trong mục Skill.</summary>
+        /// <summary>H: mở / đóng bảng chọn minibot.</summary>
+        public static bool MinibotPanelDown;
+        /// <summary>Q / E: chuyển tab con trong mục Skill.</summary>
         public static bool TabPrevDown, TabNextDown;
+        /// <summary>Trong menu B: phím 1 / 2 / 3 chọn thẳng mục (0 = Kho đồ, 1 = Skill, 2 = Player; -1 = không bấm) · phím Tab đổi sang mục kế tiếp.</summary>
+        public static int MenuTabPick = -1;
+        public static bool MenuCycleDown;
 
         public static void Poll()
         {
@@ -54,8 +57,11 @@ namespace NeonBreaker
             InteractDown = k.fKey.wasPressedThisFrame;
             MapDown = k.mKey.wasPressedThisFrame;
             DiscardDown = k.xKey.wasPressedThisFrame;
-            SkillMenuDown = k.nKey.wasPressedThisFrame;
             MinibotPanelDown = k.hKey.wasPressedThisFrame;
+            MenuTabPick = (k.digit1Key.wasPressedThisFrame || k.numpad1Key.wasPressedThisFrame) ? 0
+                        : (k.digit2Key.wasPressedThisFrame || k.numpad2Key.wasPressedThisFrame) ? 1
+                        : (k.digit3Key.wasPressedThisFrame || k.numpad3Key.wasPressedThisFrame) ? 2 : -1;
+            MenuCycleDown = k.tabKey.wasPressedThisFrame;
             TabPrevDown = k.qKey.wasPressedThisFrame;
             TabNextDown = k.eKey.wasPressedThisFrame;
             NavLeftDown = k.aKey.wasPressedThisFrame || k.leftArrowKey.wasPressedThisFrame;
@@ -88,8 +94,11 @@ namespace NeonBreaker
             InteractDown = Input.GetKeyDown(KeyCode.F);
             MapDown = Input.GetKeyDown(KeyCode.M);
             DiscardDown = Input.GetKeyDown(KeyCode.X);
-            SkillMenuDown = Input.GetKeyDown(KeyCode.N);
             MinibotPanelDown = Input.GetKeyDown(KeyCode.H);
+            MenuTabPick = (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1)) ? 0
+                        : (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2)) ? 1
+                        : (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3)) ? 2 : -1;
+            MenuCycleDown = Input.GetKeyDown(KeyCode.Tab);
             TabPrevDown = Input.GetKeyDown(KeyCode.Q);
             TabNextDown = Input.GetKeyDown(KeyCode.E);
             NavLeftDown = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
@@ -107,7 +116,8 @@ namespace NeonBreaker
             AttackDown = DashDown = ShurikenDown = HealDown = false;
             ConfirmDown = RestartDown = PauseDown = ClickDown = LangDown = CheatDown = false;
             InventoryDown = InteractDown = DiscardDown = NavLeftDown = NavRightDown = NavUpDown = NavDownDown = false;
-            SkillMenuDown = MinibotPanelDown = TabPrevDown = TabNextDown = MapDown = false;
+            MinibotPanelDown = TabPrevDown = TabNextDown = MapDown = MenuCycleDown = false;
+            MenuTabPick = -1;
         }
     }
 }

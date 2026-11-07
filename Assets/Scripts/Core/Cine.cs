@@ -28,6 +28,8 @@ namespace NeonBreaker
         public static Vector2 FocusPos;
         public static float CamSmooth = 1f;
         public static bool CanSkip = true;
+        /// <summary>Độ phóng to camera hiện tại (1 = bình thường). CameraRig dùng để chia kích thước camera. Dùng 2 để giữ pixel đều.</summary>
+        public static float Zoom = 1f, ZoomTarget = 1f;
         public static bool Skipping { get; private set; }
         public static bool Advance { get; private set; }
 
@@ -45,6 +47,7 @@ namespace NeonBreaker
             HasFocus = false;
             CamSmooth = 1f;
             CanSkip = true;
+            Zoom = ZoomTarget = 1f;
             Skipping = Advance = false;
             running = null;
         }
@@ -108,7 +111,8 @@ namespace NeonBreaker
             }
             else if (fadeSpeed <= 0f && Fade > 0f) { fadeTarget = 0f; fadeSpeed = 0.9f; }
 
-            if (Skipping) { Bars = barsTarget; Fade = fadeTarget; }
+            Zoom = Mathf.Abs(ZoomTarget - Zoom) < 0.002f ? ZoomTarget : Mathf.Lerp(Zoom, ZoomTarget, 1f - Mathf.Exp(-4.5f * dt));
+            if (Skipping) { Bars = barsTarget; Fade = fadeTarget; Zoom = ZoomTarget; }
             else
             {
                 if (barsSpeed > 0f) Bars = Mathf.MoveTowards(Bars, barsTarget, barsSpeed * dt);
@@ -136,6 +140,9 @@ namespace NeonBreaker
         }
 
         public static void ReleaseFocus() { HasFocus = false; }
+
+        /// <summary>Phóng to / thu nhỏ camera dần dần tới độ phóng mong muốn (1 = bình thường).</summary>
+        public static void SetZoom(float target) { ZoomTarget = Mathf.Clamp(target, 1f, 4f); }
 
         // ------------------------------------------------------------ lệnh chờ
         /// <summary>Chờ (giây thời gian thật). Bỏ qua / ESC thì chờ xong ngay.</summary>

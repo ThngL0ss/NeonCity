@@ -61,6 +61,9 @@ namespace NeonBreaker
         [Header("Chế tác vật phẩm (bàn chế tác trong căn cứ)")]
         public List<CraftRecipe> recipes = new List<CraftRecipe>();
 
+        [Header("Hội thoại")]
+        [Tooltip("Độ phóng to camera về phía người đang nói (1 = không zoom; nên dùng số nguyên 2 để pixel đều)")] [Range(1f, 3f)] public float dialogueZoom = 2f;
+
         [Header("Bản đồ (phím M / cửa ra của căn cứ)")]
         [Tooltip("Bật = trên bản đồ đen có 1 điểm thử nghiệm để quay lại màn chơi. Tắt = bản đồ chỉ là màn đen, không đi vào được")] public bool mapTestDestination = true;
 

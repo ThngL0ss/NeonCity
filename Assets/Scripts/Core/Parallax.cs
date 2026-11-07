@@ -13,11 +13,26 @@ namespace NeonBreaker
         public float yOffset;
         [Tooltip("Làm tròn vị trí theo lưới pixel (1/16) để nền không rung")]
         public bool snapToPixel = true;
+        [Tooltip("Làm tối lớp nền này để nổi bật phần phía trước (0 = giữ nguyên, 0.5 = tối đi một nửa). Chỉ áp dụng lúc chạy game, không sửa màu đã lưu")]
+        [Range(0f, 0.9f)] public float darken = 0.45f;
 
         Vector3 start;
         Camera cam;
 
-        void Start() { start = transform.position; }
+        void Start()
+        {
+            start = transform.position;
+            if (darken > 0.001f)
+            {
+                var sr = GetComponent<SpriteRenderer>();
+                if (sr != null)
+                {
+                    Color c = sr.color;
+                    float k = 1f - darken;
+                    sr.color = new Color(c.r * k, c.g * k, c.b * k, c.a);
+                }
+            }
+        }
 
         void LateUpdate()
         {

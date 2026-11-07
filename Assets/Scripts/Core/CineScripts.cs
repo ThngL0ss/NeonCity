@@ -41,14 +41,14 @@ namespace NeonBreaker
             Cine.SetFade(0f, 1.2f);
             yield return Cine.Wait(1.3f);
 
-            yield return Cine.Say(Cfg.L("XbAst-013", "XbAst-013"),
-                Cfg.L("Địa bàn của OVERLORD... cuối cùng mình cũng tới được đây.", "OVERLORD's territory... I finally made it here."), 1.1f);
             yield return Cine.Say(HeroName,
-                Cfg.L("Nó đã cướp khỏi mình linh kiện bậc SS — " + StolenItem + ".", "It stole my SS-rank part from me — the " + StolenItem + "."), 1.3f);
+                Cfg.L("...Khu thử nghiệm của Dyber.", "...Dyber's testing ground."), 1.1f);
+            yield return Cine.Say(HeroName,
+                Cfg.L("Vậy là lõi của mình bị bọn chúng cất giữ ở đây à?", "So they've been keeping my core here?"), 1.3f);
             Fx.Flare(core.position, PowerRules.RankColor(Rank.SS), 4f, 0.5f);
             Sfx.Play("charge", 0.6f, 1.4f);
             yield return Cine.Say(HeroName,
-                Cfg.L("Thiếu nó mình chỉ là một cỗ máy rỗng. Hôm nay mình sẽ lấy lại — dù phải phá nát nơi này.", "Without it I'm just an empty machine. Today I take it back — even if I have to tear this place apart."), 1.4f);
+                Cfg.L("Nhưng chẳng phải nơi đây an ninh khá lỏng lẻo sao? Liệu chúng có mục đích gì...", "But isn't security around here rather lax? What are they up to..."), 1.8f);
             Cine.ClearText();
 
             // quay về chỗ người chơi

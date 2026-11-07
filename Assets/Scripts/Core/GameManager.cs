@@ -47,6 +47,10 @@ namespace NeonBreaker
         [Tooltip("Số ô của kho đồ (phím B)")] public int inventorySlots = 24;
         [Tooltip("Số xu người chơi có lúc bắt đầu")] public int startCoins = 0;
 
+        [Header("Nền (background)")]
+        [Tooltip("Làm tối THÊM mọi lớp nền cuộn (Parallax) để phần người chơi đứng nổi bật. 0 = không thêm; 0.4 = tối thêm 40% (cộng với Darken riêng của từng lớp)")]
+        [Range(0f, 0.9f)] public float backgroundExtraDarken = 0.4f;
+
         [Header("Boss")]
         [Tooltip("Prefab boss. Để trống = lấy trong ArtBank.")]
         public GameObject bossPrefab;

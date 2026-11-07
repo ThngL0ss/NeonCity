@@ -13,7 +13,7 @@ namespace NeonBreaker
         public float yOffset;
         [Tooltip("Làm tròn vị trí theo lưới pixel (1/16) để nền không rung")]
         public bool snapToPixel = true;
-        [Tooltip("Làm tối lớp nền này để nổi bật phần phía trước (0 = giữ nguyên, 0.5 = tối đi một nửa). Chỉ áp dụng lúc chạy game, không sửa màu đã lưu")]
+        [Tooltip("Làm tối lớp nền này để nổi bật phần phía trước (0 = giữ nguyên, 0.5 = tối đi một nửa). Chỉ áp dụng lúc chạy game, không sửa màu đã lưu. Còn một mức tối chung cho mọi lớp ở GameManager ▸ Background Extra Darken")]
         [Range(0f, 0.9f)] public float darken = 0.45f;
 
         Vector3 start;
@@ -22,13 +22,15 @@ namespace NeonBreaker
         void Start()
         {
             start = transform.position;
-            if (darken > 0.001f)
+            // tối riêng từng lớp (Darken) nhân với mức tối chung (GameManager ▸ Background Extra Darken)
+            float extra = GameManager.Inst != null ? GameManager.Inst.backgroundExtraDarken : 0f;
+            float k = (1f - darken) * (1f - extra);
+            if (k < 0.999f)
             {
                 var sr = GetComponent<SpriteRenderer>();
                 if (sr != null)
                 {
                     Color c = sr.color;
-                    float k = 1f - darken;
                     sr.color = new Color(c.r * k, c.g * k, c.b * k, c.a);
                 }
             }

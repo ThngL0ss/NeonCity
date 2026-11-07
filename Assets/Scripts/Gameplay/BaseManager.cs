@@ -117,12 +117,9 @@ namespace NeonBreaker
             if (!BaseMissions.StoryTold)
             {
                 BaseMissions.StoryTold = true;
-                lines.Add(new DlgLine("ALBERT", Cfg.L("Để ta nhắc lại cho cậu, phòng khi dữ liệu lại mờ thêm: cậu là XbAst-013 — bộ não của cậu được số hóa vào vi máy tính, và giữa cậu với ta có một mối liên kết mà không cỗ máy nào thay thế được.",
-                                                      "Let me remind you, in case your data blurred again: you are XbAst-013 — your brain was digitized into a micro-computer, and there is a bond between you and me that no machine could replace."), a));
-                lines.Add(new DlgLine("ALBERT", Cfg.L("Linh kiện bậc SS — " + CineScripts.StolenItem + " — là lõi của cậu. OVERLORD đã cướp nó và giam mình trong khu boss cuối thành phố.",
-                                                      "Your SS-rank part — the " + CineScripts.StolenItem + " — is your core. OVERLORD stole it and locked itself in the boss zone at the far end of the city."), a));
-                lines.Add(new DlgLine("ALBERT", Cfg.L("Đường tới đó bị 6 trụ triệu hồi chặn lại. Hạ quái để lấy linh kiện, nhặt dầu, rồi quay về đây — ta ghép và chế tác giúp cậu.",
-                                                      "The way there is blocked by 6 summon towers. Take down enemies for parts, collect oil, then come back — I'll fuse and craft for you."), a));
+                lines.Add(new DlgLine("ALBERT", Cfg.L("Ta không thể cứ mãi cho cậu tái sinh miễn phí được. Tự ra ngoài kiếm nguyên liệu về đây cho tôi. Không thì đừng mong có lần sau nhé!",
+                                                      "I can't keep regenerating you for free forever. Go out and get the materials and bring them back to me. Otherwise, don't expect a next time!"), a));
+                lines.Add(new DlgLine("XbAst-013", Cfg.L("Hừ, đúng là lão già khó ưa.", "Hmph, what a cranky old man."), Cfg.Cyan));
             }
 
             var claimed = BaseMissions.TryClaim();
@@ -156,7 +153,7 @@ namespace NeonBreaker
                 "Dầu là nhiên liệu của mọi thứ ở đây. Thùng dầu nằm dọc đường, rương cũng có dầu.",
                 "Bàn chế tác làm được thuốc hồi máu và huyết thanh tăng sức. Nguyên liệu cứ nhặt hết đi, đừng bỏ phí.",
                 "Mỗi trụ triệu hồi càng về cuối thì quái càng cao cấp. Đừng coi thường cấp độ.",
-                "Bấm N để mở hệ thống Skill, H để chọn minibot. Minibot chỉ lưu trữ và sửa chữa được ở căn cứ.",
+                "Bấm B rồi chọn mục Skill để mở hệ thống Skill, bấm H để chọn minibot. Minibot chỉ lưu trữ và sửa chữa được ở căn cứ.",
             };
             string[] e =
             {
@@ -164,7 +161,7 @@ namespace NeonBreaker
                 "Oil fuels everything here. Oil cans lie along the road, and chests hold some too.",
                 "The crafting bench makes healing vials and power serums. Pick up all the materials, don't waste them.",
                 "The closer a tower is to the end, the higher-level its enemies. Don't underestimate levels.",
-                "Press N for the Skill system, H to pick a minibot. Minibots can only be stored and repaired at the base.",
+                "Press B and open the Skill tab for the Skill system, H to pick a minibot. Minibots can only be stored and repaired at the base.",
             };
             int i = Random.Range(0, v.Length);
             vi = v[i]; en = e[i];

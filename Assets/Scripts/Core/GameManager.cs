@@ -47,6 +47,10 @@ namespace NeonBreaker
         [Tooltip("Số ô của kho đồ (phím B)")] public int inventorySlots = 24;
         [Tooltip("Số xu người chơi có lúc bắt đầu")] public int startCoins = 0;
 
+        [Header("Nền (background)")]
+        [Tooltip("Làm tối THÊM mọi lớp nền cuộn (Parallax) để phần người chơi đứng nổi bật. 0 = không thêm; 0.4 = tối thêm 40% (cộng với Darken riêng của từng lớp)")]
+        [Range(0f, 0.9f)] public float backgroundExtraDarken = 0.4f;
+
         [Header("Boss")]
         [Tooltip("Prefab boss. Để trống = lấy trong ArtBank.")]
         public GameObject bossPrefab;
@@ -77,6 +81,13 @@ namespace NeonBreaker
             SkillSystem.ResetAll();
             GameMenu.ResetAll();
             GameFlow.ResetStatics();
+            ItemDatabase.ResetStatics();
+            SaveManager.ResetStatics();
+            DeathPenalty.Clear();
+            GameSettings.ResetStatics();
+            MainMenuUi.ResetStatics();
+            PlaceManager.Inst = null;
+            TutorialManager.Inst = null;
         }
 
         public static void Banner(string text, Color c, float dur = 3f)
@@ -109,7 +120,7 @@ namespace NeonBreaker
             GameFlow.Carry = false;
             GameFlow.InBase = false;
 
-            Cfg.Vietnamese = startVietnamese;
+            GameSettings.OnSceneAwake(startVietnamese);       // lần đầu: ngôn ngữ mặc định + cài đặt đã lưu; các Scene sau giữ lựa chọn hiện tại
 
             Application.targetFrameRate = 60;
             QualitySettings.vSyncCount = 1;
@@ -141,7 +152,14 @@ namespace NeonBreaker
             var cam = Camera.main;
             if (cam != null) Sfx.Listener = cam.transform;
             Sfx.Music(0);
-            if (State == GameState.Playing && !GameFlow.InBase)
+            bool introNow = GameFlow.PlayIntroOnLoad;
+            GameFlow.PlayIntroOnLoad = false;
+            if (State == GameState.Playing && introNow && playIntro && !GameFlow.InBase)
+            {
+                // vừa xong màn hướng dẫn (hoặc nạp ván chưa xem cảnh mở đầu): chạy cảnh mở đầu rồi mới vào màn chơi
+                StartCoroutine(IntroRoutine());
+            }
+            else if (State == GameState.Playing && !GameFlow.InBase && TowerTotal > 0)
                 Banner(Cfg.L("PHÁ HỦY TẤT CẢ TRỤ TRIỆU HỒI", "DESTROY ALL SUMMON TOWERS"), Cfg.Cyan, 4f);
             AutoStart = false;
         }
@@ -174,6 +192,7 @@ namespace NeonBreaker
             Time.timeScale = 1f;
             AutoStart = true;
             GameFlow.Carry = false;       // chơi lại từ đầu: xoá sạch dữ liệu (kho, skill, minibot)
+            SaveManager.Detach();         // ván thử này không ghi đè ô lưu (nạp lại bằng "Tiếp tục" ở menu chính)
             Sfx.Play("click", 1f);
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
@@ -212,7 +231,7 @@ namespace NeonBreaker
         void Update()
         {
             GameInput.Poll();
-            if (GameInput.LangDown) Cfg.Vietnamese = !Cfg.Vietnamese;
+            if (GameInput.LangDown) { Cfg.Vietnamese = !Cfg.Vietnamese; GameSettings.Save(); }
             if (GameInput.CheatDown)
             {
                 Cheat = !Cheat;
@@ -222,12 +241,14 @@ namespace NeonBreaker
             }
 
             if (BannerT > 0f) BannerT -= Time.unscaledDeltaTime;
+            if (DeathPenalty.ReportT > 0f) DeathPenalty.ReportT -= Time.unscaledDeltaTime;
             Cine.Tick();
 
             switch (State)
             {
                 case GameState.Menu:
-                    if (GameInput.ConfirmDown) StartGame();
+                    if (MainMenuUi.Active) MainMenuUi.UpdateInput();      // menu chính mới (Scene MainMenu)
+                    else if (GameInput.ConfirmDown) StartGame();          // chạy thẳng Scene Main trong Unity: màn bắt đầu cũ
                     break;
                 case GameState.Playing:
                     if (BaseUi.IsOpen)
@@ -280,6 +301,7 @@ namespace NeonBreaker
         {
             if (BossSpawned) return;
             if (GameFlow.InBase) return;
+            if (Level.Instance == null) return;       // Scene không có Level (màn hướng dẫn, Phố Neon, Rìa...) thì không có boss
             var p = Player.Instance;
             if (p == null || p.Dead) return;
             if (Tower.Remaining > 0) return;
@@ -367,9 +389,14 @@ namespace NeonBreaker
             Projectile.ClearHostile();
             Cine.Play(CineScripts.Death());
             while (Cine.Active) yield return null;
+            if (GameFlow.InTutorial)
+            {
+                GameFlow.RetryTutorial();         // màn hướng dẫn: làm lại màn, không bị phạt
+                yield break;
+            }
             if (GameFlow.BaseAvailable)
             {
-                GameFlow.GoToBase();
+                GameFlow.GoToBase(true);          // áp hình phạt chết + tự lưu game
                 yield break;
             }
             Cine.SetFade(0f, 0.8f);               // chưa có Scene Base: về màn thua cũ

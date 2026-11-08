@@ -86,8 +86,10 @@ namespace NeonBreaker
         }
 
         // ------------------------------------------------------------ thêm / bớt vật phẩm
-        static bool AddTo(List<InvSlot> list, ItemData it, int n)
+        /// <summary>Thêm n vật phẩm vào danh sách ô (xếp chồng trước, rồi mở ô mới). capacity &lt; 0 = dùng sức chứa của kho đồ. false nếu hết chỗ (có thể đã thêm một phần — kiểm tra trước bằng CanAddAll).</summary>
+        public static bool AddTo(List<InvSlot> list, ItemData it, int n, int capacity = -1)
         {
+            int cap = capacity < 0 ? Capacity : capacity;
             int stack = Mathf.Max(1, it.maxStack);
             for (int i = 0; i < list.Count && n > 0; i++)
             {
@@ -98,7 +100,7 @@ namespace NeonBreaker
             }
             while (n > 0)
             {
-                if (list.Count >= Capacity) return false;
+                if (list.Count >= cap) return false;
                 int take = Mathf.Min(n, stack);
                 list.Add(new InvSlot { item = it, count = take });
                 n -= take;
@@ -158,6 +160,46 @@ namespace NeonBreaker
             Sel = Mathf.Clamp(Sel, 0, Mathf.Max(0, Slots.Count - 1));
             Recompute();
         }
+
+        // ------------------------------------------------------------ chết / lưu game
+        /// <summary>Tổng số vật phẩm đang mang (trong kho đồ + đang gắn ở ô trang bị).</summary>
+        public static int CarriedCount
+        {
+            get
+            {
+                int n = EquippedCount;
+                for (int i = 0; i < Slots.Count; i++) n += Slots[i].count;
+                return n;
+            }
+        }
+
+        /// <summary>
+        /// Chết: mất hết vật phẩm trong kho đồ, các trang bị đang gắn và buff tạm. Xu, dầu và chỉ số vĩnh viễn (từ vật phẩm đã dùng) được giữ.
+        /// Trả về số vật phẩm đã mất.
+        /// </summary>
+        public static int ClearCarried()
+        {
+            int lost = CarriedCount;
+            Slots.Clear();
+            System.Array.Clear(Equipped, 0, Equipped.Length);
+            timed.Clear();
+            Sel = 0;
+            Recompute();
+            return lost;
+        }
+
+        /// <summary>Bản sao chỉ số vĩnh viễn (để lưu game).</summary>
+        public static float[] PermBuffs() { return (float[])perm.Clone(); }
+
+        /// <summary>Nạp lại chỉ số vĩnh viễn từ file lưu.</summary>
+        public static void SetPermBuffs(float[] src)
+        {
+            System.Array.Clear(perm, 0, perm.Length);
+            if (src != null) System.Array.Copy(src, perm, Mathf.Min(src.Length, perm.Length));
+        }
+
+        /// <summary>Tính lại chỉ số tổng (sau khi nạp file lưu hoặc sửa trực tiếp Slots / Equipped).</summary>
+        public static void RefreshStats() { Recompute(); }
 
         /// <summary>Bán n cái ở ô index. Trả về số xu nhận được (dành cho thương nhân sau này; chưa có shop trong Scene).</summary>
         public static int Sell(int index, int n = 1)

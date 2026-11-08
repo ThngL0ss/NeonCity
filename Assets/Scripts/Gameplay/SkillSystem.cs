@@ -540,6 +540,105 @@ namespace NeonBreaker
             Sfx.Play("click", 0.8f, 1.2f);
         }
 
+        // ------------------------------------------------------------ chết / lưu game
+        /// <summary>Chết: mất hết linh kiện đang mang. Trả về số linh kiện đã mất. (Bộ đếm PartsCollected cho điều kiện mở skill được giữ.)</summary>
+        public static int ClearParts()
+        {
+            int n = PartsTotal;
+            System.Array.Clear(partCount, 0, partCount.Length);
+            return n;
+        }
+
+        /// <summary>Số minibot đang mang theo người (bảng chọn hoặc đang triệu hồi) — những con này mất khi chết; minibot trong lưu trữ ở căn cứ thì an toàn.</summary>
+        public static int FieldBotCount
+        {
+            get { int n = 0; for (int i = 0; i < Bots.Count; i++) if (Bots[i].state != BotState.Storage) n++; return n; }
+        }
+
+        /// <summary>Chết: xoá mọi minibot không nằm trong lưu trữ. Trả về số minibot đã mất.</summary>
+        public static int DropFieldBots()
+        {
+            int n = 0;
+            for (int i = Bots.Count - 1; i >= 0; i--)
+            {
+                if (Bots[i].state == BotState.Storage) continue;
+                Bots.RemoveAt(i);
+                n++;
+            }
+            SelBot = Mathf.Clamp(SelBot, 0, Mathf.Max(0, Bots.Count - 1));
+            PanelOpen = false;
+            return n;
+        }
+
+        /// <summary>Ghi trạng thái skill / linh kiện / minibot vào d (lưu game).</summary>
+        public static void Export(SaveData d)
+        {
+            var _ = Config;                                       // bảo đảm các skill khởi đầu đã có trong levels
+            d.parts = (int[])partCount.Clone();
+            d.crafted = CraftedTotal;
+            d.partsCollected = PartsCollected;
+            d.fused = PartFusion.FusedTotal;
+
+            d.skills.Clear();
+            foreach (var kv in levels) d.skills.Add(new SaveSkill { id = kv.Key, lv = kv.Value });
+            d.defeated.Clear();
+            foreach (var id in defeated) d.defeated.Add(id);
+
+            d.bots.Clear();
+            for (int i = 0; i < Bots.Count; i++)
+            {
+                var b = Bots[i];
+                float hp = b.hp;
+                if (b.state == BotState.Out && b.world != null) hp = b.world.hp;
+                d.bots.Add(new SaveBot
+                {
+                    uid = b.uid, type = b.typeId, rank = (int)b.rank, level = b.level, maturity = b.maturity,
+                    hp = hp, state = (int)(b.state == BotState.Out ? BotState.Panel : b.state),
+                });
+            }
+        }
+
+        /// <summary>Nạp trạng thái skill / linh kiện / minibot từ d (gọi sau ResetAll).</summary>
+        public static void Import(SaveData d)
+        {
+            Bots.Clear();
+            System.Array.Clear(partCount, 0, partCount.Length);
+            defeated.Clear();
+            levels.Clear();
+            uidCounter = 0;
+
+            if (d.parts != null)
+                for (int i = 0; i < d.parts.Length && i < partCount.Length; i++) partCount[i] = Mathf.Max(0, d.parts[i]);
+            CraftedTotal = d.crafted;
+            PartsCollected = d.partsCollected;
+            PartFusion.FusedTotal = d.fused;
+            for (int i = 0; i < d.skills.Count; i++)
+                if (d.skills[i] != null && !string.IsNullOrEmpty(d.skills[i].id) && d.skills[i].lv > 0) levels[d.skills[i].id] = d.skills[i].lv;
+            for (int i = 0; i < d.defeated.Count; i++)
+                if (!string.IsNullOrEmpty(d.defeated[i])) defeated.Add(d.defeated[i]);
+
+            for (int i = 0; i < d.bots.Count; i++)
+            {
+                var s = d.bots[i];
+                if (s == null || string.IsNullOrEmpty(s.type)) continue;
+                var b = new MinibotData
+                {
+                    uid = s.uid, typeId = s.type, rank = (Rank)Mathf.Clamp(s.rank, 0, 7), level = PowerRules.ClampLevel(s.level),
+                    maturity = Mathf.Max(0f, s.maturity), hp = s.hp,
+                    state = s.state == (int)BotState.Storage ? BotState.Storage : BotState.Panel,
+                };
+                Bots.Add(b);
+                if (b.uid > uidCounter) uidCounter = b.uid;
+            }
+            for (int i = 0; i < Bots.Count; i++)
+            {
+                if (Bots[i].uid <= 0) Bots[i].uid = ++uidCounter;
+                Bots[i].hp = Mathf.Clamp(Bots[i].hp, 1f, Bots[i].MaxHp);
+            }
+            SelBot = 0; PanelSel = 0; PanelOpen = false;
+            cfg = null;                                           // lần truy cập Config kế tiếp sẽ bù các skill khởi đầu còn thiếu
+        }
+
         // ------------------------------------------------------------ cập nhật theo thời gian
         public static void NoteCombat() { lastCombat = Time.time; }
 

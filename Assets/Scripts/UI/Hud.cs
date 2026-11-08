@@ -10,12 +10,14 @@ namespace NeonBreaker
     {
         public float s = 1f;
         GUIStyle st;
+        bool confirmMenu;            // hộp xác nhận "về menu chính" trong màn tạm dừng
         float hpShown = 1f, bossShown = 1f;
 
         void OnGUI()
         {
             if (Art.Pixel == null) return;
             s = Mathf.Max(0.5f, Screen.height / 720f);
+            if (!GameManager.Paused) confirmMenu = false;
             if (st == null)
             {
                 st = new GUIStyle(GUI.skin.label);
@@ -39,6 +41,8 @@ namespace NeonBreaker
             {
                 DrawTopCenter();
                 if (!GameFlow.InBase) DrawTopRight();
+                if (!cinema) DrawMissionTracker();
+                if (!cinema) TutorialManager.DrawHud(this);
                 DrawBossBar();
             }
             if (GameManager.State == GameState.Playing)
@@ -47,12 +51,16 @@ namespace NeonBreaker
                 SkillUi.DrawWorld(this);      // nhãn + bấm vào minibot để thu hồi
             }
             DrawBanner();
+            if (!cinema) DrawLossReport();
             if (!cinema) DrawCheatLabel();
             DrawScreenFx(pl);
 
             switch (GameManager.State)
             {
-                case GameState.Menu: DrawMenu(); break;
+                case GameState.Menu:
+                    if (MainMenuUi.Active) MainMenuUi.Draw(this);
+                    else DrawMenu();
+                    break;
                 case GameState.Won: DrawResult(true); break;
                 case GameState.Lost: DrawResult(false); break;
                 case GameState.Playing:
@@ -194,10 +202,16 @@ namespace NeonBreaker
             Color c = Cfg.Cyan;
             int left = Tower.Remaining;
             int total = GameManager.TowerTotal;
+            bool zone = PlaceManager.Inst != null || TutorialManager.Inst != null;       // Phố Neon / Rìa / màn hướng dẫn: không trụ, không boss
             if (GameFlow.InBase)
             {
                 msg = Cfg.L("CĂN CỨ CỦA ALBERT", "ALBERT'S BASE");
                 c = Cfg.Orange;
+            }
+            else if (zone)
+            {
+                msg = PlaceManager.Inst != null ? PlaceManager.Inst.Title : TutorialManager.Inst.Title;
+                c = PlaceManager.Inst != null ? PlaceManager.Inst.TitleColor : Cfg.Cyan;
             }
             else if (!GameManager.BossSpawned)
             {
@@ -223,7 +237,7 @@ namespace NeonBreaker
             Txt(r, msg, 17, c, TextAnchor.MiddleCenter);
 
             // mũi tên chỉ tới trụ gần nhất ngoài màn hình
-            if (!GameFlow.InBase && !GameManager.BossSpawned && Player.Instance != null && GameManager.State == GameState.Playing)
+            if (!GameFlow.InBase && !zone && !GameManager.BossSpawned && Player.Instance != null && GameManager.State == GameState.Playing)
             {
                 float px = Player.Instance.Position.x;
                 Vector2 target = Vector2.zero;
@@ -245,6 +259,33 @@ namespace NeonBreaker
                     Txt(R(390, 50, 500, 24), a, 15, Cfg.A(Cfg.Yellow, pulse), TextAnchor.MiddleCenter);
                 }
             }
+        }
+
+        /// <summary>Khung theo dõi nhiệm vụ đang làm (góc trên bên phải).</summary>
+        void DrawMissionTracker()
+        {
+            var m = BaseMissions.Current;
+            if (m == null || !BaseMissions.Accepted || GameManager.State == GameState.Won || GameManager.State == GameState.Lost) return;
+            int n = m.reqs != null && m.reqs.Count > 0 ? m.reqs.Count : 1;
+            float y = GameFlow.InBase ? 12f : 82f;
+            Rect r = R(1000, y, 266, 30f + n * 22f);
+            bool done = m.Done;
+            Color c = done ? Cfg.Lime : Cfg.Yellow;
+            Fill(r, new Color(0.01f, 0.02f, 0.06f, 0.6f));
+            Outline(r, Cfg.A(c, 0.6f), 1.5f);
+            Txt(R(1010, y + 4, 246, 22), (done ? Cfg.L("XONG — GIAO ALBERT: ", "DONE — SEE ALBERT: ") : Cfg.L("NHIỆM VỤ: ", "MISSION: ")) + m.Title, 13, c, TextAnchor.MiddleLeft);
+            if (m.reqs != null && m.reqs.Count > 0)
+            {
+                for (int i = 0; i < m.reqs.Count; i++)
+                {
+                    var q = m.reqs[i];
+                    Color qc = q.Done ? Cfg.Lime : Color.white;
+                    Txt(R(1010, y + 28 + i * 22, 170, 20), q.Name, 13, qc, TextAnchor.MiddleLeft, false);
+                    Txt(R(1180, y + 28 + i * 22, 76, 20), q.Have + "/" + q.need, 13, qc, TextAnchor.MiddleRight);
+                }
+            }
+            else
+                Txt(R(1010, y + 28, 246, 20), m.Progress + " / " + m.target, 13, Color.white, TextAnchor.MiddleLeft, false);
         }
 
         void DrawTopRight()
@@ -360,6 +401,31 @@ namespace NeonBreaker
                                            "[P] TEST MODE: INVINCIBLE · x" + GameManager.DamageMul + " DAMAGE · NO COOLDOWNS"), 14, Cfg.A(Cfg.Yellow, pulse), TextAnchor.UpperRight);
         }
 
+        /// <summary>Bảng "đã mất gì" hiện ở căn cứ sau khi chết và được hồi sinh (DeathPenalty).</summary>
+        void DrawLossReport()
+        {
+            float t = DeathPenalty.ReportT;
+            if (t <= 0f || !GameFlow.InBase) return;
+            float a = Mathf.Clamp01(Mathf.Min(t / 0.6f, (DeathPenalty.ReportLen - t) / 0.3f));
+            var l = DeathPenalty.Last;
+            Rect box = R(300, 236, 680, 118);
+            Fill(box, new Color(0.04f, 0.01f, 0.03f, 0.82f * a));
+            Outline(box, Cfg.A(Cfg.Red, 0.85f * a), 2f);
+            Txt(R(300, 240, 680, 28), Cfg.L("ĐÃ MẤT KHI GỤC NGÃ", "LOST WHEN YOU FELL"), 22, Cfg.A(Cfg.Red, a), TextAnchor.MiddleCenter);
+            string line1 = "";
+            if (l.items > 0) line1 += l.items + Cfg.L(" vật phẩm", " items") + "   ";
+            if (l.parts > 0) line1 += l.parts + Cfg.L(" linh kiện", " parts") + "   ";
+            if (l.bots > 0) line1 += l.bots + " minibot";
+            if (line1.Length == 0) line1 = Cfg.L("Không mang theo gì trên người", "You carried nothing");
+            Txt(R(300, 270, 680, 26), line1, 18, Cfg.A(Color.white, a), TextAnchor.MiddleCenter, false);
+            string line2 = "";
+            if (l.levelFrom != l.levelTo) line2 += Cfg.L("Cấp độ ", "Level ") + l.levelFrom + " → " + l.levelTo + "     ";
+            if (l.rankFrom != l.rankTo) line2 += Cfg.L("Cấp bậc ", "Rank ") + l.rankFrom + " → " + l.rankTo;
+            if (line2.Length > 0) Txt(R(300, 296, 680, 26), line2, 18, Cfg.A(Cfg.Orange, a), TextAnchor.MiddleCenter, false);
+            Txt(R(300, 324, 680, 24), Cfg.L("Còn nguyên: kho căn cứ · minibot trong lưu trữ · cây skill · xu · dầu", "Kept: base stash · stored minibots · skill tree · coins · oil"),
+                14, Cfg.A(Color.white, 0.6f * a), TextAnchor.MiddleCenter, false);
+        }
+
         void DrawBanner()
         {
             if (GameManager.BannerT <= 0f) return;
@@ -472,7 +538,22 @@ namespace NeonBreaker
             Dim(0.55f);
             Txt(R(0, 230, 1280, 90), Cfg.L("TẠM DỪNG", "PAUSED"), 64, Cfg.Cyan, TextAnchor.MiddleCenter);
             if (Button(R(490, 350, 300, 54), Cfg.L("TIẾP TỤC  [ESC]", "RESUME  [ESC]"), Cfg.Cyan)) GameManager.Inst.TogglePause();
-            Txt(R(0, 430, 1280, 24), Cfg.L("V = đổi ngôn ngữ", "V = switch language"), 14, Cfg.A(Color.white, 0.6f), TextAnchor.MiddleCenter, false);
+            if (GameFlow.MenuAvailable)
+            {
+                if (!confirmMenu)
+                {
+                    if (Button(R(490, 416, 300, 54), Cfg.L("VỀ MENU CHÍNH", "MAIN MENU"), Cfg.Magenta, 22)) confirmMenu = true;
+                }
+                else
+                {
+                    Txt(R(240, 410, 800, 28), GameFlow.InBase ? Cfg.L("Về menu chính? Ván sẽ được lưu.", "Back to the main menu? Your game will be saved.")
+                                                                : Cfg.L("Về menu chính? Tiến trình ngoài màn từ lần lưu gần nhất sẽ mất.", "Back to the main menu? Progress since your last save will be lost."),
+                        18, Cfg.Yellow, TextAnchor.MiddleCenter);
+                    if (Button(R(390, 446, 240, 50), Cfg.L("ĐỒNG Ý", "YES"), Cfg.Lime, 22)) { confirmMenu = false; GameFlow.GoToMainMenu(); }
+                    if (Button(R(650, 446, 240, 50), Cfg.L("HỦY", "CANCEL"), Cfg.Red, 22)) confirmMenu = false;
+                }
+            }
+            Txt(R(0, 520, 1280, 24), Cfg.L("V = đổi ngôn ngữ", "V = switch language"), 14, Cfg.A(Color.white, 0.6f), TextAnchor.MiddleCenter, false);
         }
 
         void DrawResult(bool win)
@@ -516,6 +597,7 @@ namespace NeonBreaker
             }
 
             if (Button(R(490, 524, 300, 58), Cfg.L("CHƠI LẠI  [R / ENTER]", "PLAY AGAIN  [R / ENTER]"), c, 24)) GameManager.Inst.Restart();
+            if (GameFlow.MenuAvailable && Button(R(490, 592, 300, 46), Cfg.L("VỀ MENU CHÍNH", "MAIN MENU"), Cfg.Magenta, 20)) GameFlow.GoToMainMenu();
         }
     }
 }

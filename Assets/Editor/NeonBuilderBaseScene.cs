@@ -379,7 +379,10 @@ namespace NeonBreaker.EditorTools
             var pois = new List<Transform>();
             Prop(props, "Crates_A", "prop_crate", 20.5f, 10);
             Prop(props, "Barrel_A", "prop_barrel", 22f, 10);
-            pois.Add(Prop(props, "Shelf", "prop_shelf", 16.5f, 8));
+            var shelfT = Prop(props, "Shelf", "prop_shelf", 16.5f, 8);
+            shelfT.gameObject.AddComponent<BaseStash>();              // kho căn cứ: đứng gần bấm F
+            pois.Add(shelfT);
+            MakeMailbox(12.2f).transform.SetParent(props, true);      // hộp thư nhiệm vụ (hiện sau lần nói chuyện đầu với Albert)
             var craft = MakeStation(props, "CraftBench", StationKind.Craft, "station_craft", 28f, new Vector2(0f, 1.9f), new Vector2(4.5f, 3.2f), new Color(1f, 0.7f, 0.25f), 3.6f, 10);
             pois.Add(craft.transform);
             Prop(props, "Crates_B", "prop_crate", 33.5f, 10);

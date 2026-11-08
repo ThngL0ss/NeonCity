@@ -799,6 +799,16 @@
   "tile": false,
   "w": 16
  },
+ "item_carbon_fiber.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
  "item_charge_cell.png": {
   "h": 16,
   "pivot": [
@@ -880,6 +890,16 @@
   "w": 16
  },
  "item_heal_vial.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "item_iron_ingot.png": {
   "h": 16,
   "pivot": [
    0.5,
@@ -1398,6 +1418,26 @@
   "ppu": 16,
   "tile": false,
   "w": 48
+ },
+ "prop_mailbox.png": {
+  "h": 40,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "prop_mailbox_flag.png": {
+  "h": 12,
+  "pivot": [
+   0.15,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 10
  },
  "prop_monitors_0.png": {
   "h": 36,

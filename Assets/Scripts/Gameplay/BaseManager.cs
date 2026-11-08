@@ -115,7 +115,8 @@ namespace NeonBreaker
             Color a = Cfg.Yellow;
             var lines = new List<DlgLine>();
 
-            if (!BaseMissions.StoryTold)
+            bool first = !BaseMissions.StoryTold;
+            if (first)
             {
                 BaseMissions.StoryTold = true;
                 lines.Add(new DlgLine("ALBERT", Cfg.L("Ta không thể cứ mãi cho cậu tái sinh miễn phí được. Tự ra ngoài kiếm nguyên liệu về đây cho tôi. Không thì đừng mong có lần sau nhé!",
@@ -123,27 +124,54 @@ namespace NeonBreaker
                 lines.Add(new DlgLine("XbAst-013", Cfg.L("Hừ, đúng là lão già khó ưa.", "Hmph, what a cranky old man."), Cfg.Cyan));
             }
 
-            var claimed = BaseMissions.TryClaim();
+            var claimed = first ? null : BaseMissions.TryClaim();
             if (claimed != null)
-                lines.Add(new DlgLine("ALBERT", Cfg.L("Xuất sắc! Xong nhiệm vụ \"" + claimed.Title + "\". Nhận lấy: +" + claimed.rewardCoins + " xu, +" + claimed.rewardOil + " dầu.",
-                                                      "Excellent! \"" + claimed.Title + "\" complete. Take this: +" + claimed.rewardCoins + " coins, +" + claimed.rewardOil + " oil."), a));
+            {
+                string rw = MissionUi.RewardText(claimed);
+                string body = !string.IsNullOrEmpty(claimed.claimVi)
+                    ? Cfg.L(claimed.claimVi, claimed.claimEn)
+                    : Cfg.L("Xuất sắc! Xong nhiệm vụ \"" + claimed.Title + "\".", "Excellent! \"" + claimed.Title + "\" complete.");
+                if (rw.Length > 0) body += Cfg.L(" Nhận lấy: ", " Take this: ") + rw + ".";
+                lines.Add(new DlgLine("ALBERT", body, a));
+            }
 
             var cur = BaseMissions.Current;
-            if (cur == null)
-                lines.Add(new DlgLine("ALBERT", Cfg.L("Ta hết việc để giao cho cậu rồi. Giờ chỉ còn lấy lại lõi của cậu thôi!", "I'm out of tasks for you. All that's left is taking your core back!"), a));
-            else if (claimed != null)
-                lines.Add(new DlgLine("ALBERT", Cfg.L("Nhiệm vụ mới: " + cur.Title + ". " + cur.Desc, "New task: " + cur.Title + ". " + cur.Desc), a));
-            else
-                lines.Add(new DlgLine("ALBERT", Cfg.L("Nhiệm vụ hiện tại: " + cur.Title + " (" + cur.Progress + "/" + cur.target + "). " + cur.Desc,
-                                                      "Current task: " + cur.Title + " (" + cur.Progress + "/" + cur.target + "). " + cur.Desc), a));
+            if (!MissionBoard.Exists && cur != null && !BaseMissions.Accepted && !first)
+                BaseMissions.Accepted = true;      // Scene Base chưa có hộp thư: nhiệm vụ được nhận tự động
 
-            if (claimed == null && BaseMissions.StoryTold && Random.value < 0.6f)
+            if (first)
+            {
+                // sau cuộc nói chuyện đầu tiên: hộp thư nhiệm vụ xuất hiện (xem DialogueUi.Begin bên dưới)
+            }
+            else if (cur == null)
+                lines.Add(new DlgLine("ALBERT", Cfg.L("Ta hết việc để giao cho cậu rồi. Giờ chỉ còn lấy lại lõi của cậu thôi!", "I'm out of tasks for you. All that's left is taking your core back!"), a));
+            else if (!BaseMissions.Accepted)
+                lines.Add(new DlgLine("ALBERT", Cfg.L((claimed != null ? "Việc mới đã có ở hộp thư nhiệm vụ. " : "Có việc cho cậu ở hộp thư nhiệm vụ. ") + "Ra đó xem rồi nhận đi.",
+                                                      (claimed != null ? "There's a new job in the mission mailbox. " : "There's a job waiting in the mission mailbox. ") + "Go take a look and accept it."), a));
+            else
+                lines.Add(new DlgLine("ALBERT", Cfg.L("Nhiệm vụ hiện tại: " + cur.Title + " — " + cur.ProgressText + ".",
+                                                      "Current mission: " + cur.Title + " — " + cur.ProgressText + "."), a));
+
+            if (!first && claimed == null && Random.value < 0.6f)
             {
                 string vi, en;
                 Tip(out vi, out en);
                 lines.Add(new DlgLine("ALBERT", Cfg.L(vi, en), a));
             }
-            DialogueUi.Begin(lines, () => { if (albert != null) albert.EndTalk(); });
+            DialogueUi.Begin(lines, () =>
+            {
+                if (albert != null) albert.EndTalk();
+                if (first)
+                {
+                    BaseMissions.UnlockBoard();                       // hộp thư nhiệm vụ hiện ra (MissionBoard chạy hiệu ứng + chỉ đường)
+                    if (!MissionBoard.Exists)
+                    {
+                        BaseMissions.BoardJustUnlocked = false;
+                        BaseMissions.Accepted = true;                 // chưa có hộp thư trong Scene: nhận nhiệm vụ luôn
+                        GameManager.Banner(Cfg.L("NHIỆM VỤ MỚI: " + (BaseMissions.Current != null ? BaseMissions.Current.Title : ""), "NEW MISSION: " + (BaseMissions.Current != null ? BaseMissions.Current.Title : "")), Cfg.Yellow, 5f);
+                    }
+                }
+            });
         }
 
         static void Tip(out string vi, out string en)

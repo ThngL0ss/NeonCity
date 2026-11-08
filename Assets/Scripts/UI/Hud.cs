@@ -41,6 +41,7 @@ namespace NeonBreaker
             {
                 DrawTopCenter();
                 if (!GameFlow.InBase) DrawTopRight();
+                if (!cinema) DrawMissionTracker();
                 DrawBossBar();
             }
             if (GameManager.State == GameState.Playing)
@@ -251,6 +252,33 @@ namespace NeonBreaker
                     Txt(R(390, 50, 500, 24), a, 15, Cfg.A(Cfg.Yellow, pulse), TextAnchor.MiddleCenter);
                 }
             }
+        }
+
+        /// <summary>Khung theo dõi nhiệm vụ đang làm (góc trên bên phải).</summary>
+        void DrawMissionTracker()
+        {
+            var m = BaseMissions.Current;
+            if (m == null || !BaseMissions.Accepted || GameManager.State == GameState.Won || GameManager.State == GameState.Lost) return;
+            int n = m.reqs != null && m.reqs.Count > 0 ? m.reqs.Count : 1;
+            float y = GameFlow.InBase ? 12f : 82f;
+            Rect r = R(1000, y, 266, 30f + n * 22f);
+            bool done = m.Done;
+            Color c = done ? Cfg.Lime : Cfg.Yellow;
+            Fill(r, new Color(0.01f, 0.02f, 0.06f, 0.6f));
+            Outline(r, Cfg.A(c, 0.6f), 1.5f);
+            Txt(R(1010, y + 4, 246, 22), (done ? Cfg.L("XONG — GIAO ALBERT: ", "DONE — SEE ALBERT: ") : Cfg.L("NHIỆM VỤ: ", "MISSION: ")) + m.Title, 13, c, TextAnchor.MiddleLeft);
+            if (m.reqs != null && m.reqs.Count > 0)
+            {
+                for (int i = 0; i < m.reqs.Count; i++)
+                {
+                    var q = m.reqs[i];
+                    Color qc = q.Done ? Cfg.Lime : Color.white;
+                    Txt(R(1010, y + 28 + i * 22, 170, 20), q.Name, 13, qc, TextAnchor.MiddleLeft, false);
+                    Txt(R(1180, y + 28 + i * 22, 76, 20), q.Have + "/" + q.need, 13, qc, TextAnchor.MiddleRight);
+                }
+            }
+            else
+                Txt(R(1010, y + 28, 246, 20), m.Progress + " / " + m.target, 13, Color.white, TextAnchor.MiddleLeft, false);
         }
 
         void DrawTopRight()

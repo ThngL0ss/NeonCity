@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace NeonBreaker
 {
-    public enum BaseMode { None, Dialogue, Craft, Fusion, Map, Stash }
+    public enum BaseMode { None, Dialogue, Craft, Fusion, Map, Stash, Missions }
 
     /// <summary>
     /// Các bảng giao diện của căn cứ (và bản đồ): hội thoại, bàn chế tác, máy ghép linh kiện, bản đồ.
@@ -54,6 +54,7 @@ namespace NeonBreaker
                 case BaseMode.Fusion: FusionUi.UpdateInput(); break;
                 case BaseMode.Map: MapUi.UpdateInput(); break;
                 case BaseMode.Stash: StashUi.UpdateInput(); break;
+                case BaseMode.Missions: MissionUi.UpdateInput(); break;
             }
         }
 
@@ -66,6 +67,7 @@ namespace NeonBreaker
                 case BaseMode.Fusion: FusionUi.Draw(h); break;
                 case BaseMode.Map: MapUi.Draw(h); break;
                 case BaseMode.Stash: StashUi.Draw(h); break;
+                case BaseMode.Missions: MissionUi.Draw(h); break;
             }
         }
 

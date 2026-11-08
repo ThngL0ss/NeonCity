@@ -111,6 +111,7 @@ namespace NeonBreaker
         void Awake()
         {
             Instance = this;
+            PlayerProgress.Sync(this);          // cấp bậc / cấp độ giữ xuyên Scene (lần đầu lấy từ Prefab)
             maxHp = maxHealth + Inventory.Stat(ItemStat.MaxHealth);
             hp = maxHp;
             healCharges = healStartCharges;

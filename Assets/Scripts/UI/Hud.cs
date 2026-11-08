@@ -47,6 +47,7 @@ namespace NeonBreaker
                 SkillUi.DrawWorld(this);      // nhãn + bấm vào minibot để thu hồi
             }
             DrawBanner();
+            if (!cinema) DrawLossReport();
             if (!cinema) DrawCheatLabel();
             DrawScreenFx(pl);
 
@@ -358,6 +359,31 @@ namespace NeonBreaker
             float pulse = 0.75f + 0.25f * Mathf.Sin(Time.unscaledTime * 5f);
             Txt(R(560, 80, 706, 22), Cfg.L("[P] CHẾ ĐỘ THỬ NGHIỆM: BẤT TỬ · SÁT THƯƠNG x" + GameManager.DamageMul + " · KHÔNG HỒI CHIÊU",
                                            "[P] TEST MODE: INVINCIBLE · x" + GameManager.DamageMul + " DAMAGE · NO COOLDOWNS"), 14, Cfg.A(Cfg.Yellow, pulse), TextAnchor.UpperRight);
+        }
+
+        /// <summary>Bảng "đã mất gì" hiện ở căn cứ sau khi chết và được hồi sinh (DeathPenalty).</summary>
+        void DrawLossReport()
+        {
+            float t = DeathPenalty.ReportT;
+            if (t <= 0f || !GameFlow.InBase) return;
+            float a = Mathf.Clamp01(Mathf.Min(t / 0.6f, (DeathPenalty.ReportLen - t) / 0.3f));
+            var l = DeathPenalty.Last;
+            Rect box = R(300, 236, 680, 118);
+            Fill(box, new Color(0.04f, 0.01f, 0.03f, 0.82f * a));
+            Outline(box, Cfg.A(Cfg.Red, 0.85f * a), 2f);
+            Txt(R(300, 240, 680, 28), Cfg.L("ĐÃ MẤT KHI GỤC NGÃ", "LOST WHEN YOU FELL"), 22, Cfg.A(Cfg.Red, a), TextAnchor.MiddleCenter);
+            string line1 = "";
+            if (l.items > 0) line1 += l.items + Cfg.L(" vật phẩm", " items") + "   ";
+            if (l.parts > 0) line1 += l.parts + Cfg.L(" linh kiện", " parts") + "   ";
+            if (l.bots > 0) line1 += l.bots + " minibot";
+            if (line1.Length == 0) line1 = Cfg.L("Không mang theo gì trên người", "You carried nothing");
+            Txt(R(300, 270, 680, 26), line1, 18, Cfg.A(Color.white, a), TextAnchor.MiddleCenter, false);
+            string line2 = "";
+            if (l.levelFrom != l.levelTo) line2 += Cfg.L("Cấp độ ", "Level ") + l.levelFrom + " → " + l.levelTo + "     ";
+            if (l.rankFrom != l.rankTo) line2 += Cfg.L("Cấp bậc ", "Rank ") + l.rankFrom + " → " + l.rankTo;
+            if (line2.Length > 0) Txt(R(300, 296, 680, 26), line2, 18, Cfg.A(Cfg.Orange, a), TextAnchor.MiddleCenter, false);
+            Txt(R(300, 324, 680, 24), Cfg.L("Còn nguyên: kho căn cứ · minibot trong lưu trữ · cây skill · xu · dầu", "Kept: base stash · stored minibots · skill tree · coins · oil"),
+                14, Cfg.A(Color.white, 0.6f * a), TextAnchor.MiddleCenter, false);
         }
 
         void DrawBanner()

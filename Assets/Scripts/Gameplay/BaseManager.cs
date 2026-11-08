@@ -74,6 +74,7 @@ namespace NeonBreaker
             {
                 albert.Mutter(AfterDeathLine(), AfterDeathLineEn());
             }
+            DeathPenalty.ShowReport();      // bảng "đã mất gì" sau khi chết (nếu có)
             GameManager.Banner(Cfg.L("CĂN CỨ — BẤM F ĐỂ TƯƠNG TÁC", "BASE — PRESS F TO INTERACT"), Cfg.Orange, 3.5f);
         }
 

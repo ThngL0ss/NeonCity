@@ -81,6 +81,9 @@ namespace NeonBreaker
             SkillSystem.ResetAll();
             GameMenu.ResetAll();
             GameFlow.ResetStatics();
+            ItemDatabase.ResetStatics();
+            SaveManager.ResetStatics();
+            DeathPenalty.Clear();
         }
 
         public static void Banner(string text, Color c, float dur = 3f)
@@ -178,6 +181,7 @@ namespace NeonBreaker
             Time.timeScale = 1f;
             AutoStart = true;
             GameFlow.Carry = false;       // chơi lại từ đầu: xoá sạch dữ liệu (kho, skill, minibot)
+            SaveManager.Detach();         // ván thử này không ghi đè ô lưu (nạp lại bằng "Tiếp tục" ở menu chính)
             Sfx.Play("click", 1f);
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
@@ -226,6 +230,7 @@ namespace NeonBreaker
             }
 
             if (BannerT > 0f) BannerT -= Time.unscaledDeltaTime;
+            if (DeathPenalty.ReportT > 0f) DeathPenalty.ReportT -= Time.unscaledDeltaTime;
             Cine.Tick();
 
             switch (State)
@@ -373,7 +378,7 @@ namespace NeonBreaker
             while (Cine.Active) yield return null;
             if (GameFlow.BaseAvailable)
             {
-                GameFlow.GoToBase();
+                GameFlow.GoToBase(true);          // áp hình phạt chết + tự lưu game
                 yield break;
             }
             Cine.SetFade(0f, 0.8f);               // chưa có Scene Base: về màn thua cũ

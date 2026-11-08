@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -22,6 +23,12 @@ namespace NeonBreaker
         public static int Deaths;
         /// <summary>Đã tới căn cứ ít nhất 1 lần.</summary>
         public static bool BaseVisited;
+        /// <summary>Đã xong màn hướng dẫn (ván mới bắt đầu bằng màn hướng dẫn).</summary>
+        public static bool TutorialDone;
+        /// <summary>Địa điểm đang chơi (id trong ván này) — dùng để ghi vào file lưu.</summary>
+        public static string CurrentPlaceId = LevelScene;
+        /// <summary>Các địa điểm đã mở trên bản đồ.</summary>
+        static readonly HashSet<string> unlockedPlaces = new HashSet<string>();
 
         /// <summary>Cảnh Base đã được thêm vào Build Settings / có trong project chưa.</summary>
         public static bool BaseAvailable { get { return Application.CanStreamedLevelBeLoaded(BaseScene); } }
@@ -33,14 +40,35 @@ namespace NeonBreaker
             BaseDialogDone = false;
             Deaths = 0;
             BaseVisited = false;
+            TutorialDone = false;
+            CurrentPlaceId = LevelScene;
+            unlockedPlaces.Clear();
             BaseMissions.ResetAll();
+            Stash.ResetAll();
+            PlayerProgress.Reset();
+            SaveManager.Detach();
         }
 
-        /// <summary>Chuyển về căn cứ (sau khi chết). Giữ dữ liệu.</summary>
-        public static void GoToBase()
+        public static bool IsPlaceUnlocked(string id) { return unlockedPlaces.Contains(id); }
+        public static void UnlockPlace(string id) { if (!string.IsNullOrEmpty(id)) unlockedPlaces.Add(id); }
+        public static void ExportPlaces(List<string> dst) { dst.Clear(); foreach (var id in unlockedPlaces) dst.Add(id); }
+        public static void ImportPlaces(List<string> src)
+        {
+            unlockedPlaces.Clear();
+            if (src != null) for (int i = 0; i < src.Count; i++) if (!string.IsNullOrEmpty(src[i])) unlockedPlaces.Add(src[i]);
+        }
+
+        /// <summary>
+        /// Chuyển về căn cứ. Giữ dữ liệu. died = true (bị hạ gục): áp hình phạt chết (DeathPenalty) rồi tự lưu game.
+        /// </summary>
+        public static void GoToBase(bool died = false)
         {
             SkillSystem.RecallAllSilently();
             BaseMissions.BankRun();
+            if (died) DeathPenalty.Apply();
+            else DeathPenalty.Clear();
+            CurrentPlaceId = BaseScene;
+            SaveManager.AutoSave();
             Carry = true;
             GameManager.AutoStart = true;         // vào thẳng căn cứ (không hiện menu chính)
             Time.timeScale = 1f;
@@ -52,6 +80,8 @@ namespace NeonBreaker
         {
             SkillSystem.RecallAllSilently();
             BaseMissions.BankRun();
+            CurrentPlaceId = LevelScene;
+            SaveManager.AutoSave();           // lưu lại khi rời căn cứ (kho căn cứ, đồ mang theo...)
             Carry = true;
             GameManager.AutoStart = true;
             Time.timeScale = 1f;

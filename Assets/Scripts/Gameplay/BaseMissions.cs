@@ -38,6 +38,28 @@ namespace NeonBreaker
             list = null;
         }
 
+        /// <summary>Ghi tiến độ nhiệm vụ + cờ cốt truyện vào d.flags (lưu game).</summary>
+        public static void Export(SaveData d)
+        {
+            SaveManager.SetFlag(d.flags, "m.crafted", Crafted);
+            SaveManager.SetFlag(d.flags, "m.kills", TotalKills);
+            SaveManager.SetFlag(d.flags, "m.towers", TotalTowers);
+            SaveManager.SetFlag(d.flags, "m.boss", BossKills);
+            SaveManager.SetFlag(d.flags, "m.story", StoryTold ? 1 : 0);
+            SaveManager.SetFlag(d.flags, "m.index", Index);
+        }
+
+        /// <summary>Nạp tiến độ nhiệm vụ + cờ cốt truyện từ d.flags (gọi sau ResetAll).</summary>
+        public static void Import(SaveData d)
+        {
+            Crafted = SaveManager.GetFlag(d.flags, "m.crafted");
+            TotalKills = SaveManager.GetFlag(d.flags, "m.kills");
+            TotalTowers = SaveManager.GetFlag(d.flags, "m.towers");
+            BossKills = SaveManager.GetFlag(d.flags, "m.boss");
+            StoryTold = SaveManager.GetFlag(d.flags, "m.story") != 0;
+            Index = SaveManager.GetFlag(d.flags, "m.index");
+        }
+
         /// <summary>Cộng thống kê ván vừa chơi vào bộ đếm tích luỹ (gọi khi chuyển cảnh).</summary>
         public static void BankRun()
         {

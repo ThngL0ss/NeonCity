@@ -200,6 +200,7 @@ namespace NeonBreaker
             d.baseDialogDone = GameFlow.BaseDialogDone;
             d.baseVisited = GameFlow.BaseVisited;
             d.deaths = GameFlow.Deaths;
+            SetFlag(d.flags, "g.introSeen", GameFlow.IntroSeen ? 1 : 0);
             GameFlow.ExportPlaces(d.places);
             BaseMissions.Export(d);
             d.totalKills = BaseMissions.TotalKills;
@@ -234,6 +235,7 @@ namespace NeonBreaker
             GameFlow.BaseDialogDone = d.baseDialogDone;
             GameFlow.BaseVisited = d.baseVisited;
             GameFlow.Deaths = d.deaths;
+            GameFlow.IntroSeen = GetFlag(d.flags, "g.introSeen") != 0 || d.baseVisited;
             GameFlow.ImportPlaces(d.places);
             BaseMissions.Import(d);
             BaseMissions.TotalKills = Mathf.Max(BaseMissions.TotalKills, d.totalKills);

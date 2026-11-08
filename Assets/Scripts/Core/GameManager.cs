@@ -84,6 +84,8 @@ namespace NeonBreaker
             ItemDatabase.ResetStatics();
             SaveManager.ResetStatics();
             DeathPenalty.Clear();
+            GameSettings.ResetStatics();
+            MainMenuUi.ResetStatics();
         }
 
         public static void Banner(string text, Color c, float dur = 3f)
@@ -116,7 +118,7 @@ namespace NeonBreaker
             GameFlow.Carry = false;
             GameFlow.InBase = false;
 
-            Cfg.Vietnamese = startVietnamese;
+            GameSettings.OnSceneAwake(startVietnamese);       // lần đầu: ngôn ngữ mặc định + cài đặt đã lưu; các Scene sau giữ lựa chọn hiện tại
 
             Application.targetFrameRate = 60;
             QualitySettings.vSyncCount = 1;
@@ -148,7 +150,14 @@ namespace NeonBreaker
             var cam = Camera.main;
             if (cam != null) Sfx.Listener = cam.transform;
             Sfx.Music(0);
-            if (State == GameState.Playing && !GameFlow.InBase)
+            bool introNow = GameFlow.PlayIntroOnLoad;
+            GameFlow.PlayIntroOnLoad = false;
+            if (State == GameState.Playing && introNow && playIntro && !GameFlow.InBase)
+            {
+                // vừa xong màn hướng dẫn (hoặc nạp ván chưa xem cảnh mở đầu): chạy cảnh mở đầu rồi mới vào màn chơi
+                StartCoroutine(IntroRoutine());
+            }
+            else if (State == GameState.Playing && !GameFlow.InBase && TowerTotal > 0)
                 Banner(Cfg.L("PHÁ HỦY TẤT CẢ TRỤ TRIỆU HỒI", "DESTROY ALL SUMMON TOWERS"), Cfg.Cyan, 4f);
             AutoStart = false;
         }
@@ -220,7 +229,7 @@ namespace NeonBreaker
         void Update()
         {
             GameInput.Poll();
-            if (GameInput.LangDown) Cfg.Vietnamese = !Cfg.Vietnamese;
+            if (GameInput.LangDown) { Cfg.Vietnamese = !Cfg.Vietnamese; GameSettings.Save(); }
             if (GameInput.CheatDown)
             {
                 Cheat = !Cheat;
@@ -236,7 +245,8 @@ namespace NeonBreaker
             switch (State)
             {
                 case GameState.Menu:
-                    if (GameInput.ConfirmDown) StartGame();
+                    if (MainMenuUi.Active) MainMenuUi.UpdateInput();      // menu chính mới (Scene MainMenu)
+                    else if (GameInput.ConfirmDown) StartGame();          // chạy thẳng Scene Main trong Unity: màn bắt đầu cũ
                     break;
                 case GameState.Playing:
                     if (BaseUi.IsOpen)
@@ -376,6 +386,11 @@ namespace NeonBreaker
             Projectile.ClearHostile();
             Cine.Play(CineScripts.Death());
             while (Cine.Active) yield return null;
+            if (GameFlow.InTutorial)
+            {
+                GameFlow.RetryTutorial();         // màn hướng dẫn: làm lại màn, không bị phạt
+                yield break;
+            }
             if (GameFlow.BaseAvailable)
             {
                 GameFlow.GoToBase(true);          // áp hình phạt chết + tự lưu game

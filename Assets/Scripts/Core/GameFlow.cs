@@ -12,6 +12,8 @@ namespace NeonBreaker
     {
         public const string LevelScene = "Main";
         public const string BaseScene = "Base";
+        public const string MenuScene = "MainMenu";
+        public const string TutorialScene = "Tutorial";
 
         /// <summary>Đang ở căn cứ (BaseManager đặt khi cảnh Base nạp xong).</summary>
         public static bool InBase;
@@ -25,6 +27,12 @@ namespace NeonBreaker
         public static bool BaseVisited;
         /// <summary>Đã xong màn hướng dẫn (ván mới bắt đầu bằng màn hướng dẫn).</summary>
         public static bool TutorialDone;
+        /// <summary>Đã xem cảnh mở đầu ở khu thử nghiệm Dyber (hoặc đã từng về căn cứ) chưa.</summary>
+        public static bool IntroSeen;
+        /// <summary>true = lần nạp Scene kế tiếp (Main) chạy cảnh mở đầu (GameManager đọc rồi tự tắt).</summary>
+        public static bool PlayIntroOnLoad;
+        /// <summary>Đang chơi màn hướng dẫn (chết thì làm lại màn, không bị phạt).</summary>
+        public static bool InTutorial;
         /// <summary>Địa điểm đang chơi (id trong ván này) — dùng để ghi vào file lưu.</summary>
         public static string CurrentPlaceId = LevelScene;
         /// <summary>Các địa điểm đã mở trên bản đồ.</summary>
@@ -32,6 +40,9 @@ namespace NeonBreaker
 
         /// <summary>Cảnh Base đã được thêm vào Build Settings / có trong project chưa.</summary>
         public static bool BaseAvailable { get { return Application.CanStreamedLevelBeLoaded(BaseScene); } }
+        public static bool MenuAvailable { get { return Application.CanStreamedLevelBeLoaded(MenuScene); } }
+        public static bool TutorialAvailable { get { return Application.CanStreamedLevelBeLoaded(TutorialScene); } }
+        public static bool SceneAvailable(string scene) { return Application.CanStreamedLevelBeLoaded(scene); }
 
         public static void ResetStatics()
         {
@@ -41,6 +52,9 @@ namespace NeonBreaker
             Deaths = 0;
             BaseVisited = false;
             TutorialDone = false;
+            IntroSeen = false;
+            PlayIntroOnLoad = false;
+            InTutorial = false;
             CurrentPlaceId = LevelScene;
             unlockedPlaces.Clear();
             BaseMissions.ResetAll();
@@ -68,6 +82,8 @@ namespace NeonBreaker
             if (died) DeathPenalty.Apply();
             else DeathPenalty.Clear();
             CurrentPlaceId = BaseScene;
+            IntroSeen = true;                 // về tới căn cứ nghĩa là đã trải qua cảnh mở đầu
+            InTutorial = false;
             SaveManager.AutoSave();
             Carry = true;
             GameManager.AutoStart = true;         // vào thẳng căn cứ (không hiện menu chính)
@@ -86,6 +102,116 @@ namespace NeonBreaker
             GameManager.AutoStart = true;
             Time.timeScale = 1f;
             SceneManager.LoadScene(LevelScene);
+        }
+
+        // ------------------------------------------------------------ menu chính / ván mới / tiếp tục
+        /// <summary>Về menu chính. Đang ở căn cứ thì lưu trước. Dữ liệu trong bộ nhớ bị xoá (nạp lại từ ô lưu khi Tiếp tục).</summary>
+        public static void GoToMainMenu()
+        {
+            if (InBase) SaveManager.AutoSave();
+            Carry = false;
+            GameManager.AutoStart = false;
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(MenuScene);
+        }
+
+        /// <summary>Ván mới: tạo ô lưu mới rồi vào màn hướng dẫn. Trả về false nếu cả 10 ô đã đầy.</summary>
+        public static bool StartNewGame()
+        {
+            int slot = SaveManager.NewGame();
+            if (slot < 0) return false;
+            EnterSaved();
+            return true;
+        }
+
+        /// <summary>Tiếp tục ván ở ô slot. Trả về false nếu ô trống / hỏng.</summary>
+        public static bool ContinueGame(int slot)
+        {
+            if (!SaveManager.Load(slot)) return false;
+            EnterSaved();
+            return true;
+        }
+
+        /// <summary>
+        /// Vào đúng chỗ theo trạng thái đang có: chưa xong hướng dẫn → màn hướng dẫn; xong hướng dẫn mà chưa xem cảnh mở đầu → khu Dyber (có cảnh mở đầu);
+        /// còn lại → căn cứ. Chưa có Scene tương ứng thì bỏ qua bước đó.
+        /// </summary>
+        static void EnterSaved()
+        {
+            Carry = true;
+            GameManager.AutoStart = true;
+            Time.timeScale = 1f;
+            InTutorial = false;
+            PlayIntroOnLoad = false;
+            if (!TutorialDone)
+            {
+                if (TutorialAvailable)
+                {
+                    InTutorial = true;
+                    CurrentPlaceId = TutorialScene;
+                    SceneManager.LoadScene(TutorialScene);
+                    return;
+                }
+                TutorialDone = true;          // chưa có Scene hướng dẫn: coi như đã xong
+            }
+            if (!IntroSeen && SceneAvailable(LevelScene))
+            {
+                PlayIntroOnLoad = true;
+                CurrentPlaceId = LevelScene;
+                SceneManager.LoadScene(LevelScene);
+                return;
+            }
+            if (BaseAvailable)
+            {
+                CurrentPlaceId = BaseScene;
+                SceneManager.LoadScene(BaseScene);
+                return;
+            }
+            CurrentPlaceId = LevelScene;
+            SceneManager.LoadScene(LevelScene);
+        }
+
+        /// <summary>Chết trong màn hướng dẫn: nạp lại màn, giữ dữ liệu, không bị phạt.</summary>
+        public static void RetryTutorial()
+        {
+            SkillSystem.RecallAllSilently();
+            Carry = true;
+            GameManager.AutoStart = true;
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(TutorialScene);
+        }
+
+        /// <summary>Xong màn hướng dẫn (đi qua cánh cửa): lưu game rồi vào khu Dyber với cảnh mở đầu.</summary>
+        public static void FinishTutorial()
+        {
+            SkillSystem.RecallAllSilently();
+            TutorialDone = true;
+            InTutorial = false;
+            SaveManager.AutoSave();
+            if (SceneAvailable(LevelScene))
+            {
+                PlayIntroOnLoad = true;
+                CurrentPlaceId = LevelScene;
+                Carry = true;
+                GameManager.AutoStart = true;
+                Time.timeScale = 1f;
+                SceneManager.LoadScene(LevelScene);
+            }
+            else if (BaseAvailable) GoToBase();
+        }
+
+        /// <summary>Từ căn cứ tới một địa điểm trên bản đồ (Scene trùng id). Giữ dữ liệu, lưu game trước khi đi.</summary>
+        public static void GoToPlace(string sceneId)
+        {
+            if (!SceneAvailable(sceneId)) return;
+            SkillSystem.RecallAllSilently();
+            BaseMissions.BankRun();
+            CurrentPlaceId = sceneId;
+            SaveManager.AutoSave();
+            Carry = true;
+            GameManager.AutoStart = true;
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(sceneId);
         }
     }
 }

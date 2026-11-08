@@ -10,12 +10,14 @@ namespace NeonBreaker
     {
         public float s = 1f;
         GUIStyle st;
+        bool confirmMenu;            // hộp xác nhận "về menu chính" trong màn tạm dừng
         float hpShown = 1f, bossShown = 1f;
 
         void OnGUI()
         {
             if (Art.Pixel == null) return;
             s = Mathf.Max(0.5f, Screen.height / 720f);
+            if (!GameManager.Paused) confirmMenu = false;
             if (st == null)
             {
                 st = new GUIStyle(GUI.skin.label);
@@ -53,7 +55,10 @@ namespace NeonBreaker
 
             switch (GameManager.State)
             {
-                case GameState.Menu: DrawMenu(); break;
+                case GameState.Menu:
+                    if (MainMenuUi.Active) MainMenuUi.Draw(this);
+                    else DrawMenu();
+                    break;
                 case GameState.Won: DrawResult(true); break;
                 case GameState.Lost: DrawResult(false); break;
                 case GameState.Playing:
@@ -498,7 +503,22 @@ namespace NeonBreaker
             Dim(0.55f);
             Txt(R(0, 230, 1280, 90), Cfg.L("TẠM DỪNG", "PAUSED"), 64, Cfg.Cyan, TextAnchor.MiddleCenter);
             if (Button(R(490, 350, 300, 54), Cfg.L("TIẾP TỤC  [ESC]", "RESUME  [ESC]"), Cfg.Cyan)) GameManager.Inst.TogglePause();
-            Txt(R(0, 430, 1280, 24), Cfg.L("V = đổi ngôn ngữ", "V = switch language"), 14, Cfg.A(Color.white, 0.6f), TextAnchor.MiddleCenter, false);
+            if (GameFlow.MenuAvailable)
+            {
+                if (!confirmMenu)
+                {
+                    if (Button(R(490, 416, 300, 54), Cfg.L("VỀ MENU CHÍNH", "MAIN MENU"), Cfg.Magenta, 22)) confirmMenu = true;
+                }
+                else
+                {
+                    Txt(R(240, 410, 800, 28), GameFlow.InBase ? Cfg.L("Về menu chính? Ván sẽ được lưu.", "Back to the main menu? Your game will be saved.")
+                                                                : Cfg.L("Về menu chính? Tiến trình ngoài màn từ lần lưu gần nhất sẽ mất.", "Back to the main menu? Progress since your last save will be lost."),
+                        18, Cfg.Yellow, TextAnchor.MiddleCenter);
+                    if (Button(R(390, 446, 240, 50), Cfg.L("ĐỒNG Ý", "YES"), Cfg.Lime, 22)) { confirmMenu = false; GameFlow.GoToMainMenu(); }
+                    if (Button(R(650, 446, 240, 50), Cfg.L("HỦY", "CANCEL"), Cfg.Red, 22)) confirmMenu = false;
+                }
+            }
+            Txt(R(0, 520, 1280, 24), Cfg.L("V = đổi ngôn ngữ", "V = switch language"), 14, Cfg.A(Color.white, 0.6f), TextAnchor.MiddleCenter, false);
         }
 
         void DrawResult(bool win)
@@ -542,6 +562,7 @@ namespace NeonBreaker
             }
 
             if (Button(R(490, 524, 300, 58), Cfg.L("CHƠI LẠI  [R / ENTER]", "PLAY AGAIN  [R / ENTER]"), c, 24)) GameManager.Inst.Restart();
+            if (GameFlow.MenuAvailable && Button(R(490, 592, 300, 46), Cfg.L("VỀ MENU CHÍNH", "MAIN MENU"), Cfg.Magenta, 20)) GameFlow.GoToMainMenu();
         }
     }
 }

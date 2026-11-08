@@ -62,14 +62,28 @@
 - Dù đối lập và thù nhau, các phe có **hiệp ước ngầm: không ai được xen vào sự tồn tại của phe khác** ("hiệp ước đình chiến").
 - Tuy vậy, **việc chống đối và phá hủy hiệp ước vẫn thường xảy ra trong bóng tối**.
 
+## 4b. Địa điểm trong game (do tác giả yêu cầu)
+Mô tả dưới đây là **bối cảnh nội bộ**; lời thoại / mô tả trong game **không nhắc tên phe nào** cho tới khi tác giả yêu cầu.
+- **Phố Neon** — thành phố công nghệ trung tâm, nằm **dưới sự cai quản của 5 phe**: Dyber, Pyber, Diệt chủng, Tài phiệt, Hòa hảo. Phe Cướp bóc và Đánh thuê hay đi ngang qua. Nhà cao tầng, neon đủ màu, rất nhiều NPC qua lại (người, robot, thậm chí quái) — **không ai tấn công**. Vật phẩm rải rác nhặt được. *(Nhiệm vụ phụ: sau này.)*
+- **Rìa Phố Neon** — vùng trũng cạnh thành phố, nơi **rác và khí thải của thành phố trên cao** đổ xuống; là **căn cứ của Cướp bóc và Đánh thuê**. Tội phạm và bệnh tật nguy hiểm; đống rác công nghệ, ruồi nhặng, NPC đeo mặt nạ mang vũ khí. Vật phẩm rải rác. *(Nhiệm vụ phụ: sau này.)* Trên bản đồ là vùng hình chữ L ôm Phố Neon từ rìa Tây xuống rìa Nam.
+- **Khu thử nghiệm của Dyber** — nơi player bị cướp lõi `Core-T04` và thua OVERLORD lần đầu. Lời thoại mở đầu của player: "…Khu thử nghiệm của Dyber. Vậy là lõi của mình bị bọn chúng cất giữ ở đây à? Nhưng chẳng phải nơi đây an ninh khá lỏng lẻo sao? Liệu chúng có mục đích gì…"
+- **Khu huấn luyện** — đường thẳng dạy thao tác ở ván mới, kết thúc ở cánh cửa dẫn tới cảnh mở đầu.
+
+## 4c. Hồi sinh & nhiệm vụ của Albert
+- Albert **không tái tạo miễn phí mãi**: lần nói chuyện đầu ông bảo player tự ra ngoài kiếm nguyên liệu ("Không thì đừng mong có lần sau nhé!"); player đáp "Hừ, đúng là lão già khó ưa."
+- **Mỗi lần chết = một lần tái tạo cơ thể**: mất đồ mang theo, tụt cấp độ (−10) và cấp bậc (−1); đồ cất ở kho căn cứ và cây skill được giữ. (Tuân theo chi tiết: mỗi lần tái sinh player mất một phần ký ức.)
+- **Nhiệm vụ nguyên liệu hồi sinh đầu tiên:** 10 Thỏi sắt, 20 Sợi cacbon, 50 dầu — nhận ở **hộp thư nhiệm vụ** trong căn cứ.
+
 ## 5. Đã chốt (tác giả xác nhận)
 - **Tên nhân vật chính: `XbAst-013`** (gạch ngang, đúng như code hiện tại). Không dùng `XbAst_013`.
 - **Tên boss: giữ nguyên `OVERLORD`** (boss thuộc Dyber).
 - **Item SS bị cướp: `Core-T04`.** Các lõi SS rải rác cùng kiểu tên, chỉ khác số (ví dụ `Core-T03`, `Core-T06`). Trong code: `CineScripts.StolenItemVi/En`.
 - **`Earth-01836` là đúng**; dãy số chỉ là ngẫu nhiên, **không phải năm** (dòng thời gian hiện tại vẫn là năm 2036).
 - **Player liên kết với Albert**, không chỉ là cỗ máy do Albert chế tạo.
+- **Phố Neon / Rìa Phố Neon / cơ chế hồi sinh – nhiệm vụ đầu** như mục 4b, 4c (tác giả mô tả ngày 08/11/2026).
 
 ## 6. Chưa chốt (hỏi tác giả trước khi dùng)
 - **Các phe phái và cách đề cập trong game** (tên phe, lời thoại nhắc tới Pyber / Dyber / hiệp ước, ...): tác giả sẽ yêu cầu chỉnh sửa sau. Hiện lời thoại trong game **chưa** nhắc tên phe nào — không tự thêm.
+- **Độ nguy hiểm (số đầu lâu) của Khu thử nghiệm Dyber** — hiện đặt tạm 5; tác giả xác nhận sau. Phần thưởng nhiệm vụ nguyên liệu đầu (hiện 60 xu) cũng là giá trị tạm.
 - **Người sáng lập Dyber** ("?") — bí ẩn, chưa tiết lộ.
 - Bản chất mối liên kết giữa player và Albert — chưa nói rõ; chỉ viết chung chung "có liên kết", không tự bịa chi tiết.

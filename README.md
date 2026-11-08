@@ -26,6 +26,12 @@ Game 2D platformer đồ họa **pixel art neon tương lai**. Scene, Prefab, Sp
 - **Bản chỉnh boss / UI / menu B / máy tính khổng lồ** (nhánh `claude/boss-ui-polish`): chỉ có code + sprite mới, **không đụng Scene / Prefab của bạn** (chỉnh thông số vẫn do bạn). Sau khi kéo về và Unity biên dịch xong:
   1. Chạy **Tools ▸ Neon Breaker ▸ Thêm máy tính khổng lồ vào Scene Base (giữ nguyên chỉnh sửa của bạn)** — thêm đúng 1 object `ResurrectionComputer` (máy + màn hình động + 2 bó dây cáp) cạnh lồng hồi sinh trong `Base.unity`; chạy lại thì báo "đã có", không thêm lần nữa. Nên commit git trước khi chạy. Nếu Base đang mở trong Unity thì nhớ **Ctrl+S**.
   2. Bấm Play thử rồi commit các file `.meta`, PNG `bigpc_*`, Scene Unity vừa tạo / sửa.
+- **Bản có menu chính / lưu game / nhiệm vụ / Phố Neon** (nhánh `claude/menu-nhiem-vu-pho-neon`): chỉ thêm code + sprite + công cụ, **không ghi đè Scene / Prefab / asset của bạn**. Sau khi kéo về và Unity biên dịch xong, chạy **một menu**: **Tools ▸ Neon Breaker ▸ Cập nhật Nhiệm vụ + Phố Neon + Lưu game (giữ nguyên chỉnh sửa của bạn)**. Menu này (chạy lại nhiều lần vẫn an toàn):
+  - tạo 2 nguyên liệu `Item_iron_ingot` (Thỏi sắt) + `Item_carbon_fiber` (Sợi cacbon) và `Resources/NeonBreaker/ItemDatabase.asset` (danh sách vật phẩm để file lưu game tra lại — thêm vật phẩm mới thì chạy lại menu này);
+  - trong `Base.unity` có sẵn: chỉ **thêm** `BaseStash` vào object `Shelf` (kho căn cứ) và object `Mailbox` (hộp thư nhiệm vụ, x ≈ 12.2) nếu chưa có — không đụng gì khác (Base đang mở thì nhớ **Ctrl+S**);
+  - tạo Scene còn thiếu: `MainMenu` (menu chính), `Tutorial` (huấn luyện), `PhoNeon`, `RiaPhoNeon` + prefab NPC `Npc_*`; Scene đã có thì **giữ nguyên** (muốn dựng lại: xoá file `.unity` đó rồi chạy lại menu);
+  - thêm Scene vào Build Settings, `MainMenu` đứng đầu.
+  Rồi commit các file `.meta`, PNG `city_* rim_* npc_* tut_*`, prefab, asset, Scene Unity vừa tạo. **Thử luồng thật bằng cách mở `MainMenu.unity` rồi bấm Play** (bấm Play thẳng ở `Main.unity` vẫn chạy kiểu cũ, có màn hình tựa cũ).
 - Ảnh PNG tự được cài đặt pixel art (Point filter, không nén, PPU, pivot) nhờ `Assets/Editor/NeonArtImporter.cs`.
 
 ## 2. Điều khiển
@@ -197,27 +203,51 @@ Hầm công nghệ cũ pha đá / đất, dài ~120 đơn vị, đèn trần ch�
 - **Máy tính khổng lồ** (`ResurrectionComputer`, cao ~7 đơn vị) đứng cạnh lồng (mặc định bên trái; sát mép trái thì sang bên phải), nối với lồng bằng 2 bó dây cáp (cáp thấp vào chân lồng, cáp cao vòng lên khung lồng). Màn hình động: quét cơ thể, sóng tim, thanh tiến độ, đèn nhấp nháy. Khi lồng nạp điện hồi sinh, vầng sáng màn hình mạnh lên, dây cáp sáng lên và phóng tia lửa điện. Thêm vào Scene có sẵn bằng menu *Thêm máy tính khổng lồ vào Scene Base*; sau đó kéo object `ResurrectionComputer` (dây cáp là object con nên đi theo) để chỉnh vị trí. Thông số: `Idle Glow`, `Charged Glow`.
 - **Hội thoại:** khi Albert ↔ người chơi nói chuyện, camera **zoom vào người đang nói** (mức zoom `BaseConfig ▸ Dialogue Zoom`, mặc định 2) và khung thoại nhỏ gọn hơn ở đáy màn hình, không che nhân vật.
 - **Lần đầu về căn cứ:** hội thoại Albert ↔ XbAst-013 (lời thoại ở `BaseManager.FirstArrivalLines`), sau đó đi lại tự do.
-- **Albert** (áo choàng trắng, kính tròn): đi lại quanh căn cứ, thỉnh thoảng dừng lại ngắm một phát minh (kéo công trình vào `AlbertNpc ▸ Interest Points`). **F** để nói chuyện: kể cốt truyện (lần đầu), **giao nhiệm vụ** / nhận thưởng (6 nhiệm vụ trong `BaseMissions.cs`: hạ quái, phá trụ, ghép linh kiện, chế tác, hạ boss…), mẹo chơi.
+- **Albert** (áo choàng trắng, kính tròn): đi lại quanh căn cứ, thỉnh thoảng dừng lại ngắm một phát minh (kéo công trình vào `AlbertNpc ▸ Interest Points`). **F** để nói chuyện: kể cốt truyện (lần đầu), **giao nhiệm vụ** / nhận thưởng (nhiệm vụ mở đầu "Nguyên liệu hồi sinh" nhận ở hộp thư, rồi các nhiệm vụ hạ quái, phá trụ, ghép linh kiện, chế tác, hạ boss… trong `BaseMissions.cs`), mẹo chơi.
 - **Bàn chế tác** (F): chọn công thức (W/S, Enter chế tác) — nguyên liệu + dầu (+ xu). Công thức ở `BaseConfig ▸ Recipes`.
 - **Máy ghép** (F): 3 ô xếp **tam giác** + 1 ô giữa là thành phẩm; chọn bậc bằng A/D, bấm GHÉP (mục 7c).
-- **Cửa ra** (F): mở **bản đồ**. Bản đồ hiện đang đen; `BaseConfig ▸ Map Test Destination` bật = có 1 điểm "KHU THỬ NGHIỆM — Thành phố Neon" để quay lại màn chơi (tắt = bản đồ đen hoàn toàn).
+- **Cửa ra** (F): mở **bản đồ** — chọn Phố Neon / Rìa Phố Neon / Khu thử nghiệm Dyber (mục 7h).
+- **Giá kệ `Shelf`** (F): **kho căn cứ** — cất đồ để không mất khi chết (mục 7f). **Hộp thư `Mailbox`** (F): nhận nhiệm vụ (mục 7g).
 - Dữ liệu (xu, kho đồ, skill, minibot, nhiệm vụ) được giữ khi chuyển Main ↔ Base (`GameFlow.Carry`). Khi thua game / chơi lại từ menu thì reset như cũ.
 - Trong Scene `Base`, mọi thứ là object thật để bạn kéo thả: `BaseManager` (giới hạn trái/phải, lồng, Albert, cửa), `Props` (phát minh, máy), `Lamps`, `Environment`. Muốn đổi lời thoại / nhiệm vụ: `BaseManager.cs`, `BaseMissions.cs`.
+
+## 7f. Menu chính, lưu game, hình phạt khi chết
+
+- **Menu chính** (Scene `MainMenu`): tên game ở giữa trên cùng, **Trò chơi mới · Tiếp tục · Cài đặt · Thoát**. Cài đặt: ngôn ngữ, nhạc, hiệu ứng âm thanh, toàn màn hình (lưu vào PlayerPrefs, nhớ giữa các lần mở game). Trong Editor có thêm nút `[DEV]` nhảy thẳng vào màn Dyber để thử nhanh.
+- **10 ô lưu.** Mỗi ván mới dùng 1 ô trống (đầy thì phải xoá bớt: nút **XÓA** hoặc phím **X** ở danh sách, có hỏi xác nhận). Mỗi ô là 1 file JSON dễ đọc `Application.persistentDataPath/saves/slot_N.json` (ghi qua `.tmp`, giữ `.bak`; file chính hỏng thì tự đọc `.bak`). Mã: `SaveManager`, `SaveData`.
+- **Lưu tự động ở "điểm an toàn"** (không lưu giữa lúc đang đánh nhau ngoài màn): ngay sau khi chết (đã trừ hình phạt), khi về căn cứ, khi rời căn cứ, khi nhận / nhận thưởng nhiệm vụ, khi đóng kho căn cứ, khi xong màn hướng dẫn. Nội dung lưu: cấp bậc / cấp độ, xu, dầu, chỉ số vĩnh viễn, kho đồ + trang bị + linh kiện, minibot, cây skill, kho căn cứ, nhiệm vụ, cờ cốt truyện, địa điểm đã mở. Nạp lại = vào thẳng căn cứ.
+- **Hình phạt khi chết** (`DeathPenalty`): mỗi lần chết là một lần Albert tái tạo cơ thể — **MẤT** toàn bộ vật phẩm + linh kiện **mang trên người** và minibot mang theo; **cấp độ −10**, **cấp bậc −1** (không xuống dưới mức tối thiểu). **GIỮ**: đồ cất ở **kho căn cứ** (giá kệ `Shelf`, bấm F; đồ chưa cất thì mất), minibot đã cất vào lưu trữ ở căn cứ, **cây skill**, xu, dầu, chỉ số vĩnh viễn. Về căn cứ có bảng "đã mất gì" trong 10 giây. Hằng số ở `DeathPenalty.cs` (`LevelLoss`, `RankLoss`).
+- **Màn hướng dẫn chết = làm lại màn**, không bị phạt. Chơi lại bằng **R** (Restart) thì tách khỏi ô lưu (ván thử, không tự lưu) — muốn tiếp tục ván thật thì dùng **Tiếp tục** ở menu. Trong màn chơi, ESC ▸ **VỀ MENU CHÍNH** (có hỏi xác nhận).
+- Cấp độ / cấp bậc hiện **chỉ được lưu và trừ khi chết** — chưa có hệ thống kinh nghiệm hay chỉ số chiến đấu gắn vào chúng.
+
+## 7g. Nhiệm vụ & hộp thư
+
+- Sau lần nói chuyện đầu với Albert, **hộp thư nhiệm vụ** (`Mailbox`, object `MissionBoard`) hiện lên ở căn cứ và có thông báo bảo ra đó nhận nhiệm vụ (bấm **F**). Cờ trên hộp thư dựng lên khi có việc mới. Hộp thư không tự nhận hộ — phải đi tới và bấm **NHẬN NHIỆM VỤ**.
+- **Nhiệm vụ đầu "Nguyên liệu hồi sinh":** mang về căn cứ **10 Thỏi sắt + 20 Sợi cacbon + 50 dầu** (đồ trên người và trong kho căn cứ đều tính), nói chuyện với Albert để nộp (nộp xong thì trừ đồ). Thưởng 60 xu (mặc định, chỉnh ở `BaseMissions.cs`). Các nhiệm vụ cũ (hạ quái, phá trụ, ghép linh kiện, chế tác, hạ boss) nối tiếp sau. Mục tiêu hiện ở góc phải HUD.
+- Thêm nhiệm vụ: sửa danh sách trong `BaseMissions.cs` (mỗi nhiệm vụ có thể có nhiều yêu cầu `MissionReq`: tên, số lượng cần, số đang có, có trừ đồ khi nộp không).
+
+## 7h. Địa điểm & bản đồ
+
+- **Khu huấn luyện** (Scene `Tutorial`, chỉ ở ván mới): đường dài thẳng tắp dạy lần lượt di chuyển → nhảy → lướt → chém → phi tiêu → hạ 4 quái (rào chắn mở khi hạ hết) → **chế tạo 2 minibot** (hệ thống tự cấp đủ linh kiện; chế ở **B ▸ Skill ▸ Chế tạo**) → bước qua cánh cửa cuối đường (bấm F) → cảnh mở đầu → màn chơi chính. Hướng dẫn hiện giữa phía trên màn hình; **Tab hai lần** để bỏ qua. Yêu cầu từng bước chỉnh ở `TutorialManager` (Inspector). Chưa có Scene `Tutorial` thì ván mới vào thẳng cảnh mở đầu.
+- **Phố Neon** (Scene `PhoNeon`, 2 đầu lâu): thành phố công nghệ ban đêm, nhà cao tầng, biển neon / bảng quảng cáo nhấp nháy, nhiều NPC đi qua đi lại — người, robot, cả quái vô hại (không ai tấn công). Rải vật phẩm trên đường (thùng dầu, Thỏi sắt, Sợi cacbon, vật liệu — bấm **F** nhặt). Cổng về căn cứ ở đầu đường.
+- **Rìa Phố Neon** (Scene `RiaPhoNeon`, 4 đầu lâu): vùng trũng rác thải + khí thải của thành phố trên cao: đống rác công nghệ, ruồi nhặng, thùng độc, lều trại, ống xả nhỏ giọt, NPC đeo mặt nạ mang vũ khí (hiện **chưa** tấn công — để dành cho nhiệm vụ phụ sau này). Cũng rải vật phẩm.
+- Cả hai dùng `PlaceManager` (Inspector: số thùng dầu, số vật phẩm, **bảng Loot**, khoảng cách tối thiểu, màu hạt bay), `PlaceGate` (cổng F), `CityNpc` (NPC đi lại: tốc độ, thời gian đi / nghỉ, vùng đi lại), `FlySwarm` (đàn ruồi). Bố cục là object thật trong Scene, kéo thả để sửa; chỉnh NPC bằng prefab `Npc_*`.
+- **Bản đồ** (phím **M**, hoặc cửa ra của căn cứ): mỗi địa điểm là một biểu tượng — **tên ở trên, hàng 5 đầu lâu ở dưới** (luôn vẽ đủ 5, đầu lâu thừa mờ đi: 1 đầu lâu = 1 sáng + 4 tối). **Phố Neon ở giữa**, **Rìa Phố Neon là vùng hình chữ L** ôm Phố Neon từ rìa Tây xuống rìa Nam, Khu thử nghiệm Dyber ở phía đông bắc. A D chọn, ENTER / F hoặc nút ĐI để tới (chỉ khi đang ở căn cứ). Dữ liệu địa điểm (tên, mô tả, đầu lâu, vị trí, vùng tô) ở `Places.cs`. `BaseConfig ▸ Map Test Destination` không còn dùng.
 
 ## 8. Cấu trúc thư mục
 
 ```
 Assets/
-├─ Editor/                    NeonArtImporter (import PNG), NeonBuilder + NeonBuilderExtras + NeonBuilderSkill + NeonBuilderBase + NeonBuilderBaseScene (menu Tools ▸ Neon Breaker)
+├─ Editor/                    NeonArtImporter (import PNG), NeonBuilder + NeonBuilderExtras + NeonBuilderSkill + NeonBuilderBase + NeonBuilderBaseScene + NeonBuilderStory (menu Tools ▸ Neon Breaker)
 ├─ Shaders/                   NeonAdditive (phát sáng), NeonFlash (chớp trắng khi trúng đòn)
 ├─ NeonBreaker/
 │  ├─ Art/                    PNG pixel art + manifest.json (PPU, pivot, tile)
 │  ├─ Audio/  Materials/  Prefabs/  Scenes/  Items/ (vật phẩm)  Skills/ (kỹ năng)
 ├─ Resources/NeonBreaker/     ArtBank, AudioBank, SkillConfig, BaseConfig
 └─ Scripts/
-   ├─ Core/                   Cfg, GameManager, GameFlow (Main ↔ Base), GameInput, PixelScreen, SpriteAnimator, Fx, Sfx, Cine, CineScripts, PixelDissolve, ...
-   ├─ Gameplay/               Player, Enemy, Walker, Flyer, Boss, Tower, Projectile, Pickup, Level, Trap*, Coin, Chest, Inventory, ItemData, SkillSystem, SkillConfig, SkillNodeData, Minibot, PartDrop, PowerSystem, WorldItem, OilDrop, PartFusion, BaseConfig, BaseManager, BaseMissions, BaseCrafting, BaseStation, AlbertNpc, ResurrectionCapsule, ResurrectionComputer, LampFlicker, RobotBit ...
-   └─ UI/                     Hud.cs (HUD / menu / màn thắng-thua, IMGUI), GameMenu.cs (menu B: khung + 3 thẻ mục), InventoryUi.cs (mục Kho đồ), SkillUi.cs (mục Skill, bảng minibot H), PlayerUi.cs (mục Player: hình + 8 ô trang bị + thông tin), BaseUi / DialogueUi / CraftUi / FusionUi / MapUi (căn cứ)
+   ├─ Core/                   Cfg, GameManager, GameFlow (menu / huấn luyện / căn cứ / địa điểm), SaveManager + SaveData (lưu 10 ô), GameSettings, GameInput, PixelScreen, SpriteAnimator, Fx, Sfx, Cine, CineScripts, PixelDissolve, ...
+   ├─ Gameplay/               Player, Enemy, Walker, Flyer, Boss, Tower, Projectile, Pickup, Level, Trap*, Coin, Chest, Inventory, ItemData, SkillSystem, SkillConfig, SkillNodeData, Minibot, PartDrop, PowerSystem, WorldItem, OilDrop, PartFusion, BaseConfig, BaseManager, BaseMissions, MissionBoard, BaseStash + Stash, DeathPenalty, PlayerProgress, ItemDatabase, Places, PlaceManager, PlaceGate, CityNpc, FlySwarm, TutorialManager, MainMenuScreen, BaseCrafting, BaseStation, AlbertNpc, ResurrectionCapsule, ResurrectionComputer, LampFlicker, RobotBit ...
+   └─ UI/                     Hud.cs (HUD / menu / màn thắng-thua, IMGUI), GameMenu.cs (menu B: khung + 3 thẻ mục), InventoryUi.cs (mục Kho đồ), SkillUi.cs (mục Skill, bảng minibot H), PlayerUi.cs (mục Player: hình + 8 ô trang bị + thông tin), BaseUi / DialogueUi / CraftUi / FusionUi / StashUi / MissionUi / MapUi (căn cứ), MainMenuUi (menu chính)
 Tools/PixelArt/gen_art.py       Sinh toàn bộ PNG (tuỳ chọn)
 Tools/PixelArt/gen_enemies2.py  Sinh sprite Heavy + Rusher, CẬP NHẬT manifest.json không ghi đè
 Tools/PixelArt/gen_extras.py    Sinh sprite bẫy, xu, rương, icon vật phẩm, CẬP NHẬT manifest.json không ghi đè
@@ -226,6 +256,8 @@ Tools/PixelArt/gen_stage2.py    Sinh sprite dầu, nguyên liệu, icon linh ki�
 Tools/PixelArt/gen_cine.py      Sinh bộ khung robot + mảnh linh kiện cho cinematic
 Tools/PixelArt/gen_base.py      Sinh art căn cứ: gạch tường/sàn/trần, đèn, Albert, lồng kính, máy ghép, bàn chế tác, cửa, phát minh
 Tools/PixelArt/gen_bigpc.py     Sinh sprite máy tính khổng lồ cạnh lồng hồi sinh (thân, 4 khung màn hình, 2 bó dây cáp), CẬP NHẬT manifest.json không ghi đè
+Tools/PixelArt/gen_story.py     Sinh sprite Thỏi sắt, Sợi cacbon, hộp thư nhiệm vụ + cờ, CẬP NHẬT manifest.json không ghi đè
+Tools/PixelArt/gen_places.py    Sinh art Phố Neon (nền, nhà cao tầng, biển neon), Rìa Phố Neon (đống rác, lều, thùng độc, ruồi), NPC (người / robot), cửa huấn luyện, CẬP NHẬT manifest.json không ghi đè
 ```
 
 `Cfg.cs` chỉ còn giữ: ngôn ngữ, layer, mốc chiều dài màn, bảng màu. Mốc cổng/boss/bàn thờ chỉnh bằng object `Level` trong Scene.

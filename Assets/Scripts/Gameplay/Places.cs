@@ -12,6 +12,8 @@ namespace NeonBreaker
         public Vector2 map;                  // vị trí biểu tượng trên bản đồ (0..1, gốc trái-trên)
         public Color color = Cfg.Cyan;
         public bool unlockedAtStart;         // false = chỉ mở sau khi đã hoàn thành màn hướng dẫn (xem Unlocked)
+        public Rect[] zones;                 // vùng tô trên bản đồ (toạ độ 0..1 trong khung bản đồ; nhiều hình chữ nhật ghép lại, ví dụ hình chữ L). null = chỉ vẽ biểu tượng
+        public Vector2[] outline;            // đường viền vùng (các điểm 0..1, nối vòng kín)
 
         public string Name { get { return Cfg.L(nameVi, nameEn); } }
         public string Desc { get { return Cfg.L(descVi, descEn); } }
@@ -38,7 +40,10 @@ namespace NeonBreaker
             },
             new PlaceDef
             {
-                id = Rim, skulls = 4, map = new Vector2(0.22f, 0.72f), color = Cfg.Orange, unlockedAtStart = true,
+                id = Rim, skulls = 4, map = new Vector2(0.19f, 0.62f), color = Cfg.Orange, unlockedAtStart = true,
+                // vùng hình chữ L ôm lấy Phố Neon từ rìa Tây tới rìa Nam: cánh dọc ở phía Tây, cánh ngang ở phía Nam
+                zones = new[] { new Rect(0.06f, 0.26f, 0.22f, 0.68f), new Rect(0.28f, 0.74f, 0.30f, 0.20f) },
+                outline = new[] { new Vector2(0.06f, 0.26f), new Vector2(0.28f, 0.26f), new Vector2(0.28f, 0.74f), new Vector2(0.58f, 0.74f), new Vector2(0.58f, 0.94f), new Vector2(0.06f, 0.94f) },
                 nameVi = "Rìa Phố Neon", nameEn = "Neon Street Outskirts",
                 descVi = "Vùng trũng sát Phố Neon, nơi chứa rác và khí thải của khu trên. Ổ của bọn cướp và lính đánh thuê. Tội phạm, dịch bệnh — rất nguy hiểm. Rác công nghệ chất đống, ruồi nhặng bay đầy.",
                 descEn = "The lowland beside Neon Street, where the upper city dumps its garbage and exhaust. A den of bandits and hired guns. Crime and disease — very dangerous. Heaps of tech junk and swarms of flies.",

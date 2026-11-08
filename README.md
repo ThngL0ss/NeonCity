@@ -31,7 +31,7 @@ Game 2D platformer đồ họa **pixel art neon tương lai**. Scene, Prefab, Sp
   - trong `Base.unity` có sẵn: chỉ **thêm** `BaseStash` vào object `Shelf` (kho căn cứ) và object `Mailbox` (hộp thư nhiệm vụ, x ≈ 12.2) nếu chưa có — không đụng gì khác (Base đang mở thì nhớ **Ctrl+S**);
   - tạo Scene còn thiếu: `MainMenu` (menu chính), `Tutorial` (huấn luyện), `PhoNeon`, `RiaPhoNeon` + prefab NPC `Npc_*`; Scene đã có thì **giữ nguyên** (muốn dựng lại: xoá file `.unity` đó rồi chạy lại menu);
   - thêm Scene vào Build Settings, `MainMenu` đứng đầu.
-  Rồi commit các file `.meta`, PNG `city_* rim_* npc_* tut_*`, prefab, asset, Scene Unity vừa tạo. **Thử luồng thật bằng cách mở `MainMenu.unity` rồi bấm Play** (bấm Play thẳng ở `Main.unity` vẫn chạy kiểu cũ, có màn hình tựa cũ).
+  Rồi commit các file `.meta`, PNG `city_* rim_* npc_* tut_*`, prefab, asset, Scene Unity vừa tạo. **Thử luồng thật bằng cách mở `MainMenu.unity` rồi bấm Play** (menu chính vẽ bằng IMGUI lúc chạy nên ở chế độ Edit Game view đen là bình thường; `MainMenuScreen` tự vẽ menu ở lớp trên cùng và nếu việc vẽ lỗi thì in lỗi thẳng lên màn hình + Console) (bấm Play thẳng ở `Main.unity` vẫn chạy kiểu cũ, có màn hình tựa cũ).
 - Ảnh PNG tự được cài đặt pixel art (Point filter, không nén, PPU, pivot) nhờ `Assets/Editor/NeonArtImporter.cs`.
 
 ## 2. Điều khiển

@@ -559,6 +559,196 @@
   "tile": false,
   "w": 32
  },
+ "city_billboard_0.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 56
+ },
+ "city_billboard_1.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 56
+ },
+ "city_bld_a.png": {
+  "h": 240,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 96
+ },
+ "city_bld_b.png": {
+  "h": 200,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 72
+ },
+ "city_bld_c.png": {
+  "h": 176,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 112
+ },
+ "city_bld_d.png": {
+  "h": 256,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 80
+ },
+ "city_far.png": {
+  "h": 128,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 256
+ },
+ "city_floor_fill.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 16
+ },
+ "city_floor_top.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 16
+ },
+ "city_lamp.png": {
+  "h": 60,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "city_mid.png": {
+  "h": 128,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 256
+ },
+ "city_sign_a_0.png": {
+  "h": 44,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 14
+ },
+ "city_sign_a_1.png": {
+  "h": 44,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 14
+ },
+ "city_sign_b_0.png": {
+  "h": 44,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 14
+ },
+ "city_sign_b_1.png": {
+  "h": 44,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 14
+ },
+ "city_sign_c_0.png": {
+  "h": 44,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 14
+ },
+ "city_sign_c_1.png": {
+  "h": 44,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 14
+ },
+ "city_sky.png": {
+  "h": 270,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 480
+ },
+ "city_vending.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 22
+ },
  "coin_0.png": {
   "h": 16,
   "pivot": [
@@ -1018,6 +1208,326 @@
   "ppu": 16,
   "tile": false,
   "w": 16
+ },
+ "npc_bot_a_roll_0.png": {
+  "h": 28,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 28
+ },
+ "npc_bot_a_roll_1.png": {
+  "h": 28,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 28
+ },
+ "npc_bot_b_idle_0.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_bot_b_idle_1.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_bot_b_walk_0.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_bot_b_walk_1.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_bot_b_walk_2.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_bot_b_walk_3.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h1_idle_0.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h1_idle_1.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h1_walk_0.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h1_walk_1.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h1_walk_2.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h1_walk_3.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h2_idle_0.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h2_idle_1.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h2_walk_0.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h2_walk_1.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h2_walk_2.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h2_walk_3.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h3_idle_0.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h3_idle_1.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h3_walk_0.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h3_walk_1.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h3_walk_2.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_h3_walk_3.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_raider_idle_0.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_raider_idle_1.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_raider_walk_0.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_raider_walk_1.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_raider_walk_2.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
+ },
+ "npc_raider_walk_3.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 32
  },
  "oil_can.png": {
   "h": 16,
@@ -1559,6 +2069,166 @@
   "tile": false,
   "w": 32
  },
+ "rim_barrel_toxic.png": {
+  "h": 20,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "rim_drip_0.png": {
+  "h": 40,
+  "pivot": [
+   0.5,
+   1.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "rim_drip_1.png": {
+  "h": 40,
+  "pivot": [
+   0.5,
+   1.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "rim_far.png": {
+  "h": 128,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 256
+ },
+ "rim_fire_0.png": {
+  "h": 28,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "rim_fire_1.png": {
+  "h": 28,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 16
+ },
+ "rim_floor_fill.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 16
+ },
+ "rim_floor_top.png": {
+  "h": 16,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 16
+ },
+ "rim_fly_0.png": {
+  "h": 4,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 5
+ },
+ "rim_fly_1.png": {
+  "h": 4,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 5
+ },
+ "rim_junk_a.png": {
+  "h": 36,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 64
+ },
+ "rim_junk_b.png": {
+  "h": 28,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 48
+ },
+ "rim_junk_c.png": {
+  "h": 46,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 88
+ },
+ "rim_mid.png": {
+  "h": 96,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": true,
+  "w": 256
+ },
+ "rim_shack.png": {
+  "h": 52,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 72
+ },
+ "rim_sky.png": {
+  "h": 270,
+  "pivot": [
+   0.5,
+   0.5
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 480
+ },
  "robot_bit_0.png": {
   "h": 7,
   "pivot": [
@@ -1961,6 +2631,46 @@
  },
  "trap_turret_base.png": {
   "h": 16,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 24
+ },
+ "tut_door_0.png": {
+  "h": 64,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 40
+ },
+ "tut_door_1.png": {
+  "h": 64,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 40
+ },
+ "tut_sign_0.png": {
+  "h": 32,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 24
+ },
+ "tut_sign_1.png": {
+  "h": 32,
   "pivot": [
    0.5,
    0.0

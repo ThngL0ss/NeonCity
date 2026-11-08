@@ -42,6 +42,7 @@ namespace NeonBreaker
                 DrawTopCenter();
                 if (!GameFlow.InBase) DrawTopRight();
                 if (!cinema) DrawMissionTracker();
+                if (!cinema) TutorialManager.DrawHud(this);
                 DrawBossBar();
             }
             if (GameManager.State == GameState.Playing)
@@ -201,10 +202,16 @@ namespace NeonBreaker
             Color c = Cfg.Cyan;
             int left = Tower.Remaining;
             int total = GameManager.TowerTotal;
+            bool zone = PlaceManager.Inst != null || TutorialManager.Inst != null;       // Phố Neon / Rìa / màn hướng dẫn: không trụ, không boss
             if (GameFlow.InBase)
             {
                 msg = Cfg.L("CĂN CỨ CỦA ALBERT", "ALBERT'S BASE");
                 c = Cfg.Orange;
+            }
+            else if (zone)
+            {
+                msg = PlaceManager.Inst != null ? PlaceManager.Inst.Title : TutorialManager.Inst.Title;
+                c = PlaceManager.Inst != null ? PlaceManager.Inst.TitleColor : Cfg.Cyan;
             }
             else if (!GameManager.BossSpawned)
             {
@@ -230,7 +237,7 @@ namespace NeonBreaker
             Txt(r, msg, 17, c, TextAnchor.MiddleCenter);
 
             // mũi tên chỉ tới trụ gần nhất ngoài màn hình
-            if (!GameFlow.InBase && !GameManager.BossSpawned && Player.Instance != null && GameManager.State == GameState.Playing)
+            if (!GameFlow.InBase && !zone && !GameManager.BossSpawned && Player.Instance != null && GameManager.State == GameState.Playing)
             {
                 float px = Player.Instance.Position.x;
                 Vector2 target = Vector2.zero;

@@ -86,6 +86,8 @@ namespace NeonBreaker
             DeathPenalty.Clear();
             GameSettings.ResetStatics();
             MainMenuUi.ResetStatics();
+            PlaceManager.Inst = null;
+            TutorialManager.Inst = null;
         }
 
         public static void Banner(string text, Color c, float dur = 3f)
@@ -299,6 +301,7 @@ namespace NeonBreaker
         {
             if (BossSpawned) return;
             if (GameFlow.InBase) return;
+            if (Level.Instance == null) return;       // Scene không có Level (màn hướng dẫn, Phố Neon, Rìa...) thì không có boss
             var p = Player.Instance;
             if (p == null || p.Dead) return;
             if (Tower.Remaining > 0) return;

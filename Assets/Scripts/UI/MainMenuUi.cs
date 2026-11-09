@@ -12,7 +12,7 @@ namespace NeonBreaker
     /// </summary>
     public static class MainMenuUi
     {
-        enum Page { Main, Load, Settings }
+        enum Page { Main, Load, Settings, AskStory }
 
         public static bool Active;
 
@@ -26,6 +26,7 @@ namespace NeonBreaker
         static Vector2 lastMouse;
         static bool mouseMoved;
         static float t;
+        static float askT;           // thời gian từ lúc vào trang hỏi "xem cốt truyện?" (màn đen mờ dần → câu hỏi → nút)
 
         public static void ResetStatics()
         {
@@ -35,6 +36,7 @@ namespace NeonBreaker
             delSlot = -1;
             notice = "";
             noticeT = 0f;
+            askT = 0f;
         }
 
         public static void Open()
@@ -43,6 +45,7 @@ namespace NeonBreaker
             page = Page.Main;
             delSlot = -1;
             noticeT = 0f;
+            askT = 0f;
             Refresh();
             sel = anySave ? 1 : 0;
         }
@@ -76,6 +79,7 @@ namespace NeonBreaker
         }
 
         // ------------------------------------------------------------ hành động
+        /// <summary>Bấm TRÒ CHƠI MỚI: kiểm tra còn ô lưu rồi sang màn đen hỏi "Bạn có muốn xem cốt truyện &amp; hướng dẫn không?" (chưa tạo ô lưu).</summary>
         static void DoNewGame()
         {
             if (SaveManager.FirstFree() < 0)
@@ -83,8 +87,21 @@ namespace NeonBreaker
                 Notify("Cả 10 ô lưu đã đầy. Vào TIẾP TỤC và xóa bớt một ô.", "All 10 save slots are used. Open CONTINUE and delete one.");
                 return;
             }
+            page = Page.AskStory;
+            sel = 1;              // mặc định chọn "Tất nhiên là xem rồi" (khuyến nghị)
+            askT = 0f;
+        }
+
+        /// <summary>i = 0: Skip (về thẳng lần hồi sinh đầu tiên ở căn cứ) · i = 1: Xem cốt truyện rồi tới màn hướng dẫn.</summary>
+        static void ActivateAsk(int i)
+        {
             Sfx.Play("charge", 0.8f, 1.2f);
-            if (!GameFlow.StartNewGame()) Notify("Không tạo được ván mới.", "Could not start a new game.");
+            if (!GameFlow.StartNewGame(i == 1))
+            {
+                page = Page.Main;
+                sel = 0;
+                Notify("Không tạo được ván mới.", "Could not start a new game.");
+            }
         }
 
         static void DoLoad(int slot)
@@ -137,6 +154,7 @@ namespace NeonBreaker
         public static void UpdateInput()
         {
             if (noticeT > 0f) noticeT -= Time.unscaledDeltaTime;
+            if (page == Page.AskStory) askT += Time.unscaledDeltaTime;
 
             if (delSlot >= 0)
             {
@@ -165,6 +183,12 @@ namespace NeonBreaker
                     if (GameInput.ConfirmDown) DoLoad(sel);
                     else if (GameInput.DiscardDown && slots[sel] != null) { delSlot = sel; Sfx.Play("click", 0.6f, 0.8f); }
                     else if (GameInput.PauseDown) { page = Page.Main; sel = 1; Sfx.Play("click", 0.5f, 0.9f); }
+                    break;
+                case Page.AskStory:
+                    if (GameInput.PauseDown) { page = Page.Main; sel = 0; Sfx.Play("click", 0.5f, 0.9f); break; }
+                    if (askT < 1.5f) break;                      // nút chưa hiện
+                    if (GameInput.NavUpDown || GameInput.NavDownDown || GameInput.NavLeftDown || GameInput.NavRightDown) { sel = 1 - Mathf.Clamp(sel, 0, 1); Sfx.Play("click", 0.3f, 1.4f); }
+                    if (GameInput.ConfirmDown) ActivateAsk(Mathf.Clamp(sel, 0, 1));
                     break;
                 case Page.Settings:
                     if (GameInput.NavUpDown) { sel = (sel + 4) % 5; Sfx.Play("click", 0.3f, 1.4f); }
@@ -198,6 +222,7 @@ namespace NeonBreaker
             {
                 case Page.Main: DrawMain(h); break;
                 case Page.Load: DrawLoad(h); break;
+                case Page.AskStory: DrawAskStory(h); break;
                 default: DrawSettings(h); break;
             }
 
@@ -241,6 +266,31 @@ namespace NeonBreaker
                 GameFlow.GoToPlace(Places.Dyber);
             }
 #endif
+        }
+
+        /// <summary>Màn đen + câu hỏi xem cốt truyện &amp; hướng dẫn. Skip = về thẳng căn cứ (lần hồi sinh đầu tiên); Xem = cốt truyện rồi màn hướng dẫn.</summary>
+        static void DrawAskStory(Hud h)
+        {
+            h.Fill(new Rect(0, 0, Screen.width, Screen.height), new Color(0f, 0f, 0f, Mathf.Clamp01(askT / 0.7f)));      // màn đen dần
+            if (askT < 0.9f) return;
+            float a = Mathf.Clamp01((askT - 0.9f) / 0.6f);
+            h.Txt(h.R(90, 200, 1100, 100), Cfg.L("Bạn có muốn xem cốt truyện & hướng dẫn không?", "Do you want to watch the story & tutorial?"),
+                  36, Cfg.A(Color.white, a), TextAnchor.MiddleCenter);
+            if (askT < 1.5f) return;
+            float b = Mathf.Clamp01((askT - 1.5f) / 0.4f);
+            string[] labels =
+            {
+                Cfg.L("Skip", "Skip"),
+                Cfg.L("Tất nhiên là xem rồi (khuyến nghị nên chọn)", "Of course I'll watch it (recommended)"),
+            };
+            Color[] cols = { Cfg.Orange, Cfg.Lime };
+            for (int i = 0; i < 2; i++)
+            {
+                Rect r = h.R(250, 340 + i * 90, 780, 66);
+                if (MenuButton(h, r, labels[i], Cfg.A(cols[i], b), true, sel == i, i) && askT >= 1.7f) ActivateAsk(i);
+            }
+            h.Txt(h.R(0, 688, 1280, 24), Cfg.L("[W S] chọn   ·   [ENTER] xác nhận   ·   [ESC] quay lại", "[W S] select   ·   [ENTER] confirm   ·   [ESC] back"),
+                  14, Cfg.A(Color.white, 0.55f * b), TextAnchor.MiddleCenter, false);
         }
 
         static void DrawLoad(Hud h)

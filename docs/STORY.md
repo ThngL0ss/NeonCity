@@ -11,9 +11,10 @@
 - Khoảng cách giàu – nghèo cao nhất chưa từng thấy.
 
 ### Cuộc "Đại cải tiến" (năm 2036)
-- Sự kiện lớn nhất lịch sử. Các nhà khoa học chế tạo thành công **cỗ máy thời gian**.
-- Trong số họ có **một kẻ điên ("nhà khoa học điên")**: hắn cải tiến cỗ máy và đưa **mọi dòng thời gian của Trái đất** tập hợp vào **Earth-01836** (dòng thời gian hiện tại, năm 2036), khiến cả thế giới khủng hoảng.
-- **54 nhà khoa học** đứng lên ngăn hắn, nhưng hắn vẫn kịp kích hoạt cỗ máy → các dòng thời gian hợp nhất → **Tân Địa Cầu (New Cyber Earth)** ra đời.
+- Sự kiện lớn nhất lịch sử. **Ngày 20/1/2036**, **55 nhà khoa học** xuất sắc nhất lịch sử thế giới chế tạo thành công **cỗ máy thời gian** (hình dải Möbius, đen – tím) và định công bố cho toàn thế giới.
+- Trong số 55 người có **một kẻ điên ("nhà khoa học điên") — tên là Nancelas** (xem mục 2): **ngày 1/11/2036** hắn cải tiến cỗ máy khiến nó hỗn loạn hơn bao giờ hết. Hắn muốn đưa con người và Trái đất "tiến hóa": **thay lõi năng lượng vàng bằng một lõi hỗn loạn đen tuyền** vào lõi chính, biến cỗ máy thành **cánh cổng "kỳ dị"**, định **đồng hóa** con người, Trái đất của thời kỳ này với con người, Trái đất của quá khứ và tương lai. Hắn gọi đó là **"Đại cải tiến"**.
+- **54 nhà khoa học còn lại** ("chiến binh áo trắng") phát hiện bất thường và ra sức ngăn hắn: một cuộc **đại chiến chưa từng có giữa những bộ não thiên tài** (robot chiến đấu khổng lồ, hầm thí nghiệm đổ nát, thành phố cháy). Hắn gục ngã trước 54 người, **nhưng cánh cổng vẫn mở ra** (lời kể: "Dù chủ nhân thất bại…").
+- Trong thời khắc quyết định, **một người** trong số họ lao lên, **dùng thân mình phá hủy "điểm kỳ dị"** trong cánh cổng. Nhờ vậy chỉ **ngăn được sự đồng hóa**; còn **mọi sự kiện, công trình, con người, vạn vật trong toàn bộ lịch sử Trái đất vẫn bị kéo về năm 2036** → **Earth-01836** hỗn loạn → **Tân Địa Cầu (New Cyber Earth)** ra đời.
 
 ### New Cyber Earth (Tân Địa Cầu)
 - Thế giới sau Đại cải tiến: công trình, con người, ... **từ thời cổ đại đến tương lai** bị đưa vào chung một thời điểm (thời hiện đại) → thế giới **quá tải**.
@@ -34,6 +35,10 @@
 - Là người **"tạo ra" player hiện tại** và phụ trách **tái tạo cơ thể** cho player.
 - Là **một trong 12 người khởi xướng** tạo ra trật tự cho Tân Địa Cầu.
 - Hiện là **cố vấn của phe Pyber**; **đồng sáng lập Pyber năm 2082**.
+
+### Nancelas (hắn / nhà khoa học điên)
+- Một trong 55 nhà khoa học; **trẻ, áo blouse trắng dài, tóc đen dài che mặt**. Từ nay gọi là **Nancelas** trong thiết kế / tài liệu; **lời kể trong game vẫn chỉ nói "hắn"**, chưa nhắc tên.
+- Gục ngã trước 54 nhà khoa học còn lại (cảnh cốt truyện mở đầu, mục 4d). Chưa nói số phận sau đó.
 
 ## 3. Dòng thời gian trong game (mở đầu)
 - Player tìm ra nơi có **item SS bị mất của chính mình — lõi `Core-T04`** (còn **rất nhiều lõi SS khác rải rác** nơi khác, cùng kiểu tên, chỉ khác số: `Core-T03`, `Core-T06`, ...). Nơi đó là lãnh địa của **một Boss thuộc phe Dyber** (phe thiện chiến, công nghệ).
@@ -74,6 +79,14 @@ Mô tả dưới đây là **bối cảnh nội bộ**; lời thoại / mô tả
 - **Mỗi lần chết = một lần tái tạo cơ thể**: mất đồ mang theo, tụt cấp độ (−10) và cấp bậc (−1); đồ cất ở kho căn cứ và cây skill được giữ. (Tuân theo chi tiết: mỗi lần tái sinh player mất một phần ký ức.)
 - **Nhiệm vụ nguyên liệu hồi sinh đầu tiên:** 10 Thỏi sắt, 20 Sợi cacbon, 50 dầu — nhận ở **hộp thư nhiệm vụ** trong căn cứ.
 
+## 4d. Cảnh cốt truyện mở đầu (Cinematic — Scene `Story`)
+- **Ván mới:** menu "Trò chơi mới" → màn đen hỏi **"Bạn có muốn xem cốt truyện & hướng dẫn không?"** với 2 lựa chọn: **Skip** hoặc **"Tất nhiên là xem rồi (khuyến nghị nên chọn)"**.
+  - **Skip** → vào thẳng **lần hồi sinh đầu tiên** của player ở căn cứ (coi như đã qua cốt truyện, màn hướng dẫn và cảnh mở đầu Dyber).
+  - **Xem** → cốt truyện 10 cảnh → màn hướng dẫn → cảnh mở đầu Dyber → … như cũ.
+- **10 cảnh** (hình + chữ ghép theo từng cảnh; chữ nguyên văn do tác giả viết, nằm ở `StoryTexts.cs`): 1 hầm thí nghiệm + cỗ máy xong, các nhà khoa học ăn mừng · 2 Nancelas một mình sửa máy · 3 thay lõi vàng bằng lõi đen · 4 các nhà khoa học phát hiện bất thường ("!") · 5a–5c đại chiến, Nancelas gục ngã, cỗ máy vẫn mở cổng (tia vật chất đen, sét, khe nứt) · 6 một người lao vào điểm kỳ dị, ánh sáng trắng · 7 phế tích La Mã + nhà chọc trời + xe bay, nháy sang đám đông 3 thời đại · 8 chiến tranh giữa các thời đại, bão, đứa trẻ đói khóc · 9 tiến hóa: vượn → người → vũ khí lạnh → vũ khí nóng → trang phục Neon tương lai · 10 chỉ chữ giữa màn hình đen: "100 năm sau cuộc “Đại cải tiến”…".
+- Tỉ lệ nhân vật trong tranh: người thường 1×, robot chiến đấu của các nhà khoa học 2,5× (robot của Nancelas 1,5×). Chữ nằm ở khung riêng phía dưới màn hình, không đè lên hình.
+- ESC = bỏ qua cả cốt truyện; ENTER / bấm chuột = qua đoạn chữ.
+
 ## 5. Đã chốt (tác giả xác nhận)
 - **Tên nhân vật chính: `XbAst-013`** (gạch ngang, đúng như code hiện tại). Không dùng `XbAst_013`.
 - **Tên boss: giữ nguyên `OVERLORD`** (boss thuộc Dyber).
@@ -81,6 +94,7 @@ Mô tả dưới đây là **bối cảnh nội bộ**; lời thoại / mô tả
 - **`Earth-01836` là đúng**; dãy số chỉ là ngẫu nhiên, **không phải năm** (dòng thời gian hiện tại vẫn là năm 2036).
 - **Player liên kết với Albert**, không chỉ là cỗ máy do Albert chế tạo.
 - **Phố Neon / Rìa Phố Neon / cơ chế hồi sinh – nhiệm vụ đầu** như mục 4b, 4c (tác giả mô tả ngày 08/11/2026).
+- **Cảnh cốt truyện mở đầu** (tác giả viết ngày 09/11/2026): ngày 20/1/2036 (55 nhà khoa học, cỗ máy thời gian), 1/11/2036 (kẻ điên cải tiến, thay lõi), "cánh cổng kỳ dị", một người hy sinh phá điểm kỳ dị, chỉ ngăn được đồng hóa nên vạn vật bị kéo về 2036; hắn tên **Nancelas** — như mục 1 và 4d. Câu "Dù **chủ nhân** thất bại…" giữ nguyên văn tác giả.
 
 ## 6. Chưa chốt (hỏi tác giả trước khi dùng)
 - **Các phe phái và cách đề cập trong game** (tên phe, lời thoại nhắc tới Pyber / Dyber / hiệp ước, ...): tác giả sẽ yêu cầu chỉnh sửa sau. Hiện lời thoại trong game **chưa** nhắc tên phe nào — không tự thêm.

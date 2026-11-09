@@ -78,12 +78,10 @@ namespace NeonBreaker
 
         void OnGUI()
         {
+            GUI.depth = 1000;                              // vẽ dưới cùng, HUD (depth 0) và menu chính (depth -1000) vẽ đè lên; đặt ở MỌI sự kiện, không trả lại giá trị cũ
             if (rt == null || Event.current.type != EventType.Repaint) return;
             UpdateRect();
-            int d = GUI.depth;
-            GUI.depth = 1000;                              // vẽ dưới cùng, HUD (depth 0) vẽ đè lên
             GUI.DrawTexture(ScreenRect, rt, ScaleMode.StretchToFill, false);
-            GUI.depth = d;
         }
 
         /// <summary>Đổi tọa độ thế giới sang tọa độ IMGUI (gốc ở góc trên trái màn hình).</summary>

@@ -13,11 +13,15 @@ namespace NeonBreaker
         bool confirmMenu;            // hộp xác nhận "về menu chính" trong màn tạm dừng
         float hpShown = 1f, bossShown = 1f;
 
-        void OnGUI()
+        /// <summary>
+        /// Chuẩn bị các thứ hàm vẽ cần (texture 1 pixel, tỉ lệ màn hình, kiểu chữ). Gọi được ở đầu bất kỳ OnGUI nào
+        /// (MainMenuScreen dùng để tự vẽ menu chính). false = chưa vẽ được (không có Art.Pixel).
+        /// </summary>
+        public bool Prepare()
         {
-            if (Art.Pixel == null) return;
+            if (Art.Pixel == null) Art.Init();      // tự chữa: GameManager.Awake chưa kịp / bị lỗi giữa chừng thì tạo texture ở đây
+            if (Art.Pixel == null) return false;
             s = Mathf.Max(0.5f, Screen.height / 720f);
-            if (!GameManager.Paused) confirmMenu = false;
             if (st == null)
             {
                 st = new GUIStyle(GUI.skin.label);
@@ -25,6 +29,13 @@ namespace NeonBreaker
                 st.clipping = TextClipping.Overflow;
                 st.richText = false;
             }
+            return true;
+        }
+
+        void OnGUI()
+        {
+            if (!Prepare()) return;
+            if (!GameManager.Paused) confirmMenu = false;
 
             var pl = Player.Instance;
 
@@ -58,7 +69,8 @@ namespace NeonBreaker
             switch (GameManager.State)
             {
                 case GameState.Menu:
-                    if (MainMenuUi.Active) MainMenuUi.Draw(this);
+                    // menu chính mới do MainMenuScreen tự vẽ (OnGUI riêng, nằm trên cùng); chỉ vẽ ở đây khi không có MainMenuScreen
+                    if (MainMenuUi.Active) { if (!MainMenuScreen.Drives) MainMenuUi.Draw(this); }
                     else DrawMenu();
                     break;
                 case GameState.Won: DrawResult(true); break;

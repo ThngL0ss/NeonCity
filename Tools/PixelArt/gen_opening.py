@@ -37,7 +37,7 @@ import random
 import sys
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
 import gen_art as G
 from gen_art import (Cv, lerp, save_array, OUT, NAVY, NAVY2, NAVYL, CYAN, CYAN_D, MAG, MAG_D,
@@ -1188,7 +1188,7 @@ def fallen(kind):
     im = f.im.rotate(90, expand=True).crop((0, 8, 32, 32))
     cv = Cv(im.width, im.height)
     cv.im = im
-    rng = noise_rng(hash(kind) & 0xffff)
+    rng = noise_rng(sum(ord(ch) * (i + 3) for i, ch in enumerate(kind)))   # ổn định giữa các lần chạy (hash() của Python thì không)
     for _ in range(7):
         x, y = rng.randint(2, 28), rng.randint(8, 22)
         if cv.im.getpixel((x, y))[3] > 0:
@@ -1196,9 +1196,239 @@ def fallen(kind):
     return cv.im
 
 
+# ---------------------------------------------------------------- thành phố đổ nát (cảnh 8)
+# Nhà chọc trời nghiêng ngả, gãy đôi, đổ nằm ngang, dựa vào nhau như quân domino — mọi tòa đều là một ảnh riêng
+# (thân + cửa sổ + viền neon) rồi xoay / bẻ gãy / dán chồng lên nhau.
+TOWER_BODY = [(30, 22, 52), (38, 26, 58), (26, 26, 56), (44, 28, 54), (24, 20, 46)]
+TOWER_EDGE = [(150, 64, 140), (70, 130, 170), (170, 84, 96), (110, 80, 190)]
+WIN_LIT = [(255, 200, 90), (255, 150, 60), (120, 220, 255), (255, 120, 200)]
+REBAR = (136, 94, 76)
+
+
+def tower_raw(w, h, seed):
+    """Tòa nhà nhìn thẳng w x h (đỉnh y=0, chân y=h-1): thân, viền neon, các tầng, cửa sổ sáng / tối / cháy."""
+    rng = noise_rng(seed)
+    body = rng.choice(TOWER_BODY)
+    edge = rng.choice(TOWER_EDGE)
+    c = Cv(w, h)
+    c.rect(0, 0, w - 1, h - 1, body)
+    c.rect(0, 0, 1, h - 1, lerp(body, edge, 0.55))                  # cạnh sáng bên trái
+    c.rect(w - 2, 0, w - 1, h - 1, lerp(body, INK, 0.5))            # cạnh tối bên phải
+    c.rect(0, 0, w - 1, 0, edge)
+    for y in range(6, h - 3, 7):
+        c.rect(2, y - 2, w - 3, y - 2, lerp(body, INK, 0.35))       # đường sàn
+        for x in range(4, w - 5, 6):
+            r = rng.random()
+            if r < 0.24:
+                col = rng.choice(WIN_LIT)
+            elif r < 0.30:
+                col = FIRE_B
+            elif r < 0.55:
+                col = (10, 8, 20)
+            else:
+                col = lerp(body, (70, 70, 120), 0.35)
+            c.rect(x, y, x + 2, y + 3, col)
+    for _ in range(rng.choice([0, 1, 1, 2, 3])):                    # vết nổ: khoét thủng thân nhà, lộ lỗ hổng răng cưa
+        erase_blob(c, rng.choice([rng.randint(0, 3), rng.randint(w - 4, w), rng.randint(0, w)]), rng.randint(0, int(h * 0.7)), rng.randint(4, max(5, min(9, w // 3))), rng)
+    return c.im
+
+
+def pad_outline(im, col=(10, 6, 20)):
+    """Thêm viền tối 1 px quanh ảnh (tách các tòa nhà chồng lên nhau)."""
+    cv = Cv(im.width + 2, im.height + 2)
+    cv.im.paste(im, (1, 1))
+    cv.outline(col)
+    return cv.im
+
+
+def split_tower(im, rng, y0, slope):
+    """Bẻ gãy tòa nhà theo đường răng cưa bắt đầu ở độ cao y0, dốc 'slope'. Trả về (phần dưới còn đứng, phần trên bị bẻ, đã cắt sát)."""
+    w, h = im.size
+    pts = []
+    x, y = 0, y0
+    while x < w:
+        pts.append((x, min(h - 4, max(4, y))))
+        x += rng.randint(2, 6)
+        y += slope * 4 + rng.randint(-6, 6)
+    pts.append((w, min(h - 4, max(4, y))))
+    up = Image.new("L", (w, h), 0)
+    ImageDraw.Draw(up).polygon([(0, -1)] + pts + [(w, -1)], fill=255)
+    top = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    top.paste(im, (0, 0), up)
+    arr = np.array(im)
+    arr[np.array(up) > 0] = 0
+    bottom = Image.fromarray(arr, "RGBA")
+    cb, ct = Cv(w, h), Cv(w, h)
+    cb.im, ct.im = bottom, top
+    cb.d, ct.d = ImageDraw.Draw(bottom), ImageDraw.Draw(top)
+    for i in range(len(pts) - 1):                                   # mặt gãy: bê tông tối + thép chìa ra
+        cb.line(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], (14, 10, 26), 3)
+        ct.line(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], (14, 10, 26), 3)
+    for (px_, py_) in pts[1:-1:2]:
+        cb.line(px_, py_, px_ + rng.randint(-2, 2), py_ - rng.randint(3, 9), REBAR, 1)
+        ct.line(px_, py_, px_ + rng.randint(-2, 2), py_ + rng.randint(3, 8), REBAR, 1)
+    box = top.getbbox()
+    return cb.im, (top.crop(box) if box else top)
+
+
+def rot_paste_base(c, im, bx, by, ang):
+    """Xoay ảnh quanh điểm giữa đáy rồi dán sao cho điểm đó rơi vào (bx, by). ang > 0 = ngả sang TRÁI."""
+    r = im.rotate(ang, resample=Image.NEAREST, expand=True)
+    th = math.radians(ang)
+    h = im.height
+    paste(c, r, round(bx - (h / 2.0) * math.sin(th) - r.width / 2.0), round(by - (h / 2.0) * math.cos(th) - r.height / 2.0))
+
+
+def rot_paste_center(c, im, cx, cy, ang):
+    r = im.rotate(ang, resample=Image.NEAREST, expand=True)
+    paste(c, r, round(cx - r.width / 2.0), round(cy - r.height / 2.0))
+
+
+def shade(im, toward, k):
+    """Pha màu ảnh về phía 'toward' với tỉ lệ k (khói bụi, xa hơn) — giữ alpha."""
+    a = np.array(im).astype(np.float32)
+    for i in range(3):
+        a[..., i] = a[..., i] * (1 - k) + toward[i] * k
+    return Image.fromarray(a.astype(np.uint8), "RGBA")
+
+
+def dust_puffs(c, items, rng, col=(120, 96, 120), alpha=70):
+    """Bụi mờ: items = [(cx, cy, rx, ry)] — vài elip bán trong suốt chồng nhau."""
+    ov = Image.new("RGBA", (c.w, c.h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(ov)
+    for (cx, cy, rx, ry) in items:
+        for _ in range(5):
+            ox, oy = rng.uniform(-rx * 0.5, rx * 0.5), rng.uniform(-ry * 0.4, ry * 0.4)
+            sx, sy = rx * rng.uniform(0.5, 0.9), ry * rng.uniform(0.5, 0.9)
+            d.ellipse([int(cx + ox - sx), int(cy + oy - sy), int(cx + ox + sx), int(cy + oy + sy)], fill=(col[0], col[1], col[2], alpha))
+    c.im.alpha_composite(ov)
+
+
+def place_tower(c, bx, by, w, h, ang, rng, mode, anchors, haze=0.0):
+    """Dựng một tòa nhà có chân ở (bx, by) ngả ang độ. mode 'broken' = gãy ngang giữa thân, nửa trên đổ nghiêng quanh điểm gãy."""
+    raw = tower_raw(w, h, rng.randint(0, 10 ** 6))
+    if mode == "broken":
+        cut = rng.uniform(0.3, 0.62) * h
+        bottom, top = split_tower(raw, rng, cut, rng.uniform(-0.5, 0.5))
+        bottom, top = pad_outline(bottom), pad_outline(top)
+        if haze:
+            bottom, top = shade(bottom, (70, 40, 84), haze), shade(top, (70, 40, 84), haze)
+        rot_paste_base(c, bottom, bx, by, ang)
+        bh = h - cut
+        th = math.radians(ang)
+        hx, hy = bx - bh * math.sin(th), by - bh * math.cos(th)    # bản lề: chỗ gãy
+        d = 1 if rng.random() < 0.5 else -1
+        a1 = ang + d * rng.uniform(32, 88)
+        rot_paste_base(c, top, hx - d * rng.uniform(0, 7), hy + rng.uniform(-1, 7), a1)
+        anchors.append((hx, hy))
+    else:
+        im = pad_outline(raw)
+        if haze:
+            im = shade(im, (70, 40, 84), haze)
+        rot_paste_base(c, im, bx, by, ang)
+
+
+def wreck_layer(c, rng, near, anchors):
+    """Một lớp nhà đổ nát: đứng thẳng / nghiêng / nghiêng nặng / gãy đôi, tựa vào nhau (chân đặt dưới mặt sàn để sàn che đi)."""
+    d = rng.choice([-1, 1])
+    x = -12
+    while x < WAR_W + 20:
+        w = rng.randint(28, 46) if near else rng.randint(20, 34)
+        h = rng.randint(86, 132) if near else rng.randint(56, 100)
+        mode = rng.choice(["stand", "lean", "lean", "heavy", "broken", "broken", "bl"])
+        if rng.random() < 0.55:
+            d = -d
+        if mode == "stand":
+            ang, m = rng.uniform(-4, 4), "plain"
+        elif mode == "lean":
+            ang, m = d * rng.uniform(9, 26), "plain"
+        elif mode == "heavy":
+            ang, m, h = d * rng.uniform(32, 56), "plain", int(h * 0.8)
+        elif mode == "broken":
+            ang, m = rng.uniform(-8, 8), "broken"
+        else:                                                        # bl: vừa nghiêng vừa gãy
+            ang, m = d * rng.uniform(14, 30), "broken"
+        by = FLOOR_Y + (4 if near else 2)
+        place_tower(c, x, by, w, h, ang, rng, m, anchors, haze=0.0 if near else 0.42)
+        x += rng.randint(20, 36) if near else rng.randint(24, 40)
+
+
+def domino_run(c, x0, d, rng, anchors, n=6):
+    """Dãy nhà đổ như quân domino (đổ về phía d: +1 = trái): mỗi tòa nghiêng hơn tòa trước, tòa cuối gần nằm ngang."""
+    for i in range(n):
+        w, h = rng.randint(30, 40), rng.randint(96, 124) - i * 6
+        place_tower(c, x0 - d * i * 24, FLOOR_Y + 5, w, h, d * (4 + i * 14), rng, "plain", anchors)
+
+
+def bridge_tower(c, cx, cy, length, thick, d, rng):
+    """Tòa nhà đổ vắt ngang như cây cầu, gần như nằm ngang, gác lên các tòa khác (ở trên đầu đám đánh nhau); đỉnh bị bẻ rơi lệch bên cạnh."""
+    raw = tower_raw(thick, length, rng.randint(0, 10 ** 6))
+    bottom, top = split_tower(raw, rng, length * rng.uniform(0.62, 0.8), rng.uniform(-0.4, 0.4))
+    rot_paste_center(c, pad_outline(bottom), cx, cy, d * rng.uniform(68, 82))
+    rot_paste_center(c, pad_outline(top), cx - d * length * 0.5 - 6 * d, cy + rng.randint(8, 20), d * rng.uniform(52, 100))
+
+
+def lying_tower(c, cx, length, thick, d, rng, anchors):
+    """Tòa nhà đổ nằm ngang trên mặt đất, gãy thành 2-3 khúc lệch nhau."""
+    raw = tower_raw(thick, length, rng.randint(0, 10 ** 6))
+    pieces = []
+    rest = raw
+    cuts = rng.choice([1, 2])
+    for k in range(cuts):
+        keep, top = split_tower(rest, rng, rest.height * 0.5, rng.uniform(-0.5, 0.5))
+        pieces.append(top)                                          # phần đỉnh
+        box = keep.getbbox()
+        rest = keep.crop(box) if box else keep
+    pieces.append(rest)                                             # phần chân
+    # đỉnh nằm phía d: xếp từ đỉnh (xa) -> chân (gần)
+    x = cx - length * 0.5 * d
+    for i, p in enumerate(pieces):
+        r = pad_outline(p).rotate(d * 90 + rng.uniform(-10, 10), resample=Image.NEAREST, expand=True)
+        gap = rng.randint(2, 7)
+        left = x if d > 0 else x - r.width
+        top_y = FLOOR_Y + rng.randint(3, 11) - r.height
+        paste(c, r, round(left), round(top_y))
+        anchors.append((left + r.width * 0.5, top_y + 4))
+        x = x + (r.width + gap) * d
+
+
+def rubble_heap(c, x, w, h, rng):
+    """Đống đổ nát: gò gạch + tấm sàn dựng xiên + thép chìa."""
+    base = FLOOR_Y + 8
+    pts = [(x, base + 4)]
+    n = max(4, w // 7)
+    for k in range(n + 1):
+        t = k / float(n)
+        pts.append((x + w * t, base - h * math.sin(math.pi * t) * rng.uniform(0.6, 1.0)))
+    pts.append((x + w, base + 4))
+    c.poly(pts, rng.choice([(26, 22, 38), (32, 26, 44)]))
+    for k in range(1, len(pts) - 2):
+        c.line(pts[k][0], pts[k][1], pts[k + 1][0], pts[k + 1][1], (100, 84, 120), 1)
+    for _ in range(rng.randint(2, 4)):                              # tấm sàn / mảnh tường dựng xiên
+        sw, sh = rng.randint(10, 22), rng.randint(3, 6)
+        slab = Cv(sw, sh)
+        slab.rect(0, 0, sw - 1, sh - 1, rng.choice([(58, 50, 82), (46, 40, 70), (70, 56, 90)]))
+        slab.rect(0, 0, sw - 1, 0, (140, 120, 170))
+        slab = pad_outline(slab.im)
+        rot_paste_center(c, slab, x + rng.uniform(0.15, 0.85) * w, base - h * rng.uniform(0.35, 0.9), rng.uniform(-60, 60))
+    for _ in range(rng.randint(3, 6)):
+        px_ = x + rng.uniform(0.1, 0.9) * w
+        py_ = base - h * rng.uniform(0.4, 0.95)
+        c.line(px_, py_, px_ + rng.randint(-5, 5), py_ - rng.randint(4, 11), REBAR, 1)
+
+
+def flying_chunks(c, rng, cx, spread, n):
+    """Mảnh nhà bị cuốn lên trời (quanh lốc xoáy)."""
+    for _ in range(n):
+        w, h = rng.randint(8, 18), rng.randint(6, 14)
+        raw = pad_outline(tower_raw(w, h, rng.randint(0, 10 ** 6)))
+        rot_paste_center(c, shade(raw, (60, 40, 80), 0.3), cx + rng.uniform(-spread, spread), rng.uniform(14, 135), rng.uniform(0, 360))
+
+
 def war_bg():
     c = Cv(WAR_W, FH)
     rng = noise_rng(81)
+    anchors = []
     sky_gradient(c, FH, (10, 8, 22), (52, 26, 56), (190, 70, 50), 130)
     # mây bão: các mảng xám tối
     for _ in range(46):
@@ -1206,8 +1436,11 @@ def war_bg():
         for k in range(14):
             ox, oy = rng.randint(-26, 26), rng.randint(-7, 7)
             c.ell(cx_ + ox - 14, cy_ + oy - 6, cx_ + ox + 14, cy_ + oy + 6, lerp((26, 20, 38), (60, 46, 70), rng.random()))
-    # thành phố cháy phía xa
-    city_far(c, 168, 101, True)
+    # thành phố phía xa (mờ hơn, nhà gãy + cháy) — lớp nhà đổ nát ở gần che lên trên
+    far = Cv(WAR_W, FH)
+    city_far(far, 168, 101, True)
+    far.im = shade(far.im, (74, 38, 84), 0.4)
+    c.im.alpha_composite(far.im)
     smoke_columns(c, [120, 330, 560, 760, 1010, 1190], 24, 4)
     # lốc xoáy khổng lồ ở x ~ 990: các elip chồng nhỏ dần xuống mặt đất, kèm mảnh vỡ
     for k in range(34):
@@ -1220,16 +1453,37 @@ def war_bg():
         a = rng.uniform(0, math.pi * 2)
         r = rng.uniform(16, 70)
         c.px(990 + math.cos(a) * r, 60 + rng.uniform(-40, 90), rng.choice([(110, 100, 120), (60, 50, 70), (160, 120, 90)]))
+    flying_chunks(c, rng, 990, 85, 22)                                          # mảnh nhà bị lốc cuốn lên
     # sét đánh xuống đất (tĩnh) ở vài chỗ
     for x0 in (300, 700, 1130):
         pts = bolt_points(x0, 0, x0 + rng.randint(-24, 24), 170, rng, 10)
         draw_bolt(c, pts, WHITE, (140, 110, 240), 1)
+    # ---- nhà cửa đổ nát: lớp xa (mờ) -> lớp gần -> dãy domino -> nhà vắt ngang như cầu
+    wreck_layer(c, rng, False, anchors)
+    wreck_layer(c, rng, True, anchors)
+    domino_run(c, 232, 1, rng, anchors)                                          # đổ về bên trái
+    domino_run(c, 598, -1, rng, anchors)                                         # đổ về bên phải
+    domino_run(c, 1066, 1, rng, anchors, 5)
+    for (bx_, by_, ln, th, dd) in ((300, 112, 150, 30, 1), (560, 106, 132, 28, -1), (880, 116, 120, 28, 1), (1130, 108, 136, 30, -1), (60, 118, 110, 26, -1)):
+        bridge_tower(c, bx_, by_, ln, th, dd, rng)
+    dust_puffs(c, [(x_, FLOOR_Y - 8, 46, 16) for x_ in range(20, WAR_W, 64)], rng)
     rubble_floor(c, 105)
-    # lửa trên mặt đất (tĩnh)
+    # đống gạch + nhà đổ nằm ngang trên mặt đất (xen vào chỗ trống giữa các cụm giao tranh, phía sau lính)
+    for (hx, hw, hh) in ((200, 70, 20), (330, 60, 16), (480, 70, 22), (610, 56, 18), (740, 36, 14), (985, 70, 22), (1100, 60, 18), (1240, 64, 20), (10, 60, 18)):
+        rubble_heap(c, hx, hw, hh, rng)
+    for (lx, ln, th, dd) in ((290, 132, 30, 1), (562, 104, 28, -1), (1046, 92, 26, 1), (24, 96, 28, 1), (1256, 96, 28, -1), (800, 70, 22, -1)):
+        lying_tower(c, lx, ln, th, dd, rng, anchors)
+    for (hx, hw, hh) in ((260, 54, 14), (540, 50, 12), (1010, 44, 12)):
+        rubble_heap(c, hx, hw, hh, rng)
+    dust_puffs(c, [(x_, FLOOR_Y + 2, 40, 12) for x_ in range(40, WAR_W, 90)], rng, alpha=56)
+    # lửa trên mặt đất + trên chỗ nhà gãy
     fires = [Image.open(os.path.join(G.OUT_DIR, "op_fire_%d.png" % k)).convert("RGBA") for k in range(3)] if os.path.exists(os.path.join(G.OUT_DIR, "op_fire_0.png")) else []
-    for x in range(30, WAR_W - 30, rng.randint(70, 110)):
+    for x in range(30, WAR_W - 30, rng.randint(150, 210)):
         if fires:
             paste(c, fires[rng.randint(0, 2)], x, FLOOR_Y - 20)
+    for (ax_, ay_) in anchors:
+        if fires and rng.random() < 0.38:
+            paste(c, fires[rng.randint(0, 2)], int(ax_) - 8, int(ay_) - 22)
     # các cụm giao tranh: trái hướng phải ↔ phải hướng trái, xen kẽ thời đại
     kinds = ["rome", "knight", "soldier", "neon"]
     clusters = [150, 430, 690, 930, 1160]

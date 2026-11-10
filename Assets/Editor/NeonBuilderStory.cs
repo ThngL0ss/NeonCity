@@ -13,7 +13,7 @@ namespace NeonBreaker.EditorTools
     /// Menu "Cập nhật Nhiệm vụ + Phố Neon + Lưu game (giữ nguyên chỉnh sửa của bạn)":
     ///   • 2 nguyên liệu mới (Thỏi sắt, Sợi cacbon) + danh sách ItemDatabase (cho file lưu game);
     ///   • Scene Base có sẵn: chỉ THÊM (nếu chưa có) BaseStash lên giá kệ "Shelf" + Hộp thư nhiệm vụ (Mailbox) — không đụng object nào khác;
-    ///   • tạo Scene còn thiếu: MainMenu (menu chính), Tutorial (huấn luyện), PhoNeon (Phố Neon), RiaPhoNeon (Rìa Phố Neon) — Scene đã có thì GIỮ NGUYÊN;
+    ///   • tạo Scene còn thiếu: MainMenu (menu chính), Tutorial (huấn luyện), PhoNeon (Phố Neon), RiaPhoNeon (Rìa Phố Neon), Story (cốt truyện mở đầu 10 cảnh) — Scene đã có thì GIỮ NGUYÊN;
     ///   • prefab NPC đi lại (người, robot, quái vô hại) — đã có thì giữ nguyên;
     ///   • thêm các Scene vào Build Settings, MainMenu đứng đầu.
     /// Chạy nhiều lần vẫn an toàn. Muốn dựng lại một Scene từ đầu: xoá file .unity của nó rồi chạy lại menu này.
@@ -52,6 +52,7 @@ namespace NeonBreaker.EditorTools
                 sb.AppendLine(EnsureStoryScene(TutorialScenePath, "Tutorial", BuildTutorialScene));
                 sb.AppendLine(EnsureStoryScene(PhoNeonScenePath, "PhoNeon", BuildPhoNeonScene));
                 sb.AppendLine(EnsureStoryScene(RimScenePath, "RiaPhoNeon", BuildRimScene));
+                sb.AppendLine(EnsureStoryScene(StoryScenePath, "Story", BuildStoryScene));
                 sb.AppendLine(StoryBuildSettings());
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
@@ -112,7 +113,7 @@ namespace NeonBreaker.EditorTools
             if (missing.Count > 0)
             {
                 Object.DestroyImmediate(go);
-                throw new System.Exception("Thiếu sprite: " + string.Join(", ", missing.ToArray()) + ". Chạy: python3 Tools/PixelArt/gen_places.py rồi thử lại.");
+                throw new System.Exception("Thiếu sprite: " + string.Join(", ", missing.ToArray()) + ". Chạy: python3 Tools/PixelArt/gen_places.py (Scene Story: gen_opening.py), để Unity nhập ảnh xong rồi thử lại.");
             }
             SavePrefab(go, name);
         }
@@ -249,17 +250,17 @@ namespace NeonBreaker.EditorTools
         static void FinishScene(Scene scene, string path)
         {
             if (missing.Count > 0)
-                throw new System.Exception("Thiếu sprite: " + string.Join(", ", missing.ToArray()) + ". Chạy: python3 Tools/PixelArt/gen_places.py rồi thử lại.");
+                throw new System.Exception("Thiếu sprite: " + string.Join(", ", missing.ToArray()) + ". Chạy: python3 Tools/PixelArt/gen_places.py (Scene Story: gen_opening.py), để Unity nhập ảnh xong rồi thử lại.");
             EditorSceneManager.MarkSceneDirty(scene);
             if (!EditorSceneManager.SaveScene(scene, path)) throw new System.Exception("Không lưu được " + path);
         }
 
         /// <summary>Camera pixel + hệ thống (GameManager, Hud, Sfx, Fx), giống các Scene khác. Không chạy cảnh mở đầu Dyber ở các Scene này.</summary>
-        static CameraRig StoryCamera(Color bg, float camX)
+        static CameraRig StoryCamera(Color bg, float camX, float camY = 5f, bool withRig = true)
         {
             var camGo = new GameObject("Main Camera");
             camGo.tag = "MainCamera";
-            camGo.transform.position = new Vector3(camX, 5f, -10f);
+            camGo.transform.position = new Vector3(camX, camY, -10f);
             var cam = camGo.AddComponent<Camera>();
             cam.orthographic = true;
             cam.orthographicSize = 270f / (2f * 16f);
@@ -269,7 +270,7 @@ namespace NeonBreaker.EditorTools
             cam.farClipPlane = 50f;
             camGo.AddComponent<AudioListener>();
             camGo.AddComponent<PixelScreen>();
-            var rig = camGo.AddComponent<CameraRig>();
+            var rig = withRig ? camGo.AddComponent<CameraRig>() : null;      // Scene Story không dùng CameraRig (StoryIntro tự điều khiển camera)
 
             var sys = new GameObject("Systems");
             var gm = sys.AddComponent<GameManager>();
@@ -682,7 +683,7 @@ namespace NeonBreaker.EditorTools
         static string StoryBuildSettings()
         {
             var list = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
-            string[] ours = { MenuScenePath, TutorialScenePath, PhoNeonScenePath, RimScenePath };
+            string[] ours = { MenuScenePath, TutorialScenePath, PhoNeonScenePath, RimScenePath, StoryScenePath };
             foreach (var p in ours)
             {
                 if (!File.Exists(p)) continue;

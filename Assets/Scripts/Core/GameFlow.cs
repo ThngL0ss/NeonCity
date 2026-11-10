@@ -14,6 +14,7 @@ namespace NeonBreaker
         public const string BaseScene = "Base";
         public const string MenuScene = "MainMenu";
         public const string TutorialScene = "Tutorial";
+        public const string StoryScene = "Story";
 
         /// <summary>Đang ở căn cứ (BaseManager đặt khi cảnh Base nạp xong).</summary>
         public static bool InBase;
@@ -42,6 +43,7 @@ namespace NeonBreaker
         public static bool BaseAvailable { get { return Application.CanStreamedLevelBeLoaded(BaseScene); } }
         public static bool MenuAvailable { get { return Application.CanStreamedLevelBeLoaded(MenuScene); } }
         public static bool TutorialAvailable { get { return Application.CanStreamedLevelBeLoaded(TutorialScene); } }
+        public static bool StoryAvailable { get { return Application.CanStreamedLevelBeLoaded(StoryScene); } }
         public static bool SceneAvailable(string scene) { return Application.CanStreamedLevelBeLoaded(scene); }
 
         public static void ResetStatics()
@@ -115,13 +117,48 @@ namespace NeonBreaker
             SceneManager.LoadScene(MenuScene);
         }
 
-        /// <summary>Ván mới: tạo ô lưu mới rồi vào màn hướng dẫn. Trả về false nếu cả 10 ô đã đầy.</summary>
-        public static bool StartNewGame()
+        /// <summary>
+        /// Ván mới: tạo ô lưu mới. watchStory = true: xem cảnh cốt truyện (Scene Story) rồi tới màn hướng dẫn, cuối cùng là cảnh mở đầu ở khu Dyber (như trước).
+        /// watchStory = false (Skip): bỏ qua cốt truyện + hướng dẫn, vào thẳng căn cứ ở lần hồi sinh đầu tiên (Albert chào, nhiệm vụ đầu tiên...).
+        /// Trả về false nếu cả 10 ô đã đầy.
+        /// </summary>
+        public static bool StartNewGame(bool watchStory = true)
         {
             int slot = SaveManager.NewGame();
             if (slot < 0) return false;
-            EnterSaved();
+            if (!watchStory) SkipToBase();
+            else if (StoryAvailable) GoToStory();
+            else EnterSaved();            // chưa có Scene Story (chưa chạy menu Editor): vào màn hướng dẫn như cũ
             return true;
+        }
+
+        /// <summary>Nạp Scene cốt truyện mở đầu (Story). Giữ dữ liệu ván mới vừa tạo. Cảnh này tự gọi FinishStory khi hết / bị bỏ qua.</summary>
+        static void GoToStory()
+        {
+            Carry = true;
+            GameManager.AutoStart = false;        // Scene Story tự đặt trạng thái Cinematic
+            Time.timeScale = 1f;
+            InTutorial = false;
+            PlayIntroOnLoad = false;
+            CurrentPlaceId = StoryScene;
+            SceneManager.LoadScene(StoryScene);
+        }
+
+        /// <summary>Hết cảnh cốt truyện (hoặc bấm bỏ qua): sang màn hướng dẫn (hoặc chỗ kế tiếp theo trạng thái ván).</summary>
+        public static void FinishStory()
+        {
+            EnterSaved();
+        }
+
+        /// <summary>Skip ở menu: coi như đã qua cốt truyện + hướng dẫn + cảnh mở đầu, vào căn cứ (lần hồi sinh đầu tiên) và lưu.</summary>
+        static void SkipToBase()
+        {
+            TutorialDone = true;
+            IntroSeen = true;
+            InTutorial = false;
+            PlayIntroOnLoad = false;
+            SaveManager.AutoSave();
+            EnterSaved();                 // TutorialDone + IntroSeen => căn cứ (không có Scene Base thì vào màn chơi)
         }
 
         /// <summary>Tiếp tục ván ở ô slot. Trả về false nếu ô trống / hỏng.</summary>

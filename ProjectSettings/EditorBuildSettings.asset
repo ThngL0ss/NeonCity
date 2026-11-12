@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/NeonBreaker/Scenes/MainMenu.unity
+    guid: f1b086e8cb7c0ef40b1e826bae636af1
+  - enabled: 1
     path: Assets/NeonBreaker/Scenes/Main.unity
     guid: a3c07280b32838242bb77001a95eae6a
   - enabled: 1
@@ -14,4 +17,16 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/NeonBreaker/Scenes/Base.unity
     guid: 5ffc323b56f319a46ba0a19c20c7a0fc
+  - enabled: 1
+    path: Assets/NeonBreaker/Scenes/Tutorial.unity
+    guid: 3e529285cce54fa4e9ee7aae6e60e77e
+  - enabled: 1
+    path: Assets/NeonBreaker/Scenes/PhoNeon.unity
+    guid: 67a77cfddbdf6c04a8bf7490fe43ec18
+  - enabled: 1
+    path: Assets/NeonBreaker/Scenes/RiaPhoNeon.unity
+    guid: 44524abad9478dd42b746c4ac8d565ab
+  - enabled: 1
+    path: Assets/NeonBreaker/Scenes/Story.unity
+    guid: eab0423da2f7cf243b6bddce36ad1e40
   m_configObjects: {}

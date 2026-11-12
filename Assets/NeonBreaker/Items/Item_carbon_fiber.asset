@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa79608b6240bf540899e469e20ac128, type: 3}
+  m_Name: Item_carbon_fiber
+  m_EditorClassIdentifier: 
+  nameVi: "S\u1EE3i cacbon"
+  nameEn: Carbon Fiber
+  descVi: "Cu\u1ED9n s\u1EE3i cacbon nh\u1EB9 m\xE0 b\u1EC1n. Nguy\xEAn li\u1EC7u
+    h\u1ED3i sinh Albert c\u1EA7n."
+  descEn: A light yet tough spool of carbon fiber. A resurrection material Albert
+    needs.
+  icon: {fileID: 21300000, guid: 21b6e00027842c34b859e463c7ef54ee, type: 3}
+  color: {r: 0.45, g: 0.55, b: 0.85, a: 1}
+  kind: 3
+  maxStack: 99
+  sellValue: 10
+  bonuses: []
+  healHp: 0
+  healCharges: 0
+  buffDuration: 0

@@ -22,7 +22,7 @@ namespace NeonBreaker
         public Sprite dot;               // chấm trắng 4x4: giấy pháo hoa, tia lửa, hạt (tô màu bằng code)
         public Sprite[] bolts;           // 3 tia sét nhỏ (gốc ở đỉnh)
         public Sprite boltBig;           // tia sét khổng lồ phủ gần hết khung
-        public Sprite[] rifts;           // 3 khe nứt không gian
+        public Sprite[] rifts;           // (không còn dùng: khe nứt cảnh 5c giờ vẽ bằng code — xem RiftLayout / MakeRiftSprite; giữ lại để Scene cũ không mất tham chiếu)
         public Sprite rain;              // hạt mưa
 
         const float CamY = -1.875f;      // camera hạ thấp để khung hình 480x210 nằm sát mép trên, 60 px dưới là khung chữ
@@ -659,7 +659,8 @@ namespace NeonBreaker
             Vector3 mBase = m != null ? m.localPosition : Vector3.zero;
             Vector2 ring = FpW(240f, 86f, HallPx);
             float t = 0f, nextBolt = 1.0f;
-            int riftCount = 0;
+            BuildRiftSprites();
+            Run(RiftSequence(ring));                 // mở lần lượt 8 khe nứt theo bố cục cố định; Say chờ xong rồi mới cho bấm qua đoạn kế
             while (hallFx)
             {
                 t += Dt;
@@ -679,26 +680,41 @@ namespace NeonBreaker
                 if (t >= nextBolt)
                 {
                     nextBolt = t + Mathf.Lerp(1.3f, 0.35f, k);
-                    Strike(ring, ref riftCount);
+                    Strike(ring);
                 }
                 yield return null;
             }
             if (m != null) m.localPosition = mBase;
         }
 
-        // Sét giáng theo các "ô" ngang cách nhau 3 đơn vị (một tia rộng ~2,5) trải khắp khung hình, nên hai tia KHÔNG BAO GIỜ đè lên nhau.
-        // Mỗi lần chọn ô khác với vài lần vừa rồi; khe nứt không gian chỉ mở ở các ô xa cỗ máy, mỗi ô một khe.
+        // ---- Sét "nền": giáng theo các "ô" ngang cách nhau 3 đơn vị (một tia rộng ~2,5) trải khắp khung hình. Mỗi lần chọn ô khác với vài lần vừa rồi
+        // và KHÔNG gần (dưới 3,1 đơn vị) tia nào vừa giáng trong 0,5 giây qua (kể cả tia mở khe nứt), nên hai tia không bao giờ đè lên nhau.
         static readonly float[] StrikeSlots = { -13.5f, -10.5f, -7.5f, -4.5f, -1.5f, 1.5f, 4.5f, 7.5f, 10.5f, 13.5f };
-        readonly bool[] riftTaken = new bool[10];
         readonly List<int> recentSlots = new List<int>();
+        readonly List<Vector2> boltLog = new List<Vector2>();           // (x, thời điểm) các tia sét gần đây
 
-        int PickSlot()
+        void LogBolt(float x)
+        {
+            boltLog.Add(new Vector2(x, Time.unscaledTime));
+            if (boltLog.Count > 12) boltLog.RemoveAt(0);
+        }
+
+        bool BoltClear(float x)
+        {
+            float now = Time.unscaledTime;
+            for (int i = 0; i < boltLog.Count; i++)
+                if (now - boltLog[i].y < 0.5f && Mathf.Abs(boltLog[i].x - x) < 3.1f) return false;
+            return true;
+        }
+
+        int PickSlot(float ringX)
         {
             var ok = new List<int>(StrikeSlots.Length);
             for (int i = 0; i < StrikeSlots.Length; i++)
             {
                 if (recentSlots.Contains(i)) continue;
                 if (dashing && Mathf.Abs(StrikeSlots[i]) < 7f) continue;      // robot đang lao vào cổng: sét chỉ giáng ở xa, không che nó
+                if (!BoltClear(ringX + StrikeSlots[i])) continue;
                 ok.Add(i);
             }
             if (ok.Count == 0) return -1;
@@ -708,25 +724,231 @@ namespace NeonBreaker
             return s;
         }
 
-        void Strike(Vector2 ring, ref int riftCount)
+        /// <summary>Một tia sét giáng xuống điểm p (đầu tia chạm p) + tiếng + chớp + rung (không chớp / rung khi robot đang lao).</summary>
+        void BoltAt(Vector2 p)
         {
-            int slot = PickSlot();
-            if (slot < 0) return;
-            Vector2 p = ring + new Vector2(StrikeSlots[slot] + Random.Range(-0.2f, 0.2f), Random.Range(-3.2f, 2.0f));
             if (bolts != null && bolts.Length > 0)
                 Spawn(bolts[Random.Range(0, bolts.Length)], p + new Vector2(0f, 6.9f), Vector2.zero, 0.18f, Color.white, 0f, 70, true, 1f, 0f, 0f, false);
-            if (!dashing && rifts != null && rifts.Length > 0 && riftCount < 6 && !riftTaken[slot] && Mathf.Abs(StrikeSlots[slot]) > 4f && Random.value < 0.85f)
-            {
-                Art.Spr(fxRoot, "rift", rifts[Random.Range(0, rifts.Length)], p, Vector2.one, Color.white, 40, false, Random.Range(-14f, 14f));
-                riftTaken[slot] = true;
-                riftCount++;
-            }
             Sfx.Play("bolt", dashing ? 0.3f : 0.45f, Random.Range(0.6f, 1.1f));
             if (!dashing)
             {
                 Flash(0.3f, new Color(0.85f, 0.75f, 1f));
                 shakeAmp = Mathf.Max(shakeAmp, 3f);
             }
+        }
+
+        void Strike(Vector2 ring)
+        {
+            int slot = PickSlot(ring.x);
+            if (slot < 0) return;
+            float x = ring.x + StrikeSlots[slot] + Random.Range(-0.2f, 0.2f);
+            LogBolt(x);
+            BoltAt(new Vector2(x, ring.y + Random.Range(-3.2f, 2.0f)));
+        }
+
+        // ============================================================== khe nứt không gian (cảnh 5c)
+        // Bố cục CỐ ĐỊNH, tính sẵn để: có khe dọc, chéo (hai chiều) và ngang; không khe nào chạm / đè khe khác (cách nhau ≥ 0,7 đơn vị);
+        // nằm trên đầu các robot, hai bên cỗ máy (không che cỗ máy). Toạ độ (x, y) tính từ tâm cỗ máy, y hướng LÊN, đơn vị thế giới (16 px).
+        // Khe được VẼ BẰNG CODE (Texture2D) theo đúng hướng nên không cần sprite / không cần dựng lại Scene, và chắc chắn hiện đủ 8 khe.
+        struct RiftSpec
+        {
+            public float x, y, ang, len, wid;
+            public int seed;
+            public RiftSpec(float x, float y, float ang, float len, float wid, int seed) { this.x = x; this.y = y; this.ang = ang; this.len = len; this.wid = wid; this.seed = seed; }
+        }
+
+        static readonly RiftSpec[] RiftLayout =
+        {
+            new RiftSpec(-13.0f, 0.9f,  93f, 3.9f, 1.5f, 11),     // 0 dọc, mép trái
+            new RiftSpec( -8.1f, 3.3f,  36f, 4.4f, 1.4f, 12),     // 1 chéo ↗
+            new RiftSpec( -9.0f, 0.1f,   3f, 5.4f, 1.3f, 13),     // 2 ngang
+            new RiftSpec(-11.8f, 3.6f, 128f, 3.4f, 1.2f, 14),     // 3 chéo ↖
+            new RiftSpec(  9.9f, 4.0f,  -5f, 6.0f, 1.3f, 15),     // 4 ngang, trên cao
+            new RiftSpec( 13.2f, 0.6f,  88f, 3.8f, 1.5f, 16),     // 5 dọc, mép phải
+            new RiftSpec( 10.4f, 0.9f, 128f, 4.0f, 1.3f, 17),     // 6 chéo ↖
+            new RiftSpec(  7.5f, 0.6f,  60f, 3.4f, 1.1f, 18),     // 7 chéo ↗
+        };
+        // thứ tự mở: xen kẽ trái / phải, dọc / chéo / ngang cho khỏi thành hàng
+        static readonly int[] RiftOrder = { 4, 0, 6, 1, 5, 2, 7, 3 };
+
+        readonly List<Sprite> riftSprites = new List<Sprite>();
+        readonly List<Texture2D> riftTex = new List<Texture2D>();
+
+        void OnDestroy()
+        {
+            for (int i = 0; i < riftSprites.Count; i++) if (riftSprites[i] != null) Destroy(riftSprites[i]);
+            for (int i = 0; i < riftTex.Count; i++) if (riftTex[i] != null) Destroy(riftTex[i]);
+        }
+
+        void BuildRiftSprites()
+        {
+            if (riftSprites.Count > 0) return;
+            for (int i = 0; i < RiftLayout.Length; i++)
+            {
+                Sprite sp = null;
+                try { sp = MakeRiftSprite(RiftLayout[i]); }
+                catch (System.Exception e) { Debug.LogWarning("Neon Breaker (Story): không vẽ được khe nứt " + i + " — " + e.Message); }
+                riftSprites.Add(sp);
+            }
+        }
+
+        /// <summary>Mở lần lượt các khe: mỗi khe có một tia sét đánh xuống, chớp sáng, rồi khe nứt bung ra. Chạy song song (busy) để đoạn chữ chờ mở đủ khe.</summary>
+        IEnumerator RiftSequence(Vector2 ring)
+        {
+            yield return Wait(0.5f);
+            for (int q = 0; q < RiftOrder.Length && hallFx; q++)
+            {
+                int idx = RiftOrder[q];
+                var sp = RiftLayout[idx];
+                Sprite spr = idx < riftSprites.Count ? riftSprites[idx] : null;
+                Vector2 pos = new Vector2(Snap(ring.x + sp.x), Snap(ring.y + sp.y));
+                LogBolt(pos.x);
+                BoltAt(pos);
+                if (spr != null) StartCoroutine(OpenRift(spr, pos));
+                yield return Wait(Random.Range(0.32f, 0.42f));
+            }
+        }
+
+        IEnumerator OpenRift(Sprite spr, Vector2 pos)
+        {
+            var sr = Art.Spr(fxRoot, "rift", spr, pos, new Vector2(0.15f, 0.15f), Color.white, 40, false, 0f);
+            for (int i = 0; i < 10; i++)
+                Spawn(dot, pos + Random.insideUnitCircle * 0.4f, Random.insideUnitCircle.normalized * Random.Range(2f, 6f), Random.Range(0.25f, 0.5f),
+                      Random.value < 0.5f ? new Color(0.8f, 0.6f, 1f) : Color.white, 0f, 45, true, Random.Range(0.5f, 1.0f), 0f, 0f, true);
+            const float dur = 0.3f;
+            float t = 0f;
+            while (t < dur && sr != null)
+            {
+                t += Dt;
+                float k = Mathf.Clamp01(t / dur) - 1f;
+                float e = 1f + 2.70158f * k * k * k + 1.70158f * k * k;      // easeOutBack: bung ra rồi nảy nhẹ
+                sr.transform.localScale = new Vector3(e, e, 1f);
+                yield return null;
+            }
+            if (sr != null) sr.transform.localScale = Vector3.one;
+        }
+
+        sealed class CrackRng
+        {
+            uint s;
+            public CrackRng(int seed) { s = unchecked((uint)seed * 2654435761u + 1013904223u); if (s == 0) s = 1; }
+            public float U() { s ^= s << 13; s ^= s >> 17; s ^= s << 5; return (s & 0xFFFFFF) / 16777216f; }
+            public float R(float a, float b) { return a + (b - a) * U(); }
+            public int I(int a, int b) { return b >= a ? a + (int)(U() * (b - a + 1)) : a; }
+        }
+
+        static bool InPoly(Vector2[] poly, float x, float y)
+        {
+            bool c = false;
+            for (int i = 0, j = poly.Length - 1; i < poly.Length; j = i++)
+                if ((poly[i].y > y) != (poly[j].y > y) && x < (poly[j].x - poly[i].x) * (y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x) c = !c;
+            return c;
+        }
+
+        /// <summary>
+        /// Vẽ một khe nứt pixel-art theo hướng ang độ: hai mép lởm chởm (bề rộng thon hai đầu), bên trong là khoảng không đầy sao của một thế giới khác,
+        /// viền tím sáng, vài nhánh nứt nhỏ. 1 pixel = 1/16 đơn vị. Điểm giữa trục nằm đúng tại pivot của sprite.
+        /// </summary>
+        Sprite MakeRiftSprite(RiftSpec sp)
+        {
+            var rng = new CrackRng(sp.seed);
+            float L = sp.len * 16f, W = sp.wid * 16f;
+            float a = sp.ang * Mathf.Deg2Rad;
+            var d = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
+            var nv = new Vector2(-d.y, d.x);
+            int N = Mathf.Max(6, (int)(L / 5f));
+            var left = new Vector2[N + 1];
+            var right = new Vector2[N + 1];
+            float wob = 0f;
+            for (int k = 0; k <= N; k++)
+            {
+                float s = (float)k / N;
+                wob = wob * 0.55f + rng.R(-1f, 1f) * W * 0.10f;
+                Vector2 c = d * ((s - 0.5f) * L) + nv * wob;
+                float prof = (k > 0 && k < N) ? Mathf.Pow(Mathf.Sin(Mathf.PI * s), 0.7f) : 0f;
+                float hl = W * 0.5f * prof * rng.R(0.55f, 1f);
+                float hr = W * 0.5f * prof * rng.R(0.55f, 1f);
+                left[k] = c + nv * hl;
+                right[k] = c - nv * hr;
+            }
+            var poly = new Vector2[2 * (N + 1)];
+            for (int k = 0; k <= N; k++) { poly[k] = left[k]; poly[poly.Length - 1 - k] = right[k]; }
+
+            // hai nhánh nứt nhỏ từ mép
+            var brA = new Vector2[2];
+            var brB = new Vector2[2];
+            for (int b = 0; b < 2; b++)
+            {
+                int k = rng.I(2, N - 2);
+                int side = rng.U() < 0.5f ? 1 : -1;
+                Vector2 bp = side > 0 ? left[k] : right[k];
+                float ln = rng.R(5f, 9f);
+                float da = rng.R(25f, 55f) * Mathf.Deg2Rad * side;
+                brA[b] = bp;
+                brB[b] = bp + new Vector2(Mathf.Cos(a + da), Mathf.Sin(a + da)) * ln;
+            }
+
+            float minX = float.MaxValue, minY = float.MaxValue, maxX = float.MinValue, maxY = float.MinValue;
+            for (int i = 0; i < poly.Length; i++) { minX = Mathf.Min(minX, poly[i].x); maxX = Mathf.Max(maxX, poly[i].x); minY = Mathf.Min(minY, poly[i].y); maxY = Mathf.Max(maxY, poly[i].y); }
+            for (int b = 0; b < 2; b++) { minX = Mathf.Min(minX, brB[b].x); maxX = Mathf.Max(maxX, brB[b].x); minY = Mathf.Min(minY, brB[b].y); maxY = Mathf.Max(maxY, brB[b].y); }
+            const int margin = 3;
+            int x0 = Mathf.FloorToInt(minX) - margin, y0 = Mathf.FloorToInt(minY) - margin;
+            int w = Mathf.CeilToInt(maxX) + margin - x0, h = Mathf.CeilToInt(maxY) + margin - y0;
+
+            var mask = new bool[w * h];
+            int area = 0;
+            for (int j = 0; j < h; j++)
+                for (int i = 0; i < w; i++)
+                    if (InPoly(poly, x0 + i + 0.5f, y0 + j + 0.5f)) { mask[j * w + i] = true; area++; }
+
+            var px = new Color32[w * h];                       // hàng 0 = đáy ảnh (toạ độ Unity), cùng chiều y LÊN với polygon
+            var fill = new Color32(6, 2, 16, 255);
+            var rim = new Color32(210, 170, 255, 255);
+            var glow = new Color32(130, 70, 220, 110);
+            System.Func<int, int, bool> M = (i, j) => i >= 0 && i < w && j >= 0 && j < h && mask[j * w + i];
+            for (int j = 0; j < h; j++)
+                for (int i = 0; i < w; i++)
+                    if (mask[j * w + i]) px[j * w + i] = (M(i - 1, j) && M(i + 1, j) && M(i, j - 1) && M(i, j + 1)) ? fill : rim;
+            for (int j = 0; j < h; j++)                        // ánh sáng mờ quanh viền
+                for (int i = 0; i < w; i++)
+                    if (!mask[j * w + i] && (M(i - 1, j) || M(i + 1, j) || M(i, j - 1) || M(i, j + 1))) px[j * w + i] = glow;
+            for (int b = 0; b < 2; b++)                        // nhánh nứt nhỏ
+            {
+                int steps = (int)Mathf.Max(Mathf.Abs(brB[b].x - brA[b].x), Mathf.Abs(brB[b].y - brA[b].y)) + 1;
+                for (int t = 0; t <= steps; t++)
+                {
+                    float f = (float)t / steps;
+                    int i = Mathf.FloorToInt(Mathf.Lerp(brA[b].x, brB[b].x, f)) - x0;
+                    int j = Mathf.FloorToInt(Mathf.Lerp(brA[b].y, brB[b].y, f)) - y0;
+                    if (i < 0 || i >= w || j < 0 || j >= h || mask[j * w + i]) continue;
+                    px[j * w + i] = f < 0.7f ? new Color32(190, 140, 250, 255) : new Color32(150, 100, 230, 200);
+                }
+            }
+            var stars = new[] { new Color32(255, 255, 255, 255), new Color32(40, 240, 255, 255), new Color32(255, 40, 200, 255), new Color32(170, 130, 255, 255) };
+            for (int q = Mathf.Max(3, area / 38); q > 0; q--)  // sao của thế giới bên kia
+            {
+                int i = rng.I(0, w - 1), j = rng.I(0, h - 1);
+                if (mask[j * w + i] && px[j * w + i].Equals(fill)) px[j * w + i] = stars[rng.I(0, 3)];
+            }
+            for (int q = Mathf.Max(1, area / 300); q > 0; q--) // vài đốm tím sẫm
+            {
+                int i = rng.I(0, w - 1), j = rng.I(0, h - 1);
+                for (int dj = -1; dj <= 1; dj++)
+                    for (int di = -1; di <= 1; di++)
+                    {
+                        int ii = i + di, jj = j + dj;
+                        if (M(ii, jj) && px[jj * w + ii].Equals(fill)) px[jj * w + ii] = new Color32(70, 20, 120, 255);
+                    }
+            }
+
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Point;
+            tex.wrapMode = TextureWrapMode.Clamp;
+            tex.SetPixels32(px);
+            tex.Apply(false);
+            riftTex.Add(tex);
+            var spr = Sprite.Create(tex, new Rect(0f, 0f, w, h), new Vector2((float)(-x0) / w, (float)(-y0) / h), 16f);
+            return spr;
         }
 
         /// <summary>Sét giật một phát cực mạnh: rung chuyển màn hình, tia sét che gần hết khung hình.</summary>

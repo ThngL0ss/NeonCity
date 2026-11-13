@@ -182,7 +182,14 @@ namespace NeonBreaker
         public static bool Save()
         {
             if (!HasSlot) return false;
-            return Write(Slot, Capture());
+            SaveData d;
+            try { d = Capture(); }
+            catch (Exception e)
+            {
+                Debug.LogWarning("Neon Breaker: không chụp được trạng thái để lưu — " + e);
+                return false;           // lỗi khi lưu không được làm hỏng việc chuyển cảnh
+            }
+            return Write(Slot, d);
         }
 
         // ------------------------------------------------------------ chụp / áp trạng thái

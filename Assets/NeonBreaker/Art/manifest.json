@@ -1920,14 +1920,24 @@
   "w": 41
  },
  "op_mech_l_ruin.png": {
-  "h": 48,
+  "h": 25,
   "pivot": [
    0.5,
    0.0
   ],
   "ppu": 16,
   "tile": false,
-  "w": 41
+  "w": 50
+ },
+ "op_mech_l_wreck.png": {
+  "h": 25,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 50
  },
  "op_mech_xl_dash.png": {
   "h": 76,
@@ -1960,24 +1970,44 @@
   "w": 64
  },
  "op_mech_xl_wreck_a.png": {
-  "h": 76,
+  "h": 38,
   "pivot": [
    0.5,
    0.0
   ],
   "ppu": 16,
   "tile": false,
-  "w": 64
+  "w": 80
  },
  "op_mech_xl_wreck_b.png": {
-  "h": 76,
+  "h": 38,
   "pivot": [
    0.5,
    0.0
   ],
   "ppu": 16,
   "tile": false,
-  "w": 64
+  "w": 80
+ },
+ "op_mech_xl_wreck_c.png": {
+  "h": 38,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 80
+ },
+ "op_mech_xl_wreck_d.png": {
+  "h": 38,
+  "pivot": [
+   0.5,
+   0.0
+  ],
+  "ppu": 16,
+  "tile": false,
+  "w": 80
  },
  "op_nan_big_hold.png": {
   "h": 64,

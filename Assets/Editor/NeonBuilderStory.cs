@@ -224,9 +224,9 @@ namespace NeonBreaker.EditorTools
         // ================================================================ DỰNG SCENE MỚI (chỉ khi file chưa có)
         delegate void SceneBuilder(Scene scene, string path);
 
-        static string EnsureStoryScene(string path, string label, SceneBuilder build)
+        static string EnsureStoryScene(string path, string label, SceneBuilder build, bool overwrite = false)
         {
-            if (File.Exists(path))
+            if (File.Exists(path) && !overwrite)
             {
                 AddSceneToBuildSettings(path);
                 return "• Scene " + label + " đã có — giữ nguyên chỉnh sửa của bạn";
@@ -244,7 +244,7 @@ namespace NeonBreaker.EditorTools
                 EditorSceneManager.CloseScene(scene, true);
             }
             AddSceneToBuildSettings(path);
-            return "• Đã dựng Scene " + label + ": " + path;
+            return (overwrite ? "• Đã DỰNG LẠI Scene " : "• Đã dựng Scene ") + label + ": " + path;
         }
 
         static void FinishScene(Scene scene, string path)

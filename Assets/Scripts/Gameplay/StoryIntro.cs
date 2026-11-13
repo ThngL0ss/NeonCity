@@ -70,7 +70,7 @@ namespace NeonBreaker
         readonly List<Part> parts = new List<Part>();
 
         // ----- cờ điều khiển các vòng lặp nền
-        bool embers, hallFx, rainOn, carsOn, sparking;
+        bool embers, hallFx, rainOn, carsOn, sparking, dashing;
 
         // ============================================================== khởi tạo
         void Awake()
@@ -686,19 +686,47 @@ namespace NeonBreaker
             if (m != null) m.localPosition = mBase;
         }
 
+        // Sét giáng theo các "ô" ngang cách nhau 3 đơn vị (một tia rộng ~2,5) trải khắp khung hình, nên hai tia KHÔNG BAO GIỜ đè lên nhau.
+        // Mỗi lần chọn ô khác với vài lần vừa rồi; khe nứt không gian chỉ mở ở các ô xa cỗ máy, mỗi ô một khe.
+        static readonly float[] StrikeSlots = { -13.5f, -10.5f, -7.5f, -4.5f, -1.5f, 1.5f, 4.5f, 7.5f, 10.5f, 13.5f };
+        readonly bool[] riftTaken = new bool[10];
+        readonly List<int> recentSlots = new List<int>();
+
+        int PickSlot()
+        {
+            var ok = new List<int>(StrikeSlots.Length);
+            for (int i = 0; i < StrikeSlots.Length; i++)
+            {
+                if (recentSlots.Contains(i)) continue;
+                if (dashing && Mathf.Abs(StrikeSlots[i]) < 7f) continue;      // robot đang lao vào cổng: sét chỉ giáng ở xa, không che nó
+                ok.Add(i);
+            }
+            if (ok.Count == 0) return -1;
+            int s = ok[Random.Range(0, ok.Count)];
+            recentSlots.Add(s);
+            if (recentSlots.Count > 4) recentSlots.RemoveAt(0);
+            return s;
+        }
+
         void Strike(Vector2 ring, ref int riftCount)
         {
-            Vector2 p = ring + new Vector2(Random.Range(-7f, 7f), Random.Range(-3.5f, 3.2f));
+            int slot = PickSlot();
+            if (slot < 0) return;
+            Vector2 p = ring + new Vector2(StrikeSlots[slot] + Random.Range(-0.2f, 0.2f), Random.Range(-3.2f, 2.0f));
             if (bolts != null && bolts.Length > 0)
                 Spawn(bolts[Random.Range(0, bolts.Length)], p + new Vector2(0f, 6.9f), Vector2.zero, 0.18f, Color.white, 0f, 70, true, 1f, 0f, 0f, false);
-            if (rifts != null && rifts.Length > 0 && riftCount < 7 && Random.value < 0.8f)
+            if (!dashing && rifts != null && rifts.Length > 0 && riftCount < 6 && !riftTaken[slot] && Mathf.Abs(StrikeSlots[slot]) > 4f && Random.value < 0.85f)
             {
                 Art.Spr(fxRoot, "rift", rifts[Random.Range(0, rifts.Length)], p, Vector2.one, Color.white, 40, false, Random.Range(-14f, 14f));
+                riftTaken[slot] = true;
                 riftCount++;
             }
-            Sfx.Play("bolt", 0.45f, Random.Range(0.6f, 1.1f));
-            Flash(0.3f, new Color(0.85f, 0.75f, 1f));
-            shakeAmp = Mathf.Max(shakeAmp, 3f);
+            Sfx.Play("bolt", dashing ? 0.3f : 0.45f, Random.Range(0.6f, 1.1f));
+            if (!dashing)
+            {
+                Flash(0.3f, new Color(0.85f, 0.75f, 1f));
+                shakeAmp = Mathf.Max(shakeAmp, 3f);
+            }
         }
 
         /// <summary>Sét giật một phát cực mạnh: rung chuyển màn hình, tia sét che gần hết khung hình.</summary>
@@ -741,15 +769,17 @@ namespace NeonBreaker
             Vector2 a = FpW(520f, 176f, HallPx), b = FpW(330f, 176f, HallPx), c = FpW(240f, 120f, HallPx);
             Vector2 center = FpW(240f, 86f, HallPx);
             yield return Wait(0.8f);
+            dashing = true;                              // sét chỉ giáng ở xa + không chớp sáng: không che robot
             d.gameObject.SetActive(true);
             d.localScale = Vector3.one;
-            if (dsr != null) { dsr.flipX = true; dsr.color = Color.white; }
+            if (dsr != null) { dsr.flipX = true; dsr.color = Color.white; dsr.sortingOrder = 100; }      // vẽ trên cùng: tia / vầng sáng không đè lên robot
             d.position = a;
             float t = 0f;
-            while (t < 0.55f)                            // chạy nhanh dọc sàn
+            const float runT = 0.95f, leapT = 0.8f, meltT = 1.7f;      // chậm hơn trước (0,55 / 0,5 / 1,0 giây)
+            while (t < runT)                             // chạy dọc sàn
             {
                 t += Dt;
-                float k = t / 0.55f;
+                float k = t / runT;
                 Vector2 p = Vector2.Lerp(a, b, k) + Vector2.up * Mathf.Abs(Mathf.Sin(t * 22f)) * 0.12f;
                 d.position = new Vector3(p.x, p.y, 0f);
                 shakeAmp = Mathf.Max(shakeAmp, 1.5f);
@@ -757,30 +787,31 @@ namespace NeonBreaker
             }
             Sfx.Play("dash", 0.9f, 0.7f);
             t = 0f;
-            while (t < 0.5f)                             // bật lên lao vào tâm cỗ máy
+            while (t < leapT)                            // bật lên lao vào tâm cỗ máy
             {
                 t += Dt;
-                float k = Mathf.Clamp01(t / 0.5f);
+                float k = Mathf.Clamp01(t / leapT);
                 Vector2 p = Vector2.Lerp(b, c, k) + Vector2.up * Mathf.Sin(k * Mathf.PI) * 2.4f;
                 d.position = new Vector3(p.x, p.y, 0f);
                 yield return null;
             }
             Sfx.Play("teleport", 0.9f, 0.5f);
             t = 0f;
-            while (t < 1.0f)                             // thân hình tan dần, bị kéo vào điểm kỳ dị
+            while (t < meltT)                            // thân hình tan dần, bị kéo vào điểm kỳ dị
             {
                 t += Dt;
-                float k = Mathf.Clamp01(t / 1.0f);
+                float k = Mathf.Clamp01(t / meltT);
                 d.localScale = Vector3.one * Mathf.Lerp(1f, 0.15f, k * k);
                 d.position = Vector3.Lerp(d.position, new Vector3(center.x, center.y - 1.2f, 0f), 0.08f);
                 if (dsr != null) dsr.color = new Color(1f, 1f, 1f, 1f - k);
                 Vector2 pp = (Vector2)d.position + Random.insideUnitCircle * 1.3f;
                 Vector2 dir = center - pp;
-                Spawn(dot, pp, dir * 2.5f, 0.5f, Random.value < 0.5f ? new Color(0.75f, 0.5f, 1f) : Color.white, 0f, 45, true, Random.Range(0.6f, 1.1f), 0f, 0f, true);
-                shakeAmp = Mathf.Max(shakeAmp, 2.5f);
+                Spawn(dot, pp, dir * 2.5f, 0.5f, Random.value < 0.5f ? new Color(0.75f, 0.5f, 1f) : Color.white, 0f, 105, true, Random.Range(0.6f, 1.1f), 0f, 0f, true);
+                shakeAmp = Mathf.Max(shakeAmp, 1.5f);
                 yield return null;
             }
             d.gameObject.SetActive(false);
+            dashing = false;
         }
 
         // ------------------------------------------------------------ cảnh 7: phế tích La Mã lẫn nhà chọc trời, rồi đám đông

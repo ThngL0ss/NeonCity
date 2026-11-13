@@ -143,6 +143,33 @@ namespace NeonBreaker
             Destroy(gameObject);
         }
 
+        /// <summary>
+        /// Xoá quái ngay, KHÔNG rơi đồ, KHÔNG tính điểm hạ gục, không báo cho hệ thống skill (dùng khi người chơi vào khu boss: dọn sạch quái bên ngoài).
+        /// Chỉ có hiệu ứng tan thành tia sáng nhỏ.
+        /// </summary>
+        public void Banish()
+        {
+            if (dead) return;
+            dead = true;
+            Fx.Burst(Center, Cfg.A(accent, 0.9f), 10, 5f, 0.5f, 0.3f);
+            Fx.Ring(Center, Cfg.A(Cfg.White, 0.7f), 0.4f, 3f, 0.35f);
+            Destroy(gameObject);
+        }
+
+        /// <summary>Xoá hết quái đang sống (không rơi đồ). Trả về số quái đã xoá.</summary>
+        public static int BanishAll()
+        {
+            var copy = new List<Enemy>(Live);
+            int n = 0;
+            for (int i = 0; i < copy.Count; i++)
+            {
+                if (copy[i] == null || copy[i].dead) continue;
+                copy[i].Banish();
+                n++;
+            }
+            return n;
+        }
+
         protected void UpdateFlash(float dt, float alpha = 1f)
         {
             if (flashT > 0f) flashT -= dt;

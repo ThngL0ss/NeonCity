@@ -321,6 +321,9 @@ namespace NeonBreaker
                 return;
             }
             BossSpawned = true;
+            // người chơi vào khu boss: dọn sạch quái còn lại ở bên ngoài (không rơi đồ, không tính hạ gục) để chỉ còn đấu với boss
+            Enemy.BanishAll();
+            Projectile.ClearHostile();
             if (Level.Instance != null) Level.Instance.CloseGate();
             Sfx.Music(1);
             Banner(Cfg.L("CẢNH BÁO — BOSS XUẤT HIỆN", "WARNING — BOSS INCOMING"), Cfg.Red, 4f);

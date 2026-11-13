@@ -83,6 +83,8 @@ namespace NeonBreaker
         public static int Index;
         /// <summary>Đã nhận nhiệm vụ hiện tại ở hộp thư chưa.</summary>
         public static bool Accepted;
+        /// <summary>Đã nhận nhiệm vụ đầu tiên chưa (đang làm nó, hoặc đã xong và sang nhiệm vụ sau). Chưa nhận thì cửa ra của căn cứ bị khoá.</summary>
+        public static bool FirstMissionReceived { get { return Accepted || Index > 0; } }
         /// <summary>Hộp thư nhiệm vụ đã xuất hiện (sau lần nói chuyện đầu với Albert).</summary>
         public static bool BoardUnlocked;
         /// <summary>Vừa mở khoá hộp thư: MissionBoard đọc để chạy hiệu ứng xuất hiện (không lưu).</summary>

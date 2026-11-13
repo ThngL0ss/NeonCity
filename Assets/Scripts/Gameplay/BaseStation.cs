@@ -19,6 +19,9 @@ namespace NeonBreaker
 
         float t;
 
+        /// <summary>Cửa ra khoá cho tới khi nhận nhiệm vụ đầu tiên (nói chuyện với Albert rồi nhận ở hộp thư nhiệm vụ).</summary>
+        public bool Locked { get { return kind == StationKind.Door && !BaseMissions.FirstMissionReceived; } }
+
         public bool CanInteract { get { return !BaseUi.IsOpen && GameManager.State == GameState.Playing && !GameManager.PlayerLocked; } }
         public Vector2 PromptPos { get { return (Vector2)transform.position + promptOffset; } }
         public bool InRange(Player p) { return Interactor.Near(p, transform.position, interactRange, interactHeight); }
@@ -31,7 +34,9 @@ namespace NeonBreaker
                 {
                     case StationKind.Craft: return Cfg.L("[F] BÀN CHẾ TÁC", "[F] CRAFTING BENCH");
                     case StationKind.Fusion: return Cfg.L("[F] MÁY GHÉP LINH KIỆN", "[F] PART FUSION MACHINE");
-                    default: return Cfg.L("[F] RA KHỎI CĂN CỨ", "[F] LEAVE THE BASE");
+                    default:
+                        if (Locked) return Cfg.L("CỬA ĐANG KHOÁ — gặp Albert nhận nhiệm vụ", "DOOR LOCKED — get a mission from Albert first");
+                        return Cfg.L("[F] RA KHỎI CĂN CỨ", "[F] LEAVE THE BASE");
                 }
             }
         }
@@ -47,6 +52,12 @@ namespace NeonBreaker
 
         public void Interact()
         {
+            if (Locked)
+            {
+                Fx.Text(PromptPos, Cfg.L("Chưa nhận nhiệm vụ — gặp Albert trước", "No mission yet — see Albert first"), Cfg.Orange, 1.4f);
+                Sfx.Play("click", 0.7f, 0.6f);
+                return;
+            }
             switch (kind)
             {
                 case StationKind.Craft: BaseUi.Open(BaseMode.Craft); break;
@@ -63,7 +74,7 @@ namespace NeonBreaker
             if (glow != null)
             {
                 float a = 0.22f + 0.1f * Mathf.Sin(t * 2.4f) + (active ? 0.35f : 0f);
-                glow.color = Cfg.A(glowColor, a);
+                glow.color = Cfg.A(Locked ? Cfg.Red : glowColor, a);
             }
             if (active && Random.value < 0.4f)
                 Fx.Emit(Fx.S_Glow, (Vector2)transform.position + new Vector2(Random.Range(-1.2f, 1.2f), Random.Range(0.5f, 2.6f)), new Vector2(0f, Random.Range(1f, 3f)),

@@ -103,6 +103,9 @@ namespace NeonBreaker
         {
             Inst = this;
             Time.timeScale = 1f;
+            // Mỗi Scene mới bắt đầu với mọi bảng UI đóng. (Static sống qua lần nạp Scene: trước đây bản đồ đang mở + cờ "đang đi" bị giữ lại
+            // sang Scene đích nên người chơi kẹt ở bản đồ, M / ESC không đóng được.)
+            BaseUi.ResetStatics();
             if (!GameFlow.Carry)
             {
                 Inventory.ResetAll();
@@ -272,7 +275,6 @@ namespace NeonBreaker
                     else if (Paused && GameInput.ConfirmDown) TogglePause();
                     else if (!Paused && GameInput.InventoryDown) OpenMenu();
                     else if (!Paused && GameInput.MinibotPanelDown) SkillSystem.TogglePanel();
-                    else if (!Paused && !PlayerLocked && GameInput.MapDown) BaseUi.Open(BaseMode.Map);
                     else if (!Paused && !PlayerLocked && GameInput.InteractDown) Interactor.TryInteract();
                     if (!Paused)
                     {
@@ -319,6 +321,9 @@ namespace NeonBreaker
                 return;
             }
             BossSpawned = true;
+            // người chơi vào khu boss: dọn sạch quái còn lại ở bên ngoài (không rơi đồ, không tính hạ gục) để chỉ còn đấu với boss
+            Enemy.BanishAll();
+            Projectile.ClearHostile();
             if (Level.Instance != null) Level.Instance.CloseGate();
             Sfx.Music(1);
             Banner(Cfg.L("CẢNH BÁO — BOSS XUẤT HIỆN", "WARNING — BOSS INCOMING"), Cfg.Red, 4f);

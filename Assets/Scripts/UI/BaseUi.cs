@@ -16,6 +16,7 @@ namespace NeonBreaker
         public static void ResetStatics()
         {
             Mode = BaseMode.None;
+            MapUi.ResetStatics();
             DialogueUi.Reset();
         }
 

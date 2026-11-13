@@ -521,6 +521,28 @@ def erase_blob(c, cx, cy, r, rng):
                     c.im.putpixel((x, y), (0, 0, 0, 0))
 
 
+def ground_cleanup(c, rows=3):
+    """Giữ lại các pixel NỐI LIỀN (8 hướng) với mặt đất (vài hàng dưới cùng); mảnh nào lơ lửng không có điểm tựa thì xoá."""
+    a = np.array(c.im)
+    solid = a[:, :, 3] > 0
+    h, w = solid.shape
+    keep = np.zeros_like(solid)
+    stack = [(y, x) for y in range(max(0, h - rows), h) for x in range(w) if solid[y, x]]
+    for y, x in stack:
+        keep[y, x] = True
+    while stack:
+        y, x = stack.pop()
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                ny, nx = y + dy, x + dx
+                if 0 <= ny < h and 0 <= nx < w and solid[ny, nx] and not keep[ny, nx]:
+                    keep[ny, nx] = True
+                    stack.append((ny, nx))
+    a[~keep] = (0, 0, 0, 0)
+    c.im = Image.fromarray(a, "RGBA")
+    c.d = ImageDraw.Draw(c.im)
+
+
 def mech_front(H, style, dmg, seed, pilot=False):
     """Robot nhìn thẳng cao H px. dmg: 0 nguyên · 1 xây xát (vài chỗ vỡ) · 2 vỡ nát gần hết · 3 đống đổ nát."""
     rng = noise_rng(seed)
@@ -585,6 +607,7 @@ def mech_front(H, style, dmg, seed, pilot=False):
     if dmg >= 3:
         for _ in range(7):
             erase_blob(c, cx + rng.uniform(-3, 3) * u, base - rng.uniform(2.5, 9) * u, rng.uniform(0.8, 1.4) * u, rng)
+    ground_cleanup(c)           # mảnh nào bị cắt rời khỏi chân thì bỏ (không để thân lơ lửng giữa không trung)
     if pilot:
         # khoang lái nứt toạc, lộ người điều khiển ngồi gục (tóc đen dài, áo trắng, vài vệt đỏ)
         px0, py0 = cx, base - 5.2 * u
@@ -595,6 +618,136 @@ def mech_front(H, style, dmg, seed, pilot=False):
         c.line(px0 - 1.3 * u, py0 - 1.2 * u, px0 - 1.7 * u, py0 + 1.4 * u, HAIR_BK, 1)
         for _ in range(6):
             c.px(px0 + rng.uniform(-1.4, 1.2) * u, py0 + rng.uniform(-0.6, 1.5) * u, RED)
+    return c
+
+
+def mech_lying(H, style, variant, seed, pilot=False):
+    """
+    Robot NẰM TRÊN MẶT ĐẤT (đầu bên trái, chân bên phải), cao H px khi đứng thì dài ~H px khi nằm. Mọi bộ phận đều chạm đất hoặc tựa vào phần chạm đất.
+    variant "a": ngửa, một chân co gối, tay gập trên ngực · "b": gãy làm đôi (thân + đầu / hai chân tách ra, dây điện kéo lê) ·
+    "c": đống sắt vụn (đầu lăn ra trước, một cánh tay chống lên) · "d": nằm nghiêng sấp, tay duỗi trước mặt.
+    """
+    rng = noise_rng(seed)
+    body, body_d, body_l, glow = MECH_STYLES[style]
+    u = H / 10.0
+    W = int(10.6 * u) + 6
+    Hh = int(4.6 * u) + 6
+    c = Cv(W, Hh)
+    ox, gy = 3, Hh - 3
+    dead = (70, 74, 96) if style == "sci" else (52, 40, 84)         # đèn đã tắt
+
+    def X(x):
+        return ox + x * u
+
+    def Y(h):
+        return gy + 1 - h * u
+
+    def Rr(x0, h0, x1, h1, col):
+        c.rect(X(x0), Y(h1), X(x1) - 1, Y(h0) - 1, col)
+
+    def Ln(x0, h0, x1, h1, col, w):
+        c.line(X(x0), Y(h0), X(x1), Y(h1), col, max(1, int(w * u)))
+
+    def P(pts, col):
+        c.poly([(X(x), Y(h)) for x, h in pts], col)
+
+    def head(hx):
+        Rr(hx, 0.0, hx + 1.7, 1.9, body_l)
+        Rr(hx, 0.0, hx + 0.35, 1.9, body)
+        Rr(hx + 0.35, 0.8, hx + 1.4, 1.3, (10, 10, 22))
+        Rr(hx + 0.55, 0.95, hx + 1.0, 1.15, dead)
+        Rr(hx + 1.7, 0.0, hx + 1.95, 1.0, body_d)                   # cổ
+
+    def leg_flat(x0, x1):
+        Rr(x0, 0.0, x1, 1.25, body_d)
+        Rr(x0, 1.0, x1, 1.25, body)
+        Rr(x1 - 0.1, 0.0, x1 + 1.0, 0.95, body)
+
+    if variant == "a":
+        head(0.4)
+        P([(2.3, 0.0), (2.3, 2.6), (3.0, 3.1), (6.2, 3.0), (6.4, 0.0)], body)       # thân ngửa
+        Rr(2.3, 2.5, 6.3, 3.0, body_l)
+        Rr(2.6, 0.0, 6.4, 0.5, body_d)
+        Rr(3.5, 1.2, 5.3, 2.4, (12, 14, 30))                                         # khoang lái
+        Rr(3.9, 1.5, 4.9, 2.1, dead)
+        Rr(6.4, 0.0, 7.3, 1.7, body_d)                                               # hông
+        leg_flat(7.3, 9.4)                                                           # chân duỗi
+        Ln(7.3, 1.6, 8.5, 3.7, body_d, 0.85)                                         # chân kia co gối
+        Ln(8.5, 3.7, 10.0, 0.6, body_d, 0.8)
+        c.ell(X(8.2), Y(4.0), X(8.9), Y(3.3), body_l)                                # khớp gối
+        Rr(9.6, 0.0, 10.5, 0.8, body)
+        c.ell(X(2.1), Y(3.7), X(3.7), Y(2.4), body_l)                                # vai
+        Ln(3.2, 3.0, 4.8, 3.9, body, 1.0)                                            # tay gập trên ngực
+        Ln(4.8, 3.9, 6.3, 2.8, body, 1.0)
+        Rr(6.1, 2.4, 7.0, 3.2, body_l)
+        erase_blob(c, X(5.8), Y(1.4), 0.7 * u, rng)
+        erase_blob(c, X(8.0), Y(0.9), 0.45 * u, rng)
+    elif variant == "b":
+        head(0.0)
+        P([(2.0, 0.0), (2.2, 2.7), (2.9, 3.2), (5.4, 2.9), (5.7, 0.0)], body)       # thân + vai
+        Rr(2.0, 2.4, 5.5, 3.0, body_l)
+        Rr(2.2, 0.0, 5.7, 0.5, body_d)
+        Rr(3.0, 1.1, 4.7, 2.3, (12, 14, 30))
+        Rr(3.4, 1.4, 4.4, 2.0, dead)
+        Ln(2.5, 0.5, 0.9, 0.4, body_d, 0.9)                                          # một tay vắt ra trước đầu
+        Rr(0.0, 0.0, 1.0, 0.9, body_l)
+        erase_blob(c, X(5.7), Y(1.2), 0.9 * u, rng)                                  # chỗ gãy ngang hông
+        erase_blob(c, X(5.5), Y(2.7), 0.55 * u, rng)
+        # nửa dưới tách ra phía phải, nằm riêng
+        Rr(7.0, 0.0, 7.9, 1.5, body_d)
+        leg_flat(7.9, 9.3)
+        Ln(7.9, 1.3, 8.9, 2.7, body_d, 1.2)
+        Ln(8.9, 2.7, 9.9, 0.6, body_d, 1.1)
+        Rr(9.5, 0.0, 10.4, 0.7, body)
+        # dây điện kéo lê giữa hai nửa (nằm sát đất)
+        for k in range(3):
+            col = (RED, YEL, ORG)[k]
+            c.line(X(5.7), Y(0.2 + 0.25 * k), X(7.0), Y(0.15 + 0.2 * k), col, 1)
+    elif variant == "c":
+        # đống sắt vụn: thân vỡ vụn thành mảng thấp, đầu lăn ra trước, một cánh tay gãy chống lên
+        head(0.0)
+        P([(2.4, 0.0), (3.0, 1.6), (4.2, 2.4), (5.6, 2.0), (6.6, 1.1), (7.6, 0.0)], body)
+        P([(3.4, 0.0), (4.2, 1.8), (5.4, 1.5), (6.2, 0.0)], body_d)
+        Rr(2.4, 0.0, 7.6, 0.45, body_d)
+        Ln(6.4, 1.1, 8.3, 3.3, body, 0.9)                                            # cánh tay chống lên
+        Ln(8.3, 3.3, 9.5, 2.6, body, 0.9)
+        Rr(9.3, 0.0, 9.9, 2.8, body_d)                                              # ... tựa vào mảnh chân dựng
+        Rr(8.0, 0.0, 10.2, 0.9, body_d)
+        c.ell(X(4.6), Y(2.9), X(6.2), Y(1.5), body_l)                                # vai lăn trên đống
+        for _ in range(5):
+            erase_blob(c, X(rng.uniform(2.8, 7.2)), Y(rng.uniform(0.7, 2.0)), rng.uniform(0.35, 0.6) * u, rng)
+    else:
+        # "d": nằm nghiêng sấp, một tay duỗi tới trước
+        head(2.6)
+        P([(4.6, 0.0), (4.7, 2.5), (5.6, 2.9), (8.0, 2.6), (8.2, 0.0)], body)
+        Rr(4.7, 2.2, 8.0, 2.8, body_l)
+        Rr(4.6, 0.0, 8.2, 0.45, body_d)
+        Rr(5.3, 0.9, 7.2, 2.0, body_d)                                               # tấm lưng
+        Rr(8.2, 0.0, 9.0, 1.6, body_d)
+        Rr(9.0, 0.0, 10.4, 1.2, body_d)                                              # hai chân gập sát nhau
+        Rr(9.9, 0.0, 10.6, 0.8, body)
+        Ln(4.9, 1.0, 0.8, 0.5, body, 1.0)                                            # tay duỗi trước
+        Rr(0.0, 0.0, 1.2, 1.0, body_l)
+        c.ell(X(4.4), Y(3.3), X(6.0), Y(1.9), body_l)
+        erase_blob(c, X(7.1), Y(1.7), 0.7 * u, rng)
+
+    # hư hại chung: vết nứt, dây điện loà xoà, tia lửa nhỏ
+    for _ in range(6):
+        x0, h0 = rng.uniform(2.2, 8.0), rng.uniform(0.3, 2.3)
+        c.line(X(x0), Y(h0), X(x0) + rng.uniform(-3, 3), Y(h0) + rng.uniform(-2, 2), (20, 18, 34), 1)
+    for _ in range(4):
+        c.px(X(rng.uniform(2.4, 7.8)), Y(rng.uniform(0.4, 2.6)), YEL if rng.random() < 0.6 else ORG)
+    ground_cleanup(c)
+    if pilot:
+        # buồng lái nứt toạc phía trên thân: người điều khiển gục nửa người ra ngoài (tóc đen dài, áo trắng, vài vệt đỏ)
+        px0 = X(4.2)
+        top = Y(3.0) if variant == "a" else Y(2.9)
+        c.rect(px0 - 1.3 * u, top - 0.3 * u, px0 + 1.4 * u, top + 0.5 * u, (14, 10, 24))
+        c.rect(px0 - 1.0 * u, top - 0.9 * u, px0 + 0.9 * u, top + 0.2 * u, COAT)
+        c.rect(px0 - 1.1 * u, top - 1.2 * u, px0 - 0.1 * u, top - 0.5 * u, HAIR_BK)
+        c.line(px0 - 1.1 * u, top - 0.5 * u, px0 - 1.6 * u, top + 0.7 * u, HAIR_BK, 1)
+        for _ in range(5):
+            c.px(px0 + rng.uniform(-1.1, 1.0) * u, top + rng.uniform(-0.8, 0.3) * u, RED)
     return c
 
 
@@ -630,11 +783,15 @@ def mech_side(H, style):
 def mechs():
     mech_front(70, "sci", 0, 11).save("op_mech_xl_ok", pivot=(0.5, 0.0))
     mech_front(70, "sci", 1, 12).save("op_mech_xl_dent", pivot=(0.5, 0.0))
-    mech_front(70, "sci", 2, 13).save("op_mech_xl_wreck_a", pivot=(0.5, 0.0))
-    mech_front(70, "sci", 3, 14).save("op_mech_xl_wreck_b", pivot=(0.5, 0.0))
+    # xác robot: NẰM trên mặt đất (không còn thân lơ lửng). wreck_a / wreck_b giữ tên cũ để Scene đã dựng tự nhận hình mới
+    mech_lying(70, "sci", "a", 13).save("op_mech_xl_wreck_a", pivot=(0.5, 0.0))
+    mech_lying(70, "sci", "b", 14).save("op_mech_xl_wreck_b", pivot=(0.5, 0.0))
+    mech_lying(70, "sci", "c", 15).save("op_mech_xl_wreck_c", pivot=(0.5, 0.0))
+    mech_lying(70, "sci", "d", 16).save("op_mech_xl_wreck_d", pivot=(0.5, 0.0))
     mech_side(70, "sci").save("op_mech_xl_dash", pivot=(0.35, 0.0))
     mech_front(42, "nan", 1, 21).save("op_mech_l_dent", pivot=(0.5, 0.0))
-    mech_front(42, "nan", 2, 22, pilot=True).save("op_mech_l_ruin", pivot=(0.5, 0.0))
+    mech_lying(42, "nan", "a", 22, pilot=True).save("op_mech_l_ruin", pivot=(0.5, 0.0))
+    mech_lying(42, "nan", "c", 23).save("op_mech_l_wreck", pivot=(0.5, 0.0))
 
 
 # ================================================================ XÁC, LỬA, KHÓI, MẢNH VỠ
@@ -1075,41 +1232,66 @@ def flying_cars():
 
 
 def ruins_mix_bg():
+    """Cảnh 7: mọi thời đại bị dồn vào cùng một chỗ — nhà chọc trời chen chúc, xô đẩy, nghiêng ngả, gãy đổ chồng lên nhau,
+    lẫn đấu trường / cột / cổng vòm La Mã vỡ và mái vòm tương lai bị kẹt giữa các tòa nhà."""
     c = Cv(FW, FH)
     rng = noise_rng(71)
+    anchors = []
     sky_gradient(c, FH, (24, 18, 44), (96, 52, 86), (210, 130, 100), 120)
     for _ in range(40):
         c.px(rng.randint(0, FW - 1), rng.randint(0, 60), rng.choice([WHITE, (255, 220, 200)]))
-    # chân trời tương lai: nhà chọc trời xa, một số nghiêng đổ
     city_far(c, 150, 83, False)
-    # nhà chọc trời lớn ở giữa: nghiêng, gãy, đèn neon
-    for (x, w, h, lean, col) in ((196, 38, 130, 18, (40, 34, 80)), (240, 30, 100, -10, (30, 40, 90)), (316, 44, 150, 8, (50, 30, 86)), (372, 26, 90, -14, (28, 44, 86))):
-        c.poly([(x, 176), (x + w, 176), (x + w + lean, 176 - h), (x + lean, 176 - h)], col)
-        c.line(x + lean, 176 - h, x + w + lean, 176 - h, (140, 110, 220), 1)
-        c.line(x, 176, x + lean, 176 - h, (100, 80, 180), 1)
-        for yy in range(176 - h + 8, 170, 9):
-            for xx in range(x + 4, x + w - 3, 6):
-                if rng.random() < 0.55:
-                    t = (176 - yy) / float(h)
-                    c.rect(xx + lean * t, yy, xx + lean * t + 2, yy + 2, rng.choice([CYAN, MAG, YEL, (255, 150, 60)]))
-        c.rect(x + lean + w * 0.3, 176 - h - 8, x + lean + w * 0.35, 176 - h, (90, 90, 130))
-    # nhà ở tương lai bên phải: mái vòm, tháp cong
-    for (x, w, h) in ((396, 40, 34), (440, 36, 48), (418, 24, 68)):
+    # --- phế tích La Mã phía xa (mờ khói): đấu trường vỡ + hàng vòm, lồi ra giữa các tòa nhà
+    far = Cv(FW, FH)
+    arch_wall(far, 118, 178, 140, 64, 2, rng, broken=True)
+    arch_wall(far, 300, 178, 120, 52, 1, rng, broken=True)
+    c.im.alpha_composite(shade(far.im, (80, 44, 90), 0.5))
+    # --- nhà chọc trời chen chúc: lớp xa (mảnh, mờ) rồi lớp gần (to, sát rạt nhau)
+    wreck_layer(c, rng, False, anchors, width=FW, gap=(13, 24))
+    wreck_layer(c, rng, True, anchors, width=FW, gap=(14, 24))
+    # --- từng cặp nhà xô vào nhau: tựa đầu, đỉnh chồng chéo
+    for x in (30, 118, 212, 300, 392, 462):
+        place_tower(c, x, FLOOR_Y + 4, rng.randint(30, 40), rng.randint(104, 138), -rng.uniform(14, 26), rng, "plain", anchors)
+        place_tower(c, x + rng.randint(26, 34), FLOOR_Y + 4, rng.randint(28, 38), rng.randint(96, 130), rng.uniform(14, 26), rng, "broken" if rng.random() < 0.4 else "plain", anchors)
+    # nhà cao ngã đè lên nhà khác (gần nằm ngang, gác lên đỉnh các tòa bên dưới)
+    for (bx_, by_, ln, th, dd) in ((120, 92, 112, 26, 1), (300, 84, 120, 28, -1), (430, 96, 96, 26, 1)):
+        bridge_tower(c, bx_, by_, ln, th, dd, rng)
+    # --- mái vòm / tháp cong của nhà tương lai bị kẹt giữa các tòa
+    for (x, w, h) in ((176, 36, 36), (344, 40, 44), (252, 28, 54), (448, 32, 38)):
         c.ell(x, 176 - h, x + w, 176 + h * 0.2, (50, 60, 110))
-        c.rect(x, 176, x + w, 176, (50, 60, 110))
         c.ell(x + 4, 176 - h + 4, x + w - 4, 176 - h + h * 0.7, (30, 40, 80))
         c.line(x + 3, 176 - h * 0.6, x + w - 3, 176 - h * 0.6, CYAN, 1)
         c.px(x + w / 2, 176 - h - 1, MAG)
-    # phế tích La Mã ở tiền cảnh trái: đấu trường vỡ + cột đổ + cổng vòm
-    arch_wall(c, 0, 178, 170, 78, 2, rng, broken=True)
-    for (x, h, br) in ((184, 70, False), (204, 40, True), (230, 58, True)):
-        column(c, x, 178, h, 8, br, rng)
-    c.rect(188, 168, 232, 176, STONE_D)                       # dầm cột nằm đổ
-    c.rect(188, 168, 232, 169, STONE_L)
-    # cổng vòm cổ bên phải, chen giữa nhà tương lai
-    arch_wall(c, 296, 178, 60, 52, 1, rng, broken=True)
-    # mặt đất đầy đổ nát
+    # --- La Mã ở tiền cảnh: đấu trường vỡ (trái) + cột đứng / gãy + cổng vòm xen giữa
+    arch_wall(c, 0, 180, 128, 74, 2, rng, broken=True)
+    for (x, h, br) in ((140, 66, False), (158, 36, True), (386, 58, True), (404, 44, False)):
+        column(c, x, 180, h, 8, br, rng)
+    arch_wall(c, 330, 180, 52, 50, 1, rng, broken=True)
+    dust_puffs(c, [(x_, FLOOR_Y - 8, 44, 16) for x_ in range(16, FW, 62)], rng)
     rubble_floor(c, 77)
+    # --- đống gạch, cột đổ nằm ngang, nhà đổ dài trên mặt đất, dãy nhà đổ như domino
+    for (hx, hw, hh) in ((14, 56, 18), (176, 60, 14), (270, 52, 16), (430, 48, 14)):
+        rubble_heap(c, hx, hw, hh, rng)
+    for (lx, ln, th, dd) in ((118, 88, 24, 1), (330, 84, 22, -1), (470, 70, 22, -1)):
+        lying_tower(c, lx, ln, th, dd, rng, anchors)
+    for (cx_, cl) in ((196, 62), (372, 52)):                                       # cột đá đổ nằm ngang, gãy đôi
+        col = Cv(cl, 11)
+        col.rect(0, 1, cl - 1, 9, STONE)
+        for k in range(2, cl - 2, 4):
+            col.rect(k, 1, k, 9, STONE_D)
+        col.rect(0, 0, 3, 10, STONE_L)
+        col.rect(cl - 4, 0, cl - 1, 10, STONE_L)
+        erase_blob(col, cl * rng.uniform(0.4, 0.6), 5, 5, rng)
+        paste(c, pad_outline(col.im, (20, 14, 22)), cx_, FLOOR_Y + rng.randint(2, 6))
+    dust_puffs(c, [(x_, FLOOR_Y + 2, 36, 11) for x_ in range(30, FW, 80)], rng, alpha=56)
+    # vài đám cháy nhỏ ở chỗ nhà gãy
+    fp = os.path.join(G.OUT_DIR, "op_fire_0.png")
+    if os.path.exists(fp):
+        fires = [Image.open(os.path.join(G.OUT_DIR, "op_fire_%d.png" % k)).convert("RGBA") for k in range(3)]
+        for (ax_, ay_) in anchors[::3]:
+            if rng.random() < 0.3:
+                paste(c, fires[rng.randint(0, 2)], int(ax_) - 8, int(ay_) - 22)
+    # tiền cảnh: đống đổ nát + gai thép
     for _ in range(14):
         x = rng.randint(0, FW - 30)
         w, h = rng.randint(16, 50), rng.randint(6, 18)
@@ -1328,11 +1510,12 @@ def place_tower(c, bx, by, w, h, ang, rng, mode, anchors, haze=0.0):
         rot_paste_base(c, im, bx, by, ang)
 
 
-def wreck_layer(c, rng, near, anchors):
-    """Một lớp nhà đổ nát: đứng thẳng / nghiêng / nghiêng nặng / gãy đôi, tựa vào nhau (chân đặt dưới mặt sàn để sàn che đi)."""
+def wreck_layer(c, rng, near, anchors, width=None, gap=None):
+    """Một lớp nhà đổ nát: đứng thẳng / nghiêng / nghiêng nặng / gãy đôi, tựa vào nhau (chân đặt dưới mặt sàn để sàn che đi).
+    width: bề ngang cần phủ (mặc định ảnh chiến tranh); gap: (nhỏ nhất, lớn nhất) khoảng cách giữa 2 tòa — nhỏ = chen chúc."""
     d = rng.choice([-1, 1])
     x = -12
-    while x < WAR_W + 20:
+    while x < (width or WAR_W) + 20:
         w = rng.randint(28, 46) if near else rng.randint(20, 34)
         h = rng.randint(86, 132) if near else rng.randint(56, 100)
         mode = rng.choice(["stand", "lean", "lean", "heavy", "broken", "broken", "bl"])
@@ -1350,7 +1533,10 @@ def wreck_layer(c, rng, near, anchors):
             ang, m = d * rng.uniform(14, 30), "broken"
         by = FLOOR_Y + (4 if near else 2)
         place_tower(c, x, by, w, h, ang, rng, m, anchors, haze=0.0 if near else 0.42)
-        x += rng.randint(20, 36) if near else rng.randint(24, 40)
+        if gap:
+            x += rng.randint(gap[0], gap[1])
+        else:
+            x += rng.randint(20, 36) if near else rng.randint(24, 40)
 
 
 def domino_run(c, x0, d, rng, anchors, n=6):
@@ -1541,21 +1727,78 @@ FUR_D = (70, 46, 30)
 FUR_L = (196, 150, 104)
 
 
+APE = (88, 62, 44)
+APE_D = (52, 36, 28)
+APE_L = (136, 100, 70)
+APE_FACE = (214, 170, 130)
+APE_FACE_D = (156, 108, 82)
+
+
+def _fur_texture(c, rng, n, region=None):
+    """Rắc những nét lông sáng / tối ngắn lên phần thân đã vẽ (chỉ ở pixel có màu)."""
+    for _ in range(n):
+        x, y = rng.randint(0, c.w - 1), rng.randint(0, c.h - 1)
+        if region and not (region[0] <= x <= region[2] and region[1] <= y <= region[3]):
+            continue
+        px_ = c.im.getpixel((x, y))
+        if px_[3] == 0 or px_[:3] in (APE_FACE, APE_FACE_D, (10, 10, 22)):
+            continue
+        col = APE_L if rng.random() < 0.45 else APE_D
+        c.px(x, y, col)
+        if rng.random() < 0.5 and c.im.getpixel((x, min(c.h - 1, y + 1)))[3] > 0:
+            c.px(x, y + 1, col)
+
+
+def _ape_head(c, hx, hy):
+    """Đầu vượn nhìn nghiêng sang phải (hộp ~20 x 15, góc trên trái (hx, hy)): sọ tròn phủ lông, gờ mày nhô, mắt sâu,
+    mặt trần sáng màu với mõm ngắn + miệng rộng, tai tròn to bên hông."""
+    c.ell(hx, hy, hx + 13, hy + 13, APE)                                 # sọ
+    c.poly([(hx + 2, hy + 3), (hx + 5, hy - 2), (hx + 8, hy + 1), (hx + 11, hy - 1), (hx + 11, hy + 4)], APE_D)       # chỏm lông
+    c.ell(hx + 5, hy + 3, hx + 16, hy + 14, APE_FACE)                    # mặt trần
+    c.ell(hx + 11, hy + 7, hx + 19, hy + 14, APE_FACE)                   # mõm ngắn, môi dày
+    c.rect(hx + 5, hy + 3, hx + 15, hy + 4, APE_D)                       # gờ mày dày
+    c.rect(hx + 7, hy + 5, hx + 8, hy + 6, INK)                          # mắt sâu dưới gờ mày
+    c.rect(hx + 12, hy + 5, hx + 13, hy + 6, INK)
+    c.px(hx + 6, hy + 5, (240, 230, 220)); c.px(hx + 11, hy + 5, (240, 230, 220))
+    c.px(hx + 17, hy + 9, APE_FACE_D)                                    # lỗ mũi
+    c.rect(hx + 12, hy + 12, hx + 18, hy + 12, APE_FACE_D)               # khe miệng rộng
+    c.ell(hx - 3, hy + 3, hx + 3, hy + 10, APE_FACE_D)                   # tai tròn to
+    c.ell(hx - 2, hy + 4, hx + 2, hy + 9, APE_FACE)
+
+
 def evo_ape4():
+    """Vượn lớn (tinh tinh) đi bằng 4 chi, chống đốt ngón tay: vai cao, lưng dốc xuống hông, tay RẤT dài chạm đất, chân sau ngắn cong, đầu nhỏ chúi giữa hai vai."""
+    rng = noise_rng(404)
     c = Cv(64, 64)
-    c.ell(14, 26, 46, 44, FUR)                                       # thân nằm ngang
-    c.ell(18, 26, 42, 34, FUR_D)
-    c.line(44, 34, 56, 38, FUR_D, 5)                                 # cổ + đầu
-    c.ell(50, 28, 62, 42, FUR)
-    c.ell(55, 33, 63, 41, FUR_L)
-    c.px(57, 33, INK); c.px(58, 33, INK)
-    c.rect(59, 38, 62, 39, FUR_D)
-    c.line(44, 36, 50, 56, FUR, 4)                                   # tay trước dài chạm đất
-    c.line(40, 38, 42, 56, FUR_D, 4)
-    c.line(20, 40, 16, 56, FUR, 5)                                   # chân sau
-    c.line(26, 42, 26, 56, FUR_D, 5)
-    c.rect(46, 55, 54, 58, FUR_D); c.rect(38, 55, 46, 58, FUR_D); c.rect(10, 55, 20, 58, FUR_D); c.rect(22, 55, 32, 58, FUR_D)
-    c.line(14, 30, 4, 24, FUR_D, 2)
+    # chi phía xa (tối hơn)
+    c.line(15, 42, 12, 54, APE_D, 5)
+    c.rect(5, 54, 16, 57, APE_D)
+    c.line(38, 26, 41, 54, APE_D, 5)
+    c.rect(37, 53, 47, 57, APE_D)
+    # thân: vai cao, lưng dốc xuống hông
+    c.poly([(9, 38), (17, 28), (29, 19), (40, 17), (46, 24), (44, 34), (36, 40), (22, 44), (12, 44)], APE)
+    c.ell(26, 15, 47, 33, APE)                                           # khối vai
+    c.poly([(10, 37), (18, 29), (29, 20), (24, 30), (16, 38)], APE_L)    # lưng sáng
+    c.ell(18, 36, 36, 46, APE_L)                                         # bụng
+    c.poly([(9, 38), (12, 33), (7, 33), (11, 37)], APE_D)                # chỏm lông ở mông (không đuôi)
+    # chân sau gần: đùi to, cẳng ngắn cong, bàn chân bè
+    c.ell(7, 33, 24, 50, APE_D)
+    c.ell(8, 34, 23, 49, APE)
+    c.line(13, 46, 14, 54, APE_D, 7)
+    c.line(13, 46, 14, 54, APE, 5)
+    c.rect(7, 54, 20, 57, APE_D)
+    c.rect(8, 54, 19, 54, APE_L)
+    # đầu nhỏ chúi giữa hai vai
+    _ape_head(c, 41, 8)
+    # cánh tay gần: rất dài, viền tối để tách khỏi thân, chống đốt ngón tay
+    c.line(40, 24, 44, 38, APE_D, 8)
+    c.line(44, 38, 47, 53, APE_D, 7)
+    c.line(40, 24, 44, 38, APE, 6)
+    c.line(44, 38, 47, 53, APE, 5)
+    c.ell(44, 51, 55, 58, APE_D)
+    for k in range(3):
+        c.px(46 + k * 3, 53, APE_L)                                      # đốt ngón tay
+    _fur_texture(c, rng, 140, (6, 16, 52, 56))
     return c
 
 

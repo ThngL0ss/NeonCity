@@ -1,4 +1,6 @@
 #if UNITY_EDITOR
+using System.IO;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -6,7 +8,7 @@ namespace NeonBreaker.EditorTools
 {
     /// <summary>
     /// Dựng Scene Story (cốt truyện mở đầu 10 cảnh) — chạy trong menu "Cập nhật Nhiệm vụ + Phố Neon + Lưu game".
-    /// Scene đã có thì GIỮ NGUYÊN (xoá Story.unity rồi chạy lại menu nếu muốn dựng lại từ đầu).
+    /// Scene đã có thì GIỮ NGUYÊN. Muốn dựng lại từ đầu (ví dụ sau khi đổi bố cục robot / hình): menu "Tạo lại Scene Cốt truyện Story (GHI ĐÈ Story.unity)".
     ///
     /// Cấu trúc: object "Story" (StoryIntro) có các nhóm con S1_Bunker, S2_Nancelas, S3_Core, S4_Alert, S5_HallA, S5_HallB, S5_Machine,
     /// S7a_Ruins, S7b_Crowd, S8_War, S9_Evo — StoryIntro bật/tắt từng nhóm theo cảnh, nên tất cả nhóm đều tắt sẵn trong Scene.
@@ -21,6 +23,43 @@ namespace NeonBreaker.EditorTools
         static Vector2 Fq(float px, float py) { return StoryIntro.Fp(px, py); }
         static Vector2 Fh(float px, float py) { return StoryIntro.FpW(px, py, 960f); }
         static Vector2 Fw(float px, float py) { return StoryIntro.FpW(px, py, 1280f); }
+
+        [MenuItem("Tools/Neon Breaker/Tạo lại Scene Cốt truyện Story (GHI ĐÈ Story.unity)", false, 18)]
+        public static void RebuildStoryScene()
+        {
+            root = null;
+            if (EditorApplication.isPlaying)
+            {
+                EditorUtility.DisplayDialog("Neon Breaker", "Đang ở chế độ Play. Hãy dừng Play rồi chạy lại.", "OK");
+                return;
+            }
+            if (!File.Exists(PrefabDir + "Player.prefab"))
+            {
+                EditorUtility.DisplayDialog("Neon Breaker", "Chưa có Prefab Player. Hãy chạy Build Project trước.", "OK");
+                return;
+            }
+            if (IsSceneOpen(StoryScenePath))
+            {
+                EditorUtility.DisplayDialog("Neon Breaker", "Scene Story đang được mở. Hãy lưu và đóng nó (hoặc mở Scene khác) rồi chạy lại.", "OK");
+                return;
+            }
+            if (File.Exists(StoryScenePath) && !EditorUtility.DisplayDialog("Neon Breaker",
+                    "Sẽ DỰNG LẠI Scene Story (cốt truyện mở đầu) và ghi đè " + StoryScenePath + ".\nMọi chỉnh sửa của bạn trên Scene Story sẽ mất (các Scene khác không bị ảnh hưởng). Tiếp tục?", "Ghi đè", "Huỷ")) return;
+            try
+            {
+                Prepare();
+                string report = EnsureStoryScene(StoryScenePath, "Story", BuildStoryScene, true);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+                Debug.Log("Neon Breaker: " + report);
+                EditorUtility.DisplayDialog("Neon Breaker", report, "OK");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("Neon Breaker: lỗi khi dựng Scene Story - " + e);
+                EditorUtility.DisplayDialog("Neon Breaker", "Lỗi: " + e.Message + "\n(xem Console)", "OK");
+            }
+        }
 
         static void BuildStoryScene(Scene scene, string path)
         {
@@ -142,17 +181,19 @@ namespace NeonBreaker.EditorTools
         {
             var r = Group(story, "S5_HallA");
             Plain(r, "bg", "op_hall_bg_a", Fh(480f, 105f), 0);
-            StoryProp(r, "wreck_0", "op_mech_xl_wreck_a", Fh(540f, 182f), 8, false);
-            StoryProp(r, "wreck_1", "op_mech_xl_wreck_b", Fh(665f, 182f), 8, false);
-            StoryProp(r, "light_dent", "op_mech_l_dent", Fh(755f, 182f), 8, false);     // robot 1.5x còn khá nguyên (của Nancelas)
-            StoryProp(r, "wreck_2", "op_mech_xl_wreck_a", Fh(850f, 182f), 8, true);
-            StoryProp(r, "wreck_3", "op_mech_xl_wreck_b", Fh(935f, 182f), 8, true);
-            StoryProp(r, "debris_0", "op_debris_0", Fh(600f, 186f), 7, false);
-            StoryProp(r, "debris_1", "op_debris_1", Fh(705f, 188f), 7, false);
-            StoryProp(r, "debris_2", "op_debris_2", Fh(805f, 186f), 7, false);
-            StoryProp(r, "debris_3", "op_debris_0", Fh(905f, 188f), 7, true);
-            StoryFire(r, "fire_0", Fh(600f, 180f), 6);
-            StoryFire(r, "fire_1", Fh(820f, 180f), 6);
+            // robot còn đứng (chân chạm đất) xen với robot đã đổ nằm hẳn xuống đất — không còn thân lơ lửng
+            StoryProp(r, "wreck_0", "op_mech_xl_wreck_a", Fh(535f, 182f), 8, false);
+            StoryProp(r, "mech_0", "op_mech_xl_dent", Fh(610f, 182f), 8, true);
+            StoryProp(r, "wreck_1", "op_mech_xl_wreck_c", Fh(692f, 182f), 8, false);
+            StoryProp(r, "light_dent", "op_mech_l_dent", Fh(765f, 182f), 8, false);     // robot 1.5x còn khá nguyên (của Nancelas)
+            StoryProp(r, "mech_1", "op_mech_xl_ok", Fh(838f, 182f), 8, true);
+            StoryProp(r, "wreck_2", "op_mech_xl_wreck_b", Fh(925f, 182f), 8, true);
+            StoryProp(r, "debris_0", "op_debris_0", Fh(575f, 186f), 7, false);
+            StoryProp(r, "debris_1", "op_debris_1", Fh(655f, 188f), 7, false);
+            StoryProp(r, "debris_2", "op_debris_2", Fh(800f, 186f), 7, false);
+            StoryProp(r, "debris_3", "op_debris_0", Fh(890f, 188f), 7, true);
+            StoryFire(r, "fire_0", Fh(575f, 180f), 6);
+            StoryFire(r, "fire_1", Fh(805f, 180f), 6);
         }
 
         // ------------------------------------------------------------ cảnh 5b: sụp đổ nặng hơn, thành phố cháy; camera trôi sang trái tới cỗ máy
@@ -160,33 +201,34 @@ namespace NeonBreaker.EditorTools
         {
             var r = Group(story, "S5_HallB");
             Plain(r, "bg", "op_hall_bg_b", Fh(480f, 105f), 0);
-            // nửa trái (px 0..480): hai bên cỗ máy ở px 240
-            StoryProp(r, "mech_l0", "op_mech_xl_ok", Fh(48f, 182f), 8, false);
-            StoryProp(r, "mech_l1", "op_mech_xl_dent", Fh(112f, 182f), 8, true);
-            StoryProp(r, "dead_l0", "op_sci_dead_0", Fh(160f, 190f), 7, false);
-            StoryProp(r, "dead_l1", "op_sci_dead_1", Fh(330f, 190f), 7, true);
-            StoryProp(r, "mech_l2", "op_mech_xl_wreck_a", Fh(392f, 182f), 8, false);
-            StoryProp(r, "mech_l3", "op_mech_xl_ok", Fh(452f, 182f), 8, true);
+            // Mọi robot hoặc đứng trên hai chân, hoặc NẰM hẳn xuống đất (thêm nhiều robot nằm cạnh xác người). Cỗ máy ở px 240 (rộng 160 px).
+            // nửa trái (px 0..480): hai bên cỗ máy
+            StoryProp(r, "mech_l0", "op_mech_xl_ok", Fh(36f, 182f), 8, false);
+            StoryProp(r, "lie_l0", "op_mech_xl_wreck_a", Fh(108f, 182f), 8, true);
+            StoryProp(r, "lie_l1", "op_mech_xl_wreck_c", Fh(385f, 182f), 8, true);
+            StoryProp(r, "mech_l1", "op_mech_xl_ok", Fh(450f, 182f), 8, true);
+            StoryProp(r, "dead_l0", "op_sci_dead_0", Fh(176f, 190f), 9, false);
+            StoryProp(r, "dead_l1", "op_sci_dead_1", Fh(338f, 190f), 9, true);
             StoryFire(r, "fire_l0", Fh(90f, 180f), 6);
             StoryFire(r, "fire_l1", Fh(350f, 180f), 6);
             StoryFire(r, "fire_l2", Fh(430f, 180f), 6);
             // nửa phải (px 480..960): nơi camera bắt đầu
             StoryProp(r, "mech_r0", "op_mech_xl_ok", Fh(520f, 182f), 8, false);
-            StoryProp(r, "mech_r1", "op_mech_xl_dent", Fh(610f, 182f), 8, true);
-            StoryProp(r, "mech_r2", "op_mech_xl_wreck_b", Fh(685f, 182f), 8, false);
-            StoryProp(r, "nan_ruin", "op_mech_l_ruin", Fh(760f, 182f), 8, false);      // robot 1.5x nát bét, phi công bị thương
-            StoryProp(r, "mech_r3", "op_mech_xl_ok", Fh(860f, 182f), 8, true);
-            StoryProp(r, "mech_r4", "op_mech_xl_dent", Fh(935f, 182f), 8, false);
-            StoryProp(r, "dead_r0", "op_sci_dead_0", Fh(565f, 190f), 7, false);
-            StoryProp(r, "dead_r1", "op_sci_dead_2", Fh(645f, 192f), 7, false);
-            StoryProp(r, "dead_r2", "op_sci_dead_1", Fh(815f, 190f), 7, true);
-            StoryProp(r, "dead_r3", "op_sci_dead_2", Fh(905f, 192f), 7, false);
-            StoryProp(r, "debris_0", "op_debris_1", Fh(575f, 187f), 7, false);
-            StoryProp(r, "debris_1", "op_debris_2", Fh(725f, 188f), 7, false);
-            StoryProp(r, "debris_2", "op_debris_0", Fh(880f, 187f), 7, false);
-            StoryFire(r, "fire_r0", Fh(590f, 180f), 6);
-            StoryFire(r, "fire_r1", Fh(735f, 180f), 6);
-            StoryFire(r, "fire_r2", Fh(830f, 180f), 6);
+            StoryProp(r, "lie_r0", "op_mech_xl_wreck_c", Fh(640f, 182f), 8, true);
+            StoryProp(r, "nan_ruin", "op_mech_l_ruin", Fh(712f, 182f), 8, false);      // robot 1.5x của hắn: nằm vỡ nát, phi công gục trong buồng lái
+            StoryProp(r, "lie_r1", "op_mech_xl_wreck_d", Fh(780f, 182f), 8, false);
+            StoryProp(r, "mech_r1", "op_mech_xl_dent", Fh(868f, 182f), 8, true);
+            StoryProp(r, "lie_r2", "op_mech_xl_wreck_a", Fh(935f, 182f), 8, false);
+            StoryProp(r, "dead_r0", "op_sci_dead_0", Fh(578f, 190f), 9, false);
+            StoryProp(r, "dead_r1", "op_sci_dead_2", Fh(698f, 192f), 9, false);
+            StoryProp(r, "dead_r2", "op_sci_dead_1", Fh(825f, 190f), 9, true);
+            StoryProp(r, "dead_r3", "op_sci_dead_2", Fh(912f, 192f), 9, false);
+            StoryProp(r, "debris_0", "op_debris_1", Fh(560f, 187f), 7, false);
+            StoryProp(r, "debris_1", "op_debris_2", Fh(700f, 188f), 7, false);
+            StoryProp(r, "debris_2", "op_debris_0", Fh(860f, 187f), 7, false);
+            StoryFire(r, "fire_r0", Fh(600f, 180f), 6);
+            StoryFire(r, "fire_r1", Fh(740f, 180f), 6);
+            StoryFire(r, "fire_r2", Fh(850f, 180f), 6);
         }
 
         // ------------------------------------------------------------ cảnh 5c + 6: cỗ máy trong hầm (px 240), tia vật chất đen, sét, khe nứt; robot lao vào

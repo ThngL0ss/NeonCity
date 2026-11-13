@@ -18,8 +18,6 @@ namespace NeonBreaker
         public static bool ConfirmDown, RestartDown, PauseDown, ClickDown, LangDown, CheatDown;
         /// <summary>B: mở / đóng menu nhân vật (Kho đồ · Skill · Player) · F: TƯƠNG TÁC (mở rương, cửa, nói chuyện, dùng máy...) · X: vứt vật phẩm (trong kho) · mũi tên / WASD: di chuyển ô chọn.</summary>
         public static bool InventoryDown, InteractDown, DiscardDown, NavLeftDown, NavRightDown, NavUpDown, NavDownDown;
-        /// <summary>M: mở / đóng bản đồ.</summary>
-        public static bool MapDown;
         /// <summary>H: mở / đóng bảng chọn minibot.</summary>
         public static bool MinibotPanelDown;
         /// <summary>Q / E: chuyển tab con trong mục Skill.</summary>
@@ -55,7 +53,6 @@ namespace NeonBreaker
             LangDown = k.vKey.wasPressedThisFrame;
             InventoryDown = k.bKey.wasPressedThisFrame;
             InteractDown = k.fKey.wasPressedThisFrame;
-            MapDown = k.mKey.wasPressedThisFrame;
             DiscardDown = k.xKey.wasPressedThisFrame;
             MinibotPanelDown = k.hKey.wasPressedThisFrame;
             MenuTabPick = (k.digit1Key.wasPressedThisFrame || k.numpad1Key.wasPressedThisFrame) ? 0
@@ -92,7 +89,6 @@ namespace NeonBreaker
             LangDown = Input.GetKeyDown(KeyCode.V);
             InventoryDown = Input.GetKeyDown(KeyCode.B);
             InteractDown = Input.GetKeyDown(KeyCode.F);
-            MapDown = Input.GetKeyDown(KeyCode.M);
             DiscardDown = Input.GetKeyDown(KeyCode.X);
             MinibotPanelDown = Input.GetKeyDown(KeyCode.H);
             MenuTabPick = (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1)) ? 0
@@ -116,7 +112,7 @@ namespace NeonBreaker
             AttackDown = DashDown = ShurikenDown = HealDown = false;
             ConfirmDown = RestartDown = PauseDown = ClickDown = LangDown = CheatDown = false;
             InventoryDown = InteractDown = DiscardDown = NavLeftDown = NavRightDown = NavUpDown = NavDownDown = false;
-            MinibotPanelDown = TabPrevDown = TabNextDown = MapDown = MenuCycleDown = false;
+            MinibotPanelDown = TabPrevDown = TabNextDown = MenuCycleDown = false;
             MenuTabPick = -1;
         }
     }

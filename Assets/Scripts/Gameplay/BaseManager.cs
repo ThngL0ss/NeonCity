@@ -75,7 +75,14 @@ namespace NeonBreaker
                 albert.Mutter(AfterDeathLine(), AfterDeathLineEn());
             }
             DeathPenalty.ShowReport();      // bảng "đã mất gì" sau khi chết (nếu có)
-            GameManager.Banner(Cfg.L("CĂN CỨ — BẤM F ĐỂ TƯƠNG TÁC", "BASE — PRESS F TO INTERACT"), Cfg.Orange, 3.5f);
+            if (!BaseMissions.FirstMissionReceived)
+            {
+                // lần hồi sinh đầu: chưa nhận nhiệm vụ thì chưa ra khỏi căn cứ được — chỉ đường tới Albert (BaseGuide)
+                string tgt = BaseMissions.StoryTold && MissionBoard.Exists ? Cfg.L("ĐẾN HỘP THƯ NHIỆM VỤ, BẤM F", "GO TO THE MISSION MAILBOX, PRESS F")
+                                                                          : Cfg.L("ĐẾN NÓI CHUYỆN VỚI ALBERT, BẤM F", "GO TALK TO ALBERT, PRESS F");
+                GameManager.Banner(tgt, Cfg.Yellow, 5f);
+            }
+            else GameManager.Banner(Cfg.L("CĂN CỨ — BẤM F ĐỂ TƯƠNG TÁC", "BASE — PRESS F TO INTERACT"), Cfg.Orange, 3.5f);
         }
 
         string AfterDeathLine()

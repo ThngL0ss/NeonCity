@@ -164,6 +164,13 @@ namespace NeonBreaker
             }
             else if (State == GameState.Playing && !GameFlow.InBase && TowerTotal > 0)
                 Banner(Cfg.L("PHÁ HỦY TẤT CẢ TRỤ TRIỆU HỒI", "DESTROY ALL SUMMON TOWERS"), Cfg.Cyan, 4f);
+            if (!GameFlow.InBase && !GameFlow.InTutorial && SceneManager.GetActiveScene().name == GameFlow.LevelScene)
+            {
+                // khu thử nghiệm Dyber cũng có 2 cửa ở đầu và cuối (cửa cuối đóng chặt cho tới khi hạ boss); cửa đầu đặt ngay cạnh chỗ người chơi xuất hiện
+                var pl0 = Player.Instance;
+                float sx = pl0 != null ? pl0.transform.position.x : Cfg.LevelMinX + 6f;
+                PlaceGate.EnsureTwoGates(sx - 3f, Cfg.LevelMaxX - 3f, true);
+            }
             AutoStart = false;
         }
 

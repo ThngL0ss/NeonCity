@@ -36,6 +36,8 @@ namespace NeonBreaker
         public static bool InTutorial;
         /// <summary>Địa điểm đang chơi (id trong ván này) — dùng để ghi vào file lưu.</summary>
         public static string CurrentPlaceId = LevelScene;
+        /// <summary>true = lần vào căn cứ kế tiếp là về bình thường từ bản đồ (xuất hiện ở cửa ra, KHÔNG có cảnh hồi sinh). BaseManager đọc rồi tự tắt.</summary>
+        public static bool NormalArrival;
         /// <summary>Các địa điểm đã mở trên bản đồ.</summary>
         static readonly HashSet<string> unlockedPlaces = new HashSet<string>();
 
@@ -56,6 +58,7 @@ namespace NeonBreaker
             TutorialDone = false;
             IntroSeen = false;
             PlayIntroOnLoad = false;
+            NormalArrival = false;
             InTutorial = false;
             CurrentPlaceId = LevelScene;
             unlockedPlaces.Clear();
@@ -77,8 +80,9 @@ namespace NeonBreaker
         /// <summary>
         /// Chuyển về căn cứ. Giữ dữ liệu. died = true (bị hạ gục): áp hình phạt chết (DeathPenalty) rồi tự lưu game.
         /// </summary>
-        public static void GoToBase(bool died = false)
+        public static void GoToBase(bool died = false, bool normalArrival = false)
         {
+            NormalArrival = normalArrival && !died;      // về bình thường (đi từ bản đồ): xuất hiện ở cửa ra, không hồi sinh
             SkillSystem.RecallAllSilently();
             BaseMissions.BankRun();
             if (died) DeathPenalty.Apply();

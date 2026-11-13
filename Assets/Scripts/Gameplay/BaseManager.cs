@@ -49,11 +49,21 @@ namespace NeonBreaker
             var pl = Player.Instance;
             if (pl == null) yield break;
 
-            if (capsule != null) pl.transform.position = new Vector3(capsule.transform.position.x, 0.05f, 0f);
+            bool normal = GameFlow.NormalArrival;          // về từ bản đồ (không phải bị hạ gục): xuất hiện ở cửa ra, không có cảnh hồi sinh
+            GameFlow.NormalArrival = false;
+            if (normal && exitDoor != null)
+            {
+                float dx = exitDoor.transform.position.x;
+                float toward = capsule != null && capsule.transform.position.x < dx ? -1f : 1f;      // đứng phía trong căn cứ, cạnh cửa
+                pl.transform.position = new Vector3(dx + toward * 2.4f, 0.05f, 0f);
+                if (capsule != null) capsule.Open();
+                if (albert != null) albert.Face(pl.transform.position.x);
+            }
+            else if (capsule != null) pl.transform.position = new Vector3(capsule.transform.position.x, 0.05f, 0f);
             if (CameraRig.Inst != null) CameraRig.Inst.Snap();
-            if (albert != null && capsule != null) albert.Face(capsule.transform.position.x);
+            if (!normal && albert != null && capsule != null) albert.Face(capsule.transform.position.x);
 
-            if (GameManager.State == GameState.Playing)
+            if (!normal && GameManager.State == GameState.Playing)
             {
                 GameManager.State = GameState.Cinematic;
                 Cine.Play(Resurrect(pl));
@@ -61,7 +71,8 @@ namespace NeonBreaker
                 GameManager.State = GameState.Playing;
             }
 
-            if (!GameFlow.BaseDialogDone)
+            if (normal) { }
+            else if (!GameFlow.BaseDialogDone)
             {
                 GameFlow.BaseDialogDone = true;
                 if (albert != null) albert.StartTalk(pl.Position.x);

@@ -9,7 +9,7 @@ namespace NeonBreaker
     ///  * đọc 2 mốc giới hạn trái / phải trong Scene rồi báo cho game biết (camera, quái, NPC);
     ///  * rải vật phẩm lên đường mỗi lần vào (thùng dầu + nguyên liệu theo bảng "Loot" bên dưới — bấm F để nhặt);
     ///  * hiện tên địa điểm; rắc hạt bụi / khói quanh camera cho có không khí.
-    /// Bố cục (nhà, đường, NPC, đống rác...) là các object thật trong Scene — bạn kéo thả để sửa. Cổng về căn cứ: object có PlaceGate.
+    /// Bố cục (nhà, đường, NPC, đống rác...) là các object thật trong Scene — bạn kéo thả để sửa. Cửa ra / vào: object có PlaceGate (mở bản đồ); luôn đủ 2 cửa ở đầu và cuối khu vực — thiếu thì tự tạo.
     /// Bảng Loot / số lượng chỉnh ngay trong Inspector của object này (không đụng BaseConfig).
     /// </summary>
     [DefaultExecutionOrder(20)]
@@ -59,6 +59,14 @@ namespace NeonBreaker
         void Start()
         {
             GameFlow.UnlockPlace(placeId);
+            // đủ 2 cửa ở đầu và cuối khu vực (thiếu thì tự tạo); người chơi luôn xuất hiện cạnh cửa đầu
+            var startGate = PlaceGate.EnsureTwoGates(Cfg.LevelMinX + 3f, Cfg.LevelMaxX - 3f, false);
+            var pl = Player.Instance;
+            if (startGate != null && pl != null)
+            {
+                pl.transform.position = new Vector3(startGate.transform.position.x + 2.6f, pl.transform.position.y, 0f);
+                if (CameraRig.Inst != null) CameraRig.Inst.Snap();
+            }
             Scatter();
             if (GameManager.State == GameState.Playing) GameManager.Banner(Title, TitleColor, 3.5f);
         }

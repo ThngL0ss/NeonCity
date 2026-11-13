@@ -25,12 +25,20 @@ namespace NeonBreaker
     /// </summary>
     public static class Places
     {
+        public const string Base = GameFlow.BaseScene;      // căn cứ của Albert (Scene Base) — nằm ở phía Bắc Phố Neon trên bản đồ
         public const string Dyber = "Main";                 // khu thử nghiệm của Dyber (Scene Main)
         public const string Neon = "PhoNeon";
         public const string Rim = "RiaPhoNeon";
 
         public static readonly PlaceDef[] All =
         {
+            new PlaceDef
+            {
+                id = Base, skulls = 0, map = new Vector2(0.50f, 0.24f), color = Cfg.Yellow, unlockedAtStart = true,
+                nameVi = "Căn cứ Albert", nameEn = "Albert's Base",
+                descVi = "Căn cứ ngầm của Albert, ở phía Bắc Phố Neon. Nơi tái sinh, chế tác, ghép linh kiện và nhận nhiệm vụ. Tuyệt đối an toàn.",
+                descEn = "Albert's underground base, north of Neon Street. Where you regenerate, craft, fuse parts and take missions. Completely safe.",
+            },
             new PlaceDef
             {
                 id = Neon, skulls = 2, map = new Vector2(0.50f, 0.50f), color = Cfg.Magenta, unlockedAtStart = true,

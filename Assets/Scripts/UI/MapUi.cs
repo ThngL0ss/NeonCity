@@ -85,18 +85,25 @@ namespace NeonBreaker
 
         static System.Collections.IEnumerator GoRoutine()
         {
+            string dest = goId;               // chép ra biến cục bộ: BaseUi.ResetStatics() bên dưới xoá goId (bản sửa trước làm màn đen vì gọi GoToPlace(null))
             Cine.SetFade(1f, 0.7f);
             float t = 0f;
             while (t < 0.8f) { t += Time.unscaledDeltaTime; yield return null; }
-            if (!GameFlow.SceneAvailable(goId))
+            if (string.IsNullOrEmpty(dest) || !GameFlow.SceneAvailable(dest))
             {
                 // không nạp được Scene đích: trả bản đồ về trạng thái chọn lại được (không để kẹt)
                 Cine.SetFade(0f, 0.5f);
                 leaving = false;
+                GameManager.Banner(Cfg.L("KHÔNG MỞ ĐƯỢC ĐỊA ĐIỂM NÀY (Scene chưa có trong Build Settings)", "CANNOT OPEN THIS PLACE (scene is not in Build Settings)"), Cfg.Yellow, 3f);
                 yield break;
             }
             BaseUi.ResetStatics();            // đóng bản đồ trước khi nạp Scene (không để Mode = Map sót lại)
-            GameFlow.GoToPlace(goId);
+            if (!GameFlow.GoToPlace(dest))
+            {
+                // phòng hờ: nạp thất bại thì hạ màn đen, không để người chơi kẹt
+                Cine.SetFade(0f, 0.5f);
+                GameManager.Banner(Cfg.L("KHÔNG MỞ ĐƯỢC ĐỊA ĐIỂM NÀY", "CANNOT OPEN THIS PLACE"), Cfg.Yellow, 3f);
+            }
         }
 
         static Vector2 P(Hud h, float nx, float ny) { return new Vector2((FX + nx * FW) * h.s, (FY + ny * FH) * h.s); }

@@ -238,17 +238,25 @@ namespace NeonBreaker
         }
 
         /// <summary>Từ căn cứ tới một địa điểm trên bản đồ (Scene trùng id). Giữ dữ liệu, lưu game trước khi đi.</summary>
-        public static void GoToPlace(string sceneId)
+        public static bool GoToPlace(string sceneId)
         {
-            if (!SceneAvailable(sceneId)) return;
-            SkillSystem.RecallAllSilently();
-            BaseMissions.BankRun();
-            CurrentPlaceId = sceneId;
-            SaveManager.AutoSave();
+            if (string.IsNullOrEmpty(sceneId) || !SceneAvailable(sceneId)) return false;
+            try
+            {
+                SkillSystem.RecallAllSilently();
+                BaseMissions.BankRun();
+                CurrentPlaceId = sceneId;
+                SaveManager.AutoSave();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("Neon Breaker: lỗi khi chuẩn bị rời căn cứ (vẫn tiếp tục nạp Scene) — " + e);
+            }
             Carry = true;
             GameManager.AutoStart = true;
             Time.timeScale = 1f;
             SceneManager.LoadScene(sceneId);
+            return true;
         }
     }
 }

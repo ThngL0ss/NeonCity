@@ -1802,93 +1802,265 @@ def evo_ape4():
     return c
 
 
+# --- 5 hình sau vẽ lại theo phong cách con vượn (evo_ape4): viền tối, 3 tông (tối / chính / sáng), nét lông - vải - kim loại, mặt đọc được (gờ mày, mắt có điểm sáng) ---
+def limb(c, pts, w, dark, base, light=None):
+    """Chi nhiều đoạn: viền tối (rộng w) -> màu chính (w-2) -> vệt sáng 1px (nếu có)."""
+    for a, b in zip(pts[:-1], pts[1:]):
+        c.line(a[0], a[1], b[0], b[1], dark, w)
+    for a, b in zip(pts[:-1], pts[1:]):
+        c.line(a[0], a[1], b[0], b[1], base, max(1, w - 2))
+    if light:
+        for a, b in zip(pts[:-1], pts[1:]):
+            c.line(a[0] - 1, a[1], b[0] - 1, b[1], light, 1)
+
+def speckle(c, rng, n, cols, region, skip=()):
+    """Rắc chấm / nét ngắn lên các pixel đã có màu (chất liệu: lông, vải, da, kim loại)."""
+    for _ in range(n):
+        x, y = rng.randint(region[0], region[2]), rng.randint(region[1], region[3])
+        if not (0 <= x < c.w and 0 <= y < c.h): continue
+        p = c.im.getpixel((x, y))
+        if p[3] == 0 or p[:3] in skip: continue
+        c.px(x, y, rng.choice(cols))
+
+W_ = (240, 232, 224)
+
+def head_r(c, hx, hy, skin, skin_d, skin_l, hair, hair_d, brow_h=1, jaw=0, nose=2, hairstyle="bush", mouth=(120, 60, 50)):
+    """Đầu người nhìn sang phải, hộp ~ 16 x 17, góc trên trái (hx, hy). Cổ nối xuống vai."""
+    c.rect(hx + 4, hy + 13, hx + 10, hy + 21, skin_d)                      # cổ
+    c.rect(hx + 5, hy + 13, hx + 10, hy + 16, skin_d)
+    c.ell(hx, hy, hx + 12, hy + 13, skin)                                  # sọ
+    c.ell(hx + 4, hy + 3, hx + 14, hy + 15 + jaw, skin)                    # mặt + hàm
+    c.ell(hx + 5, hy + 12 + jaw, hx + 13, hy + 16 + jaw, skin_d)           # bóng cằm
+    c.ell(hx + 5, hy + 11 + jaw, hx + 13, hy + 14 + jaw, skin)
+    c.px(hx + 14, hy + 8, skin); c.px(hx + 15, hy + 9, skin); c.px(hx + 14, hy + 10, skin)    # mũi
+    c.px(hx + 15, hy + 10, skin_d)
+    c.ell(hx - 1, hy + 6, hx + 3, hy + 11, skin_d); c.px(hx + 1, hy + 8, skin)           # tai
+    c.rect(hx + 8, hy + 4 + brow_h - 1, hx + 13, hy + 4 + brow_h - 1, skin_d)            # gờ mày (da sẫm)
+    if brow_h > 1: c.rect(hx + 8, hy + 4, hx + 13, hy + 4, skin_d)
+    ey = hy + 5 + brow_h
+    c.rect(hx + 10, ey, hx + 11, ey + 1, INK); c.px(hx + 9, ey, W_)
+    c.rect(hx + 9, hy + 12 + jaw, hx + 12, hy + 12 + jaw, mouth)
+    c.px(hx + 8, hy + 9, skin_l); c.px(hx + 9, hy + 9, skin_l); c.px(hx + 7, hy + 8, skin_l)
+    if hairstyle == "bush":
+        c.poly([(hx - 2, hy + 10), (hx - 3, hy + 3), (hx + 1, hy - 2), (hx + 8, hy - 3), (hx + 12, hy), (hx + 12, hy + 3), (hx + 7, hy + 2), (hx + 4, hy + 6), (hx + 3, hy + 11)], hair)
+        c.poly([(hx - 2, hy + 10), (hx - 3, hy + 3), (hx + 1, hy - 2), (hx + 2, hy + 6), (hx + 1, hy + 11)], hair_d)
+        for k in range(5): c.px(hx + k * 2, hy - 3 + (k % 2), hair_d)
+        c.poly([(hx + 4, hy + 13), (hx + 6, hy + 17), (hx + 12, hy + 17), (hx + 14, hy + 14), (hx + 12, hy + 13), (hx + 8, hy + 15)], hair)   # râu
+        c.rect(hx + 10, hy + 13, hx + 12, hy + 13, mouth)
+    elif hairstyle == "bare":
+        c.poly([(hx, hy + 6), (hx + 2, hy), (hx + 9, hy), (hx + 11, hy + 3), (hx + 6, hy + 3), (hx + 3, hy + 8)], hair)
+
+# ---------- hình 1: vượn khom (đi hai chân nhưng còn khom, tay dài) ----------
+H_FUR, H_D, H_DD, H_L = (118, 84, 58), (74, 50, 38), (40, 26, 20), (172, 130, 92)
+H_FACE, H_FACE_D = (222, 176, 136), (160, 112, 86)
+
 def evo_ape_hunch():
+    rng = noise_rng(501)
     c = Cv(64, 64)
-    c.line(28, 38, 24, 56, FUR_D, 6)                                 # chân gập
-    c.line(34, 38, 40, 56, FUR, 6)
-    c.rect(18, 55, 28, 58, FUR_D); c.rect(36, 55, 46, 58, FUR_D)
-    c.poly([(24, 20), (40, 16), (46, 38), (26, 42)], FUR)           # thân khom
-    c.poly([(24, 20), (30, 19), (32, 40), (26, 42)], FUR_D)
-    c.line(42, 22, 52, 40, FUR, 5)                                   # tay buông thõng gần đầu gối
-    c.line(52, 40, 50, 52, FUR, 4)
-    c.rect(48, 51, 52, 54, FUR_D)
-    c.ell(38, 6, 52, 22, FUR)                                        # đầu chúi về trước
-    c.ell(44, 11, 52, 21, FUR_L)
-    c.px(47, 12, INK); c.px(49, 12, INK)
-    c.rect(47, 18, 51, 18, FUR_D)
+    # chi xa (tối hơn): chân sau lùi, tay vung ra sau
+    limb(c, [(29, 40), (24, 49), (19, 56)], 6, H_DD, H_D)
+    c.rect(15, 55, 25, 58, H_DD); c.rect(16, 55, 24, 55, (96, 70, 50))
+    limb(c, [(35, 23), (30, 34), (26, 45)], 5, H_DD, H_D)
+    c.ell(23, 44, 30, 50, H_DD)
+    # thân khom
+    c.poly([(23, 41), (26, 27), (33, 19), (43, 19), (47, 26), (44, 37), (37, 43)], H_DD)
+    c.poly([(24, 40), (27, 28), (33, 20), (42, 20), (46, 26), (43, 36), (36, 42)], H_FUR)
+    c.poly([(24, 39), (27, 28), (33, 20), (31, 29), (27, 38)], H_L)                              # lưng sáng
+    c.ell(33, 27, 45, 41, (190, 148, 108)); c.ell(35, 29, 44, 39, (206, 166, 124))                # ngực thưa lông
+    c.line(34, 33, 44, 33, H_D, 1)
+    # chân gần: bước tới, gối gập
+    limb(c, [(32, 40), (37, 48), (37, 56)], 7, H_DD, H_FUR, H_L)
+    c.rect(33, 55, 46, 58, H_DD); c.rect(34, 55, 45, 56, (96, 70, 50))
+    c.ell(29, 38, 39, 46, H_DD); c.ell(30, 39, 38, 45, H_FUR); c.ell(31, 40, 36, 43, H_L)         # đùi
+    # tay gần: dài quá gối, xuôi theo thân
+    limb(c, [(41, 24), (47, 34), (47, 46)], 7, H_DD, H_FUR, H_L)
+    c.ell(44, 45, 52, 52, H_DD); c.ell(45, 46, 51, 50, H_FACE_D)
+    for k in range(3): c.px(45 + k * 2, 51, H_L)
+    # đầu: trán thấp, gờ mày, mõm vẫn nhô
+    hx, hy = 38, 5
+    c.ell(hx, hy, hx + 13, hy + 13, H_FUR)
+    c.poly([(hx + 1, hy + 3), (hx + 4, hy - 2), (hx + 8, hy), (hx + 12, hy - 1), (hx + 11, hy + 4)], H_D)
+    c.ell(hx + 5, hy + 4, hx + 16, hy + 15, H_FACE)
+    c.ell(hx + 10, hy + 8, hx + 18, hy + 15, H_FACE)
+    c.rect(hx + 5, hy + 4, hx + 15, hy + 5, H_D)
+    c.rect(hx + 7, hy + 6, hx + 8, hy + 7, INK); c.rect(hx + 12, hy + 6, hx + 13, hy + 7, INK)
+    c.px(hx + 6, hy + 6, W_); c.px(hx + 11, hy + 6, W_)
+    c.px(hx + 16, hy + 10, H_FACE_D); c.rect(hx + 11, hy + 13, hx + 17, hy + 13, H_FACE_D)
+    c.ell(hx - 3, hy + 4, hx + 2, hy + 10, H_FACE_D); c.ell(hx - 2, hy + 5, hx + 1, hy + 9, H_FACE)
+    speckle(c, rng, 110, [H_L, H_D, (92, 64, 46)], (18, 16, 50, 50), skip=(H_FACE, H_FACE_D, (190, 148, 108), (206, 166, 124), INK, W_, H_DD))
     return c
 
+# ---------- hình 2: người nguyên thủy ----------
+S_B, S_D, S_DD, S_L = (196, 138, 100), (140, 92, 66), (84, 52, 38), (232, 180, 138)
+F_B, F_D, F_L = (112, 76, 46), (70, 46, 30), (176, 130, 88)
+WOOD, WOOD_D, WOOD_L = (146, 104, 66), (84, 56, 34), (196, 150, 100)
 
 def evo_early_human():
+    rng = noise_rng(502)
     c = Cv(64, 64)
-    c.line(30, 40, 28, 58, SKIN_C, 5)
-    c.line(36, 40, 38, 58, SKIN_B, 5)
-    c.rect(24, 57, 31, 59, FUR_D); c.rect(34, 57, 42, 59, FUR_D)
-    c.poly([(26, 24), (40, 24), (42, 42), (26, 42)], SKIN_B)       # thân trần + khố lông thú
-    c.poly([(26, 38), (42, 38), (44, 46), (24, 46)], FUR)
-    c.line(26, 26, 22, 40, SKIN_C, 4)                                # tay buông
-    c.line(40, 26, 46, 38, SKIN_B, 4)
-    c.rect(45, 37, 48, 40, SKIN_B)
-    c.line(48, 36, 54, 16, (130, 100, 70), 2)                        # cây gậy
-    c.ell(29, 8, 42, 24, SKIN_B)
-    c.rect(28, 6, 43, 11, HAIR_BK)
-    c.px(37, 15, INK); c.px(34, 15, INK)
-    c.rect(34, 19, 38, 19, (120, 60, 50))
+    # chi xa
+    limb(c, [(31, 41), (28, 49), (26, 56)], 6, S_DD, S_D)
+    c.rect(21, 56, 30, 58, S_DD); c.rect(22, 56, 29, 56, S_D)
+    limb(c, [(28, 26), (24, 34), (25, 42)], 5, S_DD, S_D)
+    c.ell(23, 41, 28, 46, S_DD)
+    # chân gần
+    limb(c, [(35, 41), (38, 49), (39, 56)], 7, S_DD, S_B, S_L)
+    c.rect(35, 56, 45, 58, S_DD); c.rect(36, 56, 44, 56, S_B)
+    # thân trần + áo choàng lông một vai + khố lông thú
+    c.poly([(26, 24), (41, 23), (44, 31), (41, 39), (27, 39), (25, 31)], S_DD)
+    c.poly([(27, 25), (40, 24), (42, 31), (40, 38), (28, 38), (26, 31)], S_B)
+    c.ell(32, 26, 41, 34, S_L); c.line(33, 33, 40, 33, S_D, 1); c.line(37, 28, 37, 38, S_D, 1)      # ngực, rãnh bụng
+    c.poly([(23, 24), (31, 22), (36, 30), (31, 38), (25, 36), (22, 30)], F_D)
+    c.poly([(24, 25), (31, 23), (35, 30), (30, 36), (26, 35), (23, 30)], F_B)
+    for k in range(5): c.px(25 + k * 2, 36 + (k % 2), F_D)
+    c.poly([(26, 37), (42, 37), (45, 46), (41, 44), (38, 49), (34, 45), (30, 49), (27, 45), (25, 47)], F_D)
+    c.poly([(27, 38), (41, 38), (43, 45), (40, 43), (37, 47), (34, 44), (30, 47), (28, 44)], F_B)
+    c.rect(26, 37, 42, 38, (60, 40, 30))
+    # tay gần cầm chùy giơ lên
+    limb(c, [(40, 25), (46, 31), (50, 27)], 6, S_DD, S_B, S_L)
+    c.ell(48, 24, 54, 30, S_DD); c.ell(49, 25, 53, 29, S_B)
+    c.line(52, 27, 57, 9, WOOD_D, 4); c.line(52, 27, 57, 9, WOOD, 2)
+    c.ell(53, 3, 61, 13, WOOD_D); c.ell(54, 4, 60, 12, WOOD); c.ell(55, 5, 58, 9, WOOD_L)
+    c.px(56, 14, WOOD_D); c.px(55, 17, WOOD_D)
+    head_r(c, 29, 4, S_B, S_D, S_L, (76, 54, 38), (34, 24, 22), brow_h=2, jaw=1, nose=2, hairstyle="bush")
+    speckle(c, rng, 90, [S_L, S_D], (26, 24, 44, 56), skip=(INK, W_, F_B, F_D, WOOD, WOOD_D, WOOD_L, S_DD))
+    speckle(c, rng, 60, [F_L, F_D], (24, 22, 46, 49), skip=(INK, S_B, S_D, S_L, S_DD))
     return c
 
+# ---------- hình 3: chiến binh vũ khí lạnh ----------
+BR, BR_D, BR_L, BR_DD = (200, 142, 62), (136, 90, 40), (250, 206, 120), (84, 54, 26)
+RD, RD_D = (186, 44, 44), (110, 24, 32)
 
 def evo_cold():
+    rng = noise_rng(503)
     c = Cv(64, 64)
-    c.line(30, 40, 28, 58, (80, 60, 40), 5)
-    c.line(36, 40, 38, 58, (60, 44, 30), 5)
-    c.rect(24, 57, 31, 59, SHOE); c.rect(34, 57, 42, 59, SHOE)
-    c.rect(26, 24, 42, 42, (176, 128, 60))                           # áo giáp đồng kiểu La Mã
-    c.rect(26, 24, 42, 25, (230, 180, 90))
-    c.rect(26, 40, 42, 46, (170, 46, 46))
-    c.line(42, 28, 48, 24, (176, 128, 60), 4)
-    c.line(48, 24, 56, 4, STEEL_L, 3)                                # kiếm giơ cao
-    c.rect(46, 24, 50, 26, (180, 140, 50))
-    c.ell(14, 26, 28, 46, (190, 44, 44)); c.ell(17, 29, 25, 43, (232, 190, 70))     # khiên
-    c.ell(29, 8, 42, 24, SKIN_A)
-    c.rect(28, 6, 43, 13, (176, 128, 60))
-    c.rect(32, 2, 40, 6, (200, 40, 40))
-    c.px(37, 16, INK); c.px(34, 16, INK)
+    # chân xa
+    limb(c, [(31, 41), (28, 49), (26, 56)], 6, S_DD, S_D)
+    limb(c, [(28, 49), (26, 56)], 6, BR_DD, BR_D)                       # giáp ống chân
+    c.rect(21, 56, 30, 58, (50, 36, 26))
+    # chân gần
+    limb(c, [(35, 41), (38, 49), (39, 56)], 7, S_DD, S_B, S_L)
+    limb(c, [(38, 49), (39, 56)], 7, BR_DD, BR, BR_L)
+    c.rect(35, 56, 45, 58, (50, 36, 26)); c.rect(36, 56, 44, 56, (110, 80, 56))
+    # váy lính (các dải da đỏ)
+    c.poly([(26, 37), (42, 37), (45, 48), (24, 48)], RD_D)
+    c.poly([(27, 38), (41, 38), (43, 47), (26, 47)], RD)
+    for x in range(28, 43, 3): c.line(x, 40, x, 47, RD_D, 1)
+    c.rect(26, 37, 42, 38, BR_DD)
+    # giáp ngực đồng
+    c.poly([(25, 23), (42, 22), (45, 30), (43, 38), (26, 38)], BR_DD)
+    c.poly([(26, 24), (41, 23), (43, 30), (42, 37), (27, 37)], BR)
+    for y in (28, 32, 36): c.line(27, y, 42, y, BR_D, 1)
+    c.line(28, 25, 28, 36, BR_L, 1); c.line(33, 25, 33, 36, BR_L, 1)
+    c.rect(40, 24, 42, 36, BR_D)
+    # vai giáp
+    c.ell(39, 21, 47, 28, BR_DD); c.ell(40, 22, 46, 27, BR); c.line(41, 23, 45, 23, BR_L, 1)
+    # tay gần cầm kiếm giơ cao
+    limb(c, [(43, 25), (48, 22), (51, 15)], 5, S_DD, S_B, S_L)
+    c.rect(48, 12, 54, 16, BR_DD); c.rect(49, 13, 53, 15, BR)
+    c.line(51, 12, 59, 0, STEEL_D, 4); c.line(51, 12, 59, 0, STEEL_L, 2); c.line(51, 11, 58, 0, (230, 236, 255), 1)
+    c.rect(47, 15, 55, 16, BR_D)                                          # chắn kiếm
+    # khiên oval ở phía trước
+    c.ell(34, 27, 52, 52, RD_D); c.ell(35, 28, 51, 51, RD)
+    c.ell(37, 31, 49, 48, BR_D); c.ell(38, 32, 48, 47, RD)
+    c.ell(41, 36, 46, 43, BR_DD); c.ell(42, 37, 45, 42, BR_L)
+    c.line(36, 33, 36, 46, BR, 1)
+    # đầu + mũ sắt đồng, mào đỏ
+    head_r(c, 29, 5, (232, 184, 140), S_D, S_L, BR, BR_D, brow_h=1, jaw=0, nose=2, hairstyle="none")
+    c.poly([(27, 14), (28, 4), (34, 0), (42, 3), (43, 8), (37, 9), (33, 14)], BR_DD)
+    c.poly([(28, 13), (29, 5), (34, 1), (41, 4), (42, 7), (36, 8), (32, 13)], BR)
+    c.line(30, 6, 36, 2, BR_L, 1)
+    c.rect(28, 12, 33, 18, BR)                                            # che má
+    c.poly([(30, 0), (34, -3), (46, 1), (40, 4), (32, 4)], RD_D)
+    c.poly([(31, 0), (35, -2), (44, 1), (39, 3), (33, 3)], RD)
+    speckle(c, rng, 40, [BR_L, BR_D], (26, 22, 44, 37), skip=(RD, RD_D, S_B, S_D, S_L, INK))
     return c
 
+# ---------- hình 4: lính vũ khí nóng ----------
+G_B, G_D, G_DD, G_L = (92, 110, 70), (62, 78, 48), (38, 48, 32), (132, 152, 100)
 
 def evo_gun():
+    rng = noise_rng(504)
     c = Cv(64, 64)
-    c.line(30, 40, 26, 58, (70, 84, 56), 5)
-    c.line(36, 40, 40, 58, (56, 70, 44), 5)
-    c.rect(20, 57, 31, 59, SHOE); c.rect(34, 57, 45, 59, SHOE)
-    c.rect(26, 24, 42, 42, (84, 100, 66))
-    c.rect(28, 28, 40, 36, (60, 72, 46))
-    c.line(40, 30, 50, 30, (84, 100, 66), 4)
-    c.line(24, 34, 58, 28, (24, 24, 30), 3)                          # súng trường
-    c.rect(56, 25, 60, 30, (24, 24, 30))
-    c.rect(61, 25, 63, 29, YEL)
-    c.ell(29, 8, 42, 24, SKIN_B)
-    c.rect(28, 5, 43, 13, (70, 82, 54))
-    c.px(37, 16, INK); c.px(34, 16, INK)
+    # chân xa
+    limb(c, [(31, 41), (28, 49), (25, 56)], 6, G_DD, G_D)
+    c.rect(20, 55, 30, 58, (22, 22, 28))
+    # ba lô
+    c.rect(20, 25, 27, 40, G_DD); c.rect(21, 26, 26, 39, G_D); c.rect(21, 26, 26, 27, G_B); c.rect(22, 31, 25, 34, G_DD)
+    # chân gần
+    limb(c, [(35, 41), (38, 49), (38, 56)], 7, G_DD, G_B, G_L)
+    c.rect(33, 55, 45, 58, (22, 22, 28)); c.rect(34, 55, 44, 55, (70, 70, 84))
+    c.ell(35, 46, 41, 51, G_DD); c.ell(36, 47, 40, 50, G_D)               # băng đầu gối
+    # thân + áo giáp chiến thuật
+    c.poly([(25, 24), (42, 23), (44, 31), (42, 40), (27, 40), (24, 31)], G_DD)
+    c.poly([(26, 25), (41, 24), (43, 31), (41, 39), (28, 39), (25, 31)], G_B)
+    c.rect(28, 28, 40, 36, G_D)
+    for x in (29, 33, 37): c.rect(x, 30, x + 2, 34, G_DD); c.px(x, 30, G_L)    # túi đạn
+    c.rect(26, 38, 42, 40, (28, 28, 34)); c.rect(32, 38, 35, 40, (180, 160, 80))
+    # súng trường: báng sau vai, thân súng, nòng dài, băng đạn cong, ống ngắm
+    GM, GM_D, GM_L = (74, 78, 98), (20, 20, 28), (160, 166, 194)
+    c.poly([(24, 31), (31, 31), (31, 36), (26, 37)], (52, 36, 26)); c.line(25, 32, 30, 32, (110, 80, 52), 1)      # báng gỗ
+    c.rect(30, 30, 46, 34, GM_D); c.rect(31, 31, 45, 33, GM); c.line(31, 31, 45, 31, GM_L, 1)                 # thân + ốp
+    c.rect(46, 32, 60, 33, GM_D); c.px(61, 32, GM_D); c.px(61, 33, GM_D); c.px(47, 32, GM_L)                    # nòng
+    c.poly([(36, 34), (40, 34), (41, 41), (37, 41)], GM_D); c.poly([(37, 35), (39, 35), (40, 40), (38, 40)], GM)    # băng đạn
+    c.rect(34, 29, 42, 30, GM_D); c.rect(35, 29, 41, 29, GM); c.px(36, 28, GM_D); c.px(41, 28, GM_D); c.px(38, 29, (120, 200, 255))   # ống ngắm
+    # tay gần: khuỷu gập, bao tay đen ở tay cầm
+    limb(c, [(34, 26), (37, 33), (36, 35)], 6, G_DD, G_B, G_L)
+    c.rect(34, 33, 38, 36, GM_D)
+    # tay xa: duỗi ra đỡ ốp tay súng (vẽ đè lên súng)
+    limb(c, [(40, 26), (46, 29), (49, 33)], 5, G_DD, G_B, G_L)
+    c.rect(47, 32, 51, 35, GM_D); c.px(48, 32, GM_L)
+    # đầu + mũ sắt
+    head_r(c, 29, 4, (226, 176, 132), S_D, S_L, G_DD, G_DD, brow_h=1, jaw=0, nose=2, hairstyle="none")
+    c.poly([(26, 13), (27, 2), (34, -2), (43, 2), (45, 8), (37, 7), (33, 12)], G_DD)
+    c.poly([(27, 12), (28, 3), (34, -1), (42, 3), (44, 7), (37, 6), (34, 11)], G_B)
+    c.line(30, 3, 36, 0, G_L, 1)
+    for k in range(6): c.px(30 + k * 2, 3 + (k % 3), G_D)                  # lưới nguỵ trang
+    c.rect(26, 10, 30, 13, G_D)                                            # lưỡi trai sau gáy
+    speckle(c, rng, 90, [G_L, G_DD, (118, 98, 66)], (24, 22, 44, 56), skip=(INK, W_, (22, 22, 28), S_B, S_D, S_L, (226, 176, 132), (70, 72, 88), (60, 62, 76)))
     return c
 
+# ---------- hình 5: người Neon tương lai ----------
+N_B, N_D, N_L = (30, 30, 70), (16, 14, 40), (58, 62, 120)
+SHELL, SHELL_D = (196, 206, 226), (120, 130, 162)
 
 def evo_neon():
+    rng = noise_rng(505)
     c = Cv(64, 64)
-    c.line(30, 40, 28, 58, (24, 22, 54), 5)
-    c.line(36, 40, 38, 58, (24, 22, 54), 5)
-    c.line(27, 42, 27, 58, CYAN, 1); c.line(39, 42, 39, 58, MAG, 1)
-    c.rect(22, 57, 31, 59, CYAN); c.rect(34, 57, 44, 59, MAG)
-    c.rect(26, 22, 42, 42, (24, 22, 54))
-    c.line(26, 22, 26, 42, CYAN); c.line(42, 22, 42, 42, MAG); c.line(26, 32, 42, 32, CYAN)
-    c.rect(32, 26, 36, 29, LIME)
-    c.line(26, 24, 22, 40, (24, 22, 54), 4); c.line(42, 24, 46, 40, (24, 22, 54), 4)
-    c.line(22, 40, 22, 42, MAG, 2); c.line(46, 40, 46, 42, CYAN, 2)
-    c.rect(20, 40, 24, 43, (200, 210, 230)); c.rect(44, 40, 48, 43, (200, 210, 230))
-    c.ell(29, 7, 42, 23, (186, 196, 216))
-    c.rect(28, 5, 43, 11, MAG)
-    c.rect(33, 13, 42, 15, CYAN)
-    c.px(30, 3, CYAN); c.px(41, 3, CYAN)
+    # chân xa
+    limb(c, [(31, 41), (29, 49), (27, 56)], 6, N_D, (22, 20, 54))
+    c.rect(23, 56, 31, 58, (60, 20, 90)); c.rect(23, 58, 31, 58, MAG)
+    # chân gần
+    limb(c, [(35, 41), (37, 49), (38, 56)], 6, N_D, N_B, N_L)
+    c.line(37, 41, 38, 55, CYAN, 1)                                        # dải neon dọc chân
+    c.ell(34, 46, 40, 51, N_D); c.ell(35, 47, 39, 50, (50, 56, 120)); c.px(37, 48, CYAN)
+    c.rect(34, 55, 45, 58, N_D); c.rect(35, 55, 44, 56, SHELL_D); c.rect(34, 58, 45, 58, CYAN)
+    # thân
+    c.poly([(26, 23), (42, 22), (44, 31), (41, 40), (28, 40), (25, 31)], N_D)
+    c.poly([(27, 24), (41, 23), (43, 31), (40, 39), (29, 39), (26, 31)], N_B)
+    c.poly([(30, 25), (39, 25), (40, 32), (36, 36), (31, 32)], N_L)           # tấm ngực
+    c.ell(33, 27, 37, 31, (8, 80, 40)); c.ell(34, 28, 36, 30, LIME); c.px(34, 28, W_)   # lõi năng lượng
+    c.line(28, 25, 28, 38, CYAN, 1); c.line(41, 25, 41, 38, MAG, 1)
+    c.line(30, 34, 39, 34, CYAN, 1)
+    c.rect(27, 38, 42, 40, N_D); c.rect(28, 39, 41, 39, MAG)                  # thắt lưng neon
+    # vai + tay (thanh mảnh, găng sáng)
+    limb(c, [(29, 26), (25, 33), (26, 41)], 5, N_D, (22, 20, 54))
+    c.rect(24, 41, 28, 44, (44, 48, 104)); c.rect(24, 44, 28, 44, CYAN); c.px(25, 42, N_L)
+    limb(c, [(40, 26), (45, 33), (46, 41)], 5, N_D, N_B, N_L)
+    c.line(44, 28, 46, 39, MAG, 1)
+    c.rect(44, 40, 49, 45, SHELL); c.rect(45, 41, 48, 42, W_); c.rect(44, 45, 49, 45, SHELL_D)
+    c.ell(38, 21, 47, 28, N_D); c.ell(39, 22, 46, 27, SHELL_D); c.line(40, 23, 45, 23, CYAN, 1)   # giáp vai
+    # mũ trùm kín có kính chắn sáng
+    hx, hy = 29, 3
+    c.ell(hx - 1, hy, hx + 15, hy + 18, N_D)
+    c.ell(hx, hy + 1, hx + 14, hy + 17, SHELL)
+    c.ell(hx, hy + 1, hx + 9, hy + 12, (214, 222, 240))
+    c.poly([(hx + 5, hy + 6), (hx + 14, hy + 6), (hx + 15, hy + 12), (hx + 6, hy + 13)], (6, 30, 54))   # kính chắn sáng
+    c.poly([(hx + 6, hy + 7), (hx + 13, hy + 7), (hx + 14, hy + 11), (hx + 7, hy + 12)], (10, 120, 170))
+    c.line(hx + 7, hy + 8, hx + 12, hy + 8, CYAN, 1); c.px(hx + 8, hy + 9, W_); c.px(hx + 9, hy + 9, W_)
+    c.rect(hx + 1, hy + 2, hx + 10, hy + 3, MAG)                           # dải neon trên mũ
+    c.rect(hx + 3, hy + 14, hx + 12, hy + 16, SHELL_D)                     # hàm / khẩu trang
+    c.line(hx + 7, hy - 1, hx + 7, hy - 3, CYAN, 1); c.px(hx + 7, hy - 4, CYAN)   # ăng-ten
     return c
 
 

@@ -3,9 +3,9 @@ using UnityEngine;
 namespace NeonBreaker
 {
     /// <summary>
-    /// Bản đồ (phím M, hoặc cửa ra của căn cứ). Mỗi địa điểm trong Places.All là một biểu tượng: tên ở TRÊN, hàng 5 đầu lâu ở DƯỚI
+    /// Bản đồ (chỉ mở bằng cửa ra của căn cứ — không còn phím M). Mỗi địa điểm trong Places.All là một biểu tượng: tên ở TRÊN, hàng 5 đầu lâu ở DƯỚI
     /// (luôn vẽ đủ 5; số đầu lâu = độ nguy hiểm, phần còn lại mờ đi). Phố Neon nằm giữa bản đồ; Rìa Phố Neon là vùng hình chữ L ôm Phố Neon từ Tây xuống Nam.
-    /// Điều khiển: A D / W S (hoặc mũi tên) chuyển giữa các địa điểm · ENTER / F hoặc nút ĐI = đến đó (chỉ khi đang ở căn cứ) · bấm chuột vào biểu tượng để chọn · M / ESC đóng.
+    /// Điều khiển: A D / W S (hoặc mũi tên) chuyển giữa các địa điểm · ENTER / F hoặc nút ĐI = đến đó (chỉ khi đang ở căn cứ) · bấm chuột vào biểu tượng để chọn · ESC đóng.
     /// </summary>
     public static class MapUi
     {
@@ -27,6 +27,13 @@ namespace NeonBreaker
             "..#.#..",
             "..#.#..",
         };
+
+        /// <summary>Dọn trạng thái static (gọi mỗi lần nạp Scene): không còn "đang đi" dở.</summary>
+        public static void ResetStatics()
+        {
+            leaving = false;
+            goId = null;
+        }
 
         public static void OnOpen()
         {
@@ -59,7 +66,7 @@ namespace NeonBreaker
         public static void UpdateInput()
         {
             if (leaving) return;
-            if (GameInput.PauseDown || GameInput.MapDown) { BaseUi.Close(); return; }
+            if (GameInput.PauseDown) { BaseUi.Close(); return; }
             int n = Places.All.Length;
             if (n == 0) return;
             if (GameInput.NavLeftDown || GameInput.NavUpDown) { int s2 = Step(sel, -1); if (s2 != sel) { sel = s2; Sfx.Play("click", 0.4f, 1.3f); } }
@@ -81,6 +88,14 @@ namespace NeonBreaker
             Cine.SetFade(1f, 0.7f);
             float t = 0f;
             while (t < 0.8f) { t += Time.unscaledDeltaTime; yield return null; }
+            if (!GameFlow.SceneAvailable(goId))
+            {
+                // không nạp được Scene đích: trả bản đồ về trạng thái chọn lại được (không để kẹt)
+                Cine.SetFade(0f, 0.5f);
+                leaving = false;
+                yield break;
+            }
+            BaseUi.ResetStatics();            // đóng bản đồ trước khi nạp Scene (không để Mode = Map sót lại)
             GameFlow.GoToPlace(goId);
         }
 
@@ -158,7 +173,7 @@ namespace NeonBreaker
             }
 
             DrawInfo(h, Places.All.Length > 0 ? Places.All[Mathf.Clamp(sel, 0, Places.All.Length - 1)] : null);
-            h.Txt(h.R(90, 650, 640, 22), Cfg.L("[A D] chọn   ·   [ENTER / F] đi   ·   [M / ESC] đóng", "[A D] pick   ·   [ENTER / F] go   ·   [M / ESC] close"),
+            h.Txt(h.R(90, 650, 640, 22), Cfg.L("[A D] chọn   ·   [ENTER / F] đi   ·   [ESC] đóng", "[A D] pick   ·   [ENTER / F] go   ·   [ESC] close"),
                   14, Cfg.A(Color.white, 0.5f), TextAnchor.UpperLeft, false);
         }
 

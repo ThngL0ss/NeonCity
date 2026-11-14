@@ -106,6 +106,7 @@ namespace NeonBreaker
             // Mỗi Scene mới bắt đầu với mọi bảng UI đóng. (Static sống qua lần nạp Scene: trước đây bản đồ đang mở + cờ "đang đi" bị giữ lại
             // sang Scene đích nên người chơi kẹt ở bản đồ, M / ESC không đóng được.)
             BaseUi.ResetStatics();
+            Interior.ResetStatics();
             if (!GameFlow.Carry)
             {
                 Inventory.ResetAll();

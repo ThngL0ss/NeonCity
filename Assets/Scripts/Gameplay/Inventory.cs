@@ -180,12 +180,16 @@ namespace NeonBreaker
         public static int ClearCarried()
         {
             int lost = CarriedCount;
+            var keep = new List<InvSlot>();                      // vật phẩm nhiệm vụ không bị mất khi chết
+            for (int i = 0; i < Slots.Count; i++)
+                if (Slots[i].item != null && Slots[i].item.questItem) { keep.Add(Slots[i]); lost -= Slots[i].count; }
             Slots.Clear();
+            Slots.AddRange(keep);
             System.Array.Clear(Equipped, 0, Equipped.Length);
             timed.Clear();
             Sel = 0;
             Recompute();
-            return lost;
+            return Mathf.Max(0, lost);
         }
 
         /// <summary>Bản sao chỉ số vĩnh viễn (để lưu game).</summary>
@@ -206,6 +210,7 @@ namespace NeonBreaker
         {
             if (index < 0 || index >= Slots.Count) return 0;
             var s = Slots[index];
+            if (s.item != null && s.item.questItem) return 0;
             n = Mathf.Clamp(n, 1, s.count);
             int gained = s.item.sellValue * n;
             Remove(index, n);

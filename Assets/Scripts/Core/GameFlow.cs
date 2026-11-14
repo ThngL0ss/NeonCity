@@ -62,6 +62,7 @@ namespace NeonBreaker
             InTutorial = false;
             CurrentPlaceId = LevelScene;
             unlockedPlaces.Clear();
+            Town.ResetAll();
             BaseMissions.ResetAll();
             Stash.ResetAll();
             PlayerProgress.Reset();

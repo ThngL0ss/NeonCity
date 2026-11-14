@@ -67,6 +67,7 @@ namespace NeonBreaker
                 pl.transform.position = new Vector3(startGate.transform.position.x + 2.6f, pl.transform.position.y, 0f);
                 if (CameraRig.Inst != null) CameraRig.Inst.Snap();
             }
+            StreetBuildings.Setup(placeId);            // lớp nhà 2 (làm tối) + lớp 3 (toà nhà vào được)
             Scatter();
             if (GameManager.State == GameState.Playing) GameManager.Banner(Title, TitleColor, 3.5f);
         }

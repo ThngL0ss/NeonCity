@@ -17,7 +17,16 @@ namespace NeonBreaker
         static ItemDatabase cached;
         static Dictionary<string, ItemData> map;
 
-        public static void ResetStatics() { cached = null; map = null; }
+        public static void ResetStatics() { cached = null; map = null; QuestItems.Reset(); }
+
+        /// <summary>Mọi vật phẩm trong file ItemDatabase.asset (rỗng nếu chưa có file).</summary>
+        public static List<ItemData> All()
+        {
+            if (cached == null) cached = Resources.Load<ItemDatabase>("NeonBreaker/ItemDatabase");
+            var l = new List<ItemData>();
+            if (cached != null) for (int i = 0; i < cached.items.Count; i++) if (cached.items[i] != null) l.Add(cached.items[i]);
+            return l;
+        }
 
         static void Build()
         {
@@ -35,6 +44,8 @@ namespace NeonBreaker
         public static ItemData Find(string id)
         {
             if (string.IsNullOrEmpty(id)) return null;
+            var q = QuestItems.Find(id);                         // vật phẩm nhiệm vụ do code tạo (không có file asset)
+            if (q != null) return q;
             if (map == null) Build();
             ItemData it;
             if (map.TryGetValue(id, out it) && it != null) return it;

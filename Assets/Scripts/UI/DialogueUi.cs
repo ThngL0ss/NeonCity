@@ -17,6 +17,8 @@ namespace NeonBreaker
         /// <summary>Có ô nhập chữ: người chơi gõ rồi ENTER, gọi onInput(chuỗi đã nhập). Quy tắc tiếp theo giống onChoice.</summary>
         public bool input;
         public System.Action<string> onInput;
+        /// <summary>Chạy một lần khi câu này bắt đầu hiện (ví dụ trao vật phẩm đúng lúc NPC nói "Ta sẽ cho cậu thứ này").</summary>
+        public System.Action onShow;
         public DlgLine(string speaker, string text, Color color, Transform who = null) { this.speaker = speaker; this.text = text; this.color = color; this.who = who; }
 
         public static DlgLine Ask(string speaker, string text, Color color, Transform who, string[] options, System.Action<int> onChoice)
@@ -45,8 +47,10 @@ namespace NeonBreaker
         static float fullT;             // thời gian kể từ khi câu hiện đủ chữ (chống bấm nhầm)
         static bool replaced;           // callback đã gọi Continue / Close
         static Vector2 lastMouse;
+        static List<DlgLine> shownList;     // danh sách + chỉ số của câu đã chạy onShow
+        static int shownIdx = -1;
 
-        public static void Reset() { lines = null; done = null; idx = 0; chars = 0f; sel = 0; typed = ""; fullT = 0f; replaced = false; Cine.ReleaseFocus(); Cine.SetZoom(1f); }
+        public static void Reset() { lines = null; done = null; idx = 0; chars = 0f; sel = 0; typed = ""; fullT = 0f; replaced = false; shownList = null; shownIdx = -1; Cine.ReleaseFocus(); Cine.SetZoom(1f); }
 
         /// <summary>Đang có hội thoại (đang mở hoặc đang chạy callback).</summary>
         public static bool Running { get { return lines != null; } }
@@ -58,6 +62,7 @@ namespace NeonBreaker
             if (l == null || l.Count == 0) { Close(onDone); return; }
             lines = l;
             idx = 0; chars = 0f; sel = 0; typed = ""; fullT = 0f;
+            shownList = null; shownIdx = -1;
             done = onDone;
         }
 
@@ -109,6 +114,7 @@ namespace NeonBreaker
             idx = 0;
             chars = 0f;
             sel = 0; typed = ""; fullT = 0f; replaced = false;
+            shownList = null; shownIdx = -1;
             done = onDone;
             BaseUi.Open(BaseMode.Dialogue);
             if (BaseUi.Mode != BaseMode.Dialogue) { Reset(); if (onDone != null) onDone(); }
@@ -119,6 +125,13 @@ namespace NeonBreaker
             if (lines == null) { BaseUi.Close(); return; }
             FollowSpeaker();
             var cur = lines[idx];
+            if (shownList != lines || shownIdx != idx)
+            {
+                shownList = lines; shownIdx = idx;
+                if (cur.onShow != null) cur.onShow();
+                if (lines == null || idx >= lines.Count) return;       // onShow có thể đã đóng / thay hội thoại
+                cur = lines[idx];
+            }
             int before = (int)chars;
             chars += 38f * Time.unscaledDeltaTime;
             if ((int)chars / 3 != before / 3 && (int)chars < cur.text.Length) Sfx.Play("click", 0.1f, 1.7f);

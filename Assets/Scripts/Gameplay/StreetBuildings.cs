@@ -27,6 +27,8 @@ namespace NeonBreaker
         {
             var l = new List<Def>();
             l.Add(new Def { id = CenterShopBuilder.Id, vi = "CENTERSHOP", en = "CENTERSHOP", facade = TownArt.FacadeCenter, x = 45f, neon = Cfg.Cyan, entry = CenterShopBuilder.Floor1 });
+            l.Add(new Def { id = RoboStoreBuilder.Id, vi = "ROBOSTORE", en = "ROBOSTORE", facade = TownArt.FacadeRobo, x = 87f, neon = Cfg.Magenta, entry = RoboStoreBuilder.Floor1 });
+            l.Add(new Def { id = ZenBuilder.Id, vi = "ZENMONASTERY", en = "ZENMONASTERY", facade = TownArt.FacadeZen, x = 118f, neon = new Color(1f, 0.75f, 0.3f), entry = ZenBuilder.Hall });
             return l;
         }
 

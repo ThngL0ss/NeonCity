@@ -7,8 +7,8 @@ namespace NeonBreaker
     /// Dựng thêm các tầng nhà cho Phố Neon / Rìa Phố Neon lúc chạy (không sửa Scene của bạn):
     ///  • Lớp 1 (xa nhất, đi theo người chơi): có sẵn trong Scene (nhóm Background ▸ Far / Mid).
     ///  • Lớp 2 (nhà cố định gần người chơi, KHÔNG vào được, làm tối): các nhà có sẵn của Scene (nhóm Buildings) — được nhân màu tối đi; Rìa phố: dãy nhà đổ nát dựng thêm.
-    ///  • Lớp 3 (nhà cố định gần người chơi, VÀO ĐƯỢC, sáng rõ nhất): 5 toà nhà mặt tiền mới ở Phố Neon (nhóm TownLayers).
-    /// Mỗi toà có cửa chính ở giữa: đứng trước cửa bấm F để vào (xem Interior). DesTown4 chỉ có hai vệ sĩ chặn cửa.
+    ///  • Lớp 3 (nhà cố định gần người chơi, VÀO ĐƯỢC, sáng rõ nhất): 5 toà nhà mặt tiền mới (CenterShop, RoboStore, ZenMonastery, DesTown4, ArenaCyber) ở Phố Neon (nhóm TownLayers).
+    /// Mỗi toà có cửa chính ở giữa: đứng trước cửa bấm F để vào (xem Interior). DesTown4 chỉ có hai vệ sĩ chặn cửa (xem DesTownBuilder); ArenaCyber vào được (xem ArenaBuilder).
     /// </summary>
     public static class StreetBuildings
     {
@@ -20,6 +20,7 @@ namespace NeonBreaker
             public Color neon;
             public System.Func<Room> entry;
             public bool enterable = true;
+            public System.Action<Transform, float> onPlace;      // hook dựng thêm (NPC...) sau khi đặt mặt tiền: (transform toà nhà, x)
         }
 
         /// <summary>Danh sách toà nhà lớp 3 ở Phố Neon (x = tâm toà nhà = vị trí cửa).</summary>
@@ -29,6 +30,8 @@ namespace NeonBreaker
             l.Add(new Def { id = CenterShopBuilder.Id, vi = "CENTERSHOP", en = "CENTERSHOP", facade = TownArt.FacadeCenter, x = 45f, neon = Cfg.Cyan, entry = CenterShopBuilder.Floor1 });
             l.Add(new Def { id = RoboStoreBuilder.Id, vi = "ROBOSTORE", en = "ROBOSTORE", facade = TownArt.FacadeRobo, x = 87f, neon = Cfg.Magenta, entry = RoboStoreBuilder.Floor1 });
             l.Add(new Def { id = ZenBuilder.Id, vi = "ZENMONASTERY", en = "ZENMONASTERY", facade = TownArt.FacadeZen, x = 118f, neon = new Color(1f, 0.75f, 0.3f), entry = ZenBuilder.Hall });
+            l.Add(new Def { id = DesTownBuilder.Id, vi = "DESTOWN4", en = "DESTOWN4", facade = TownArt.FacadeDes, x = 150f, neon = Cfg.Red, enterable = false, onPlace = DesTownBuilder.Place });
+            l.Add(new Def { id = ArenaBuilder.Id, vi = "ARENACYBER", en = "ARENACYBER", facade = TownArt.FacadeArena, x = 178f, neon = Cfg.Magenta, entry = ArenaBuilder.Lobby });
             return l;
         }
 
@@ -75,6 +78,7 @@ namespace NeonBreaker
                 float x = d.x;
                 Hotspot.Make(g.transform, new Vector3(d.x, 0f, 0f), "VÀO " + d.vi, "ENTER " + d.en, () => Interior.Enter(id, x, entry), 2.2f);
             }
+            if (d.onPlace != null) d.onPlace(g.transform, d.x);
         }
 
         // ------------------------------------------------------------ Rìa Phố Neon

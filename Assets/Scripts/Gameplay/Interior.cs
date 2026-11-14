@@ -165,6 +165,7 @@ namespace NeonBreaker
             rootGo = null;
             hidden.Clear();
             rooms.Clear();
+            ArenaBuilder.ResetStatics();
         }
 
         public static Transform Root
@@ -209,21 +210,21 @@ namespace NeonBreaker
             Busy = false;
         }
 
-        static void Place(float x)
+        static void Place(float x, float y = 0.35f)
         {
             var pl = Player.Instance;
             if (pl == null) return;
-            pl.transform.position = new Vector3(x, 0.35f, 0f);
+            pl.transform.position = new Vector3(x, y, 0f);
             var rb = pl.GetComponent<Rigidbody2D>();
             if (rb != null) rb.SetVel(Vector2.zero);
         }
 
-        static void SetRoom(Room r, float lx)
+        static void SetRoom(Room r, float lx, float y = 0.35f)
         {
             Current = r;
             Cfg.LevelMinX = r.ox;
             Cfg.LevelMaxX = r.ox + r.width;
-            Place(r.ox + lx);
+            Place(r.ox + lx, y);
         }
 
         static void HideStreet()
@@ -259,13 +260,13 @@ namespace NeonBreaker
         }
 
         /// <summary>Đi sang phòng khác trong cùng toà nhà (cầu thang): dựng phòng nếu chưa có.</summary>
-        public static void Go(System.Func<Room> build, float lx, bool banner = true)
+        public static void Go(System.Func<Room> build, float lx, bool banner = true, float y = 0.35f)
         {
             if (Busy || !Inside || GameManager.Inst == null) return;
             GameManager.Inst.StartCoroutine(Fade(() =>
             {
                 var r = build();
-                SetRoom(r, lx);
+                SetRoom(r, lx, y);
                 if (banner) GameManager.Banner(r.Title, r.style.neon, 2.0f);
             }));
         }

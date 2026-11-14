@@ -210,6 +210,7 @@ namespace NeonBreaker
             SetFlag(d.flags, "g.introSeen", GameFlow.IntroSeen ? 1 : 0);
             GameFlow.ExportPlaces(d.places);
             BaseMissions.Export(d);
+            Town.Export(d);
             d.totalKills = BaseMissions.TotalKills;
 
             d.rank = (int)PlayerProgress.PlayerRank;
@@ -245,6 +246,7 @@ namespace NeonBreaker
             GameFlow.IntroSeen = GetFlag(d.flags, "g.introSeen") != 0 || d.baseVisited;
             GameFlow.ImportPlaces(d.places);
             BaseMissions.Import(d);
+            Town.Import(d);
             BaseMissions.TotalKills = Mathf.Max(BaseMissions.TotalKills, d.totalKills);
 
             PlayerProgress.Set((Rank)Mathf.Clamp(d.rank, 0, 7), d.level);

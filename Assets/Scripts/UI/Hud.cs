@@ -53,6 +53,7 @@ namespace NeonBreaker
                 DrawTopCenter();
                 if (!GameFlow.InBase) DrawTopRight();
                 if (!cinema) DrawMissionTracker();
+                if (!cinema) Town.DrawSideQuest(this);
                 if (!cinema) BaseGuide.Draw(this);
                 if (!cinema) TutorialManager.DrawHud(this);
                 DrawBossBar();

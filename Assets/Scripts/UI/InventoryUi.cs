@@ -32,6 +32,12 @@ namespace NeonBreaker
         {
             if (index < 0 || index >= Inventory.Slots.Count) return;
             var it = Inventory.Slots[index].item;
+            if (it != null && it.questItem)
+            {
+                Inventory.Say(Cfg.L("Vật phẩm nhiệm vụ — không vứt được", "Quest item — can't be dropped"));
+                Sfx.Play("click", 0.6f, 0.5f);
+                return;
+            }
             Inventory.Remove(index, 1);
             Inventory.Say(Cfg.L("Đã vứt 1: ", "Dropped 1: ") + (it != null ? it.DisplayName : ""));
             Sfx.Play("click", 0.6f, 0.7f);

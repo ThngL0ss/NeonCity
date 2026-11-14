@@ -54,6 +54,7 @@ namespace NeonBreaker
         public ItemKind kind = ItemKind.Valuable;
         [Tooltip("Số lượng tối đa xếp chung một ô")] public int maxStack = 99;
         [Tooltip("Giá bán cho thương nhân (1 cái)")] public int sellValue = 10;
+        [Tooltip("Vật phẩm nhiệm vụ / cốt truyện: không bán, không vứt được và không mất khi chết")] public bool questItem = false;
 
         [Header("Hiệu ứng (Passive: có tác dụng khi được trang bị · Consumable: khi dùng)")]
         public List<ItemStatBonus> bonuses = new List<ItemStatBonus>();
@@ -115,6 +116,7 @@ namespace NeonBreaker
         {
             get
             {
+                if (questItem) return Cfg.L("VẬT PHẨM NHIỆM VỤ — không bán, không vứt", "QUEST ITEM — cannot be sold or dropped");
                 switch (kind)
                 {
                     case ItemKind.Passive: return Cfg.L("TRANG BỊ — gắn vào ô trang bị (B ▸ Player)", "GEAR — equip it in a slot (B ▸ Player)");

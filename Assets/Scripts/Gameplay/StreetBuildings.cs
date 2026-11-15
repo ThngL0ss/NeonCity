@@ -97,6 +97,7 @@ namespace NeonBreaker
             l.Add(new Def { id = MerShopBuilder.Id, vi = "MERSHOP", en = "MERSHOP", facade = RimBase + RimArt.FacadeMer, x = 26f, neon = new Color(1f, 0.6f, 0.2f), entry = MerShopBuilder.Shop });
             l.Add(new Def { id = "DyberLab", vi = "PHÒNG THÍ NGHIỆM", en = "LABORATORY", facade = RimBase + RimArt.FacadeLab, x = 62f, neon = new Color(1f, 0.48f, 0.1f), enterable = false, onPlace = LabSite.Place });
             l.Add(new Def { id = RyberBuilder.Id, vi = "LỀU TRẠI", en = "CAMP", facade = RimBase + RimArt.FacadeCamp, x = 108f, neon = new Color(1f, 0.5f, 0.15f), entry = RyberBuilder.Camp, canEnter = () => Town.RyberOpen, doorDx = RimArt.DoorDx(RimArt.FacadeCamp), onPlace = RyberBuilder.Place });
+            l.Add(new Def { id = "TechJunkyard", vi = "BÃI RÁC CÔNG NGHỆ", en = "TECH JUNKYARD", facade = RimBase + RimArt.FacadeJunk, x = 160f, neon = new Color(0.6f, 0.45f, 0.7f), enterable = false, onPlace = JunkSite.Place });
             return l;
         }
 

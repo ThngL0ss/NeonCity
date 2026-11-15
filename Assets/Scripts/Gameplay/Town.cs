@@ -25,7 +25,8 @@ namespace NeonBreaker
         public static int Rossie;               // 0 chưa gặp · 1 đã nói chuyện, từ chối · 2 đồng minh
         public static bool RossieGift;          // đã nhận 100 xu khi nói chuyện lần đầu với Rossie
         public static int Beggar;               // 0 chưa gặp · 1 đã đưa 30 xu · 2 không đưa
-        public static bool RobbersDone;         // đã hạ đám cướp ở bãi rác (đã nhận dao đỏ)
+        public static bool RobbersDone;         // đã hạ hết đám cướp ở bãi rác
+        public static bool KnifeTaken;          // đã nhặt dao đỏ (rơi ra sau khi hạ hết đám cướp)
         // Albert: 0 chưa mở · 1 mở khoá (đã nhận Core-T06 thật, chờ về căn cứ nói chuyện) · 2 đã nói chuyện (Core-T06 do Albert cất giữ)
         public const int AlbertLocked = 0, AlbertPending = 1, AlbertDone = 2;
         public static int AlbertStory;
@@ -36,7 +37,7 @@ namespace NeonBreaker
             ArenaInfoDone = false;
             FighterWins = 0;
             MerMet = false; MerPaid = 0; MercOwned = 0; MercActive = -1;
-            RyberOpen = false; Rossie = 0; RossieGift = false; Beggar = 0; RobbersDone = false;
+            RyberOpen = false; Rossie = 0; RossieGift = false; Beggar = 0; RobbersDone = false; KnifeTaken = false;
             AlbertStory = AlbertLocked;
             QuestItems.Reset();
             Interior.ResetStatics();
@@ -56,6 +57,7 @@ namespace NeonBreaker
             SaveManager.SetFlag(d.flags, "t.rossieGift", RossieGift ? 1 : 0);
             SaveManager.SetFlag(d.flags, "t.beggar", Beggar);
             SaveManager.SetFlag(d.flags, "t.robbers", RobbersDone ? 1 : 0);
+            SaveManager.SetFlag(d.flags, "t.knife", KnifeTaken ? 1 : 0);
             SaveManager.SetFlag(d.flags, "t.albert", AlbertStory);
         }
 
@@ -73,6 +75,7 @@ namespace NeonBreaker
             RossieGift = SaveManager.GetFlag(d.flags, "t.rossieGift") != 0;
             Beggar = SaveManager.GetFlag(d.flags, "t.beggar");
             RobbersDone = SaveManager.GetFlag(d.flags, "t.robbers") != 0;
+            KnifeTaken = SaveManager.GetFlag(d.flags, "t.knife") != 0;
             AlbertStory = SaveManager.GetFlag(d.flags, "t.albert");
         }
 

@@ -575,6 +575,22 @@ namespace NeonBreaker
             });
         }
 
+        /// <summary>Con dao đỏ nằm dưới đất (pivot giữa đáy).</summary>
+        public static Sprite Knife()
+        {
+            return Cached("redknife", () =>
+            {
+                var c = new PxCanvas(18, 8);
+                c.Rect(1, 3, 10, 3, K(0xE02020));
+                c.Rect(1, 3, 10, 1, K(0xFF6A6A));
+                c.Rect(11, 4, 2, 1, K(0xE02020));
+                c.Rect(10, 2, 1, 5, K(0x8A8A94));
+                c.Rect(11, 3, 6, 3, K(0x4A2A1A));
+                c.Outline(Ink);
+                return c;
+            });
+        }
+
         /// <summary>Túi tiền cậu bé ôm (nhỏ, pivot giữa đáy).</summary>
         public static Sprite CoinBag()
         {

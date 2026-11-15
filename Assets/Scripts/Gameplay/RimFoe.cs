@@ -13,6 +13,7 @@ namespace NeonBreaker
         public enum Kind { LabRobot, Guard, Robber }
 
         public static readonly List<RimFoe> Live = new List<RimFoe>();
+        public static void ResetStatics() { Live.Clear(); }
 
         public Kind kind;
         public Rank rank = Rank.C;

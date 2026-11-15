@@ -42,6 +42,42 @@ namespace NeonBreaker
                 ceiling = new Color(0.03f, 0.03f, 0.05f), floor = new Color(0.06f, 0.06f, 0.09f), neon = new Color(1f, 0.10f, 0.24f), light = new Color(1f, 0.3f, 0.35f)
             };
         }
+        /// <summary>MerShop: gỗ cũ, ánh cam yếu ớt.</summary>
+        public static RoomStyle Shabby()
+        {
+            return new RoomStyle
+            {
+                wall = new Color(0.30f, 0.23f, 0.17f), wainscot = new Color(0.18f, 0.14f, 0.10f), pilaster = new Color(0.23f, 0.18f, 0.13f),
+                ceiling = new Color(0.10f, 0.08f, 0.06f), floor = new Color(0.14f, 0.11f, 0.09f), neon = new Color(0.90f, 0.57f, 0.23f), light = new Color(1f, 0.75f, 0.45f)
+            };
+        }
+        /// <summary>Phòng kín của Furra: gần như đen, ánh đỏ sẫm.</summary>
+        public static RoomStyle Vault()
+        {
+            return new RoomStyle
+            {
+                wall = new Color(0.055f, 0.055f, 0.08f), wainscot = new Color(0.03f, 0.03f, 0.05f), pilaster = new Color(0.08f, 0.08f, 0.11f),
+                ceiling = new Color(0.015f, 0.015f, 0.025f), floor = new Color(0.035f, 0.035f, 0.05f), neon = new Color(0.69f, 0.12f, 0.19f), light = new Color(0.75f, 0.25f, 0.30f)
+            };
+        }
+        /// <summary>Trại Ryber: trời đêm, đất, ánh lửa.</summary>
+        public static RoomStyle Camp()
+        {
+            return new RoomStyle
+            {
+                wall = new Color(0.09f, 0.08f, 0.13f), wainscot = new Color(0.17f, 0.13f, 0.09f), pilaster = new Color(0.12f, 0.10f, 0.15f),
+                ceiling = new Color(0.03f, 0.03f, 0.06f), floor = new Color(0.16f, 0.12f, 0.08f), neon = new Color(1f, 0.54f, 0.23f), light = new Color(1f, 0.65f, 0.35f)
+            };
+        }
+        /// <summary>Lều lớn của Rossie: vải bạt.</summary>
+        public static RoomStyle Tent()
+        {
+            return new RoomStyle
+            {
+                wall = new Color(0.33f, 0.30f, 0.20f), wainscot = new Color(0.20f, 0.17f, 0.11f), pilaster = new Color(0.26f, 0.22f, 0.15f),
+                ceiling = new Color(0.15f, 0.13f, 0.09f), floor = new Color(0.16f, 0.12f, 0.08f), neon = new Color(1f, 0.54f, 0.23f), light = new Color(1f, 0.75f, 0.45f)
+            };
+        }
         public static RoomStyle Arena()
         {
             return new RoomStyle
@@ -166,6 +202,7 @@ namespace NeonBreaker
             hidden.Clear();
             rooms.Clear();
             ArenaBuilder.ResetStatics();
+            MerShopBuilder.ResetStatics();
         }
 
         public static Transform Root
@@ -255,6 +292,7 @@ namespace NeonBreaker
                 Inside = true;
                 var r = build();
                 SetRoom(r, lx >= 0f ? lx : r.entryX);
+                Merc.SetInterior(true);
                 GameManager.Banner(r.Title, r.style.neon, 2.6f);
             }));
         }
@@ -282,6 +320,7 @@ namespace NeonBreaker
                 ShowStreet();
                 Cfg.LevelMinX = savedMin; Cfg.LevelMaxX = savedMax;
                 Place(returnX);
+                Merc.SetInterior(false);
                 var pm = PlaceManager.Inst;
                 if (pm != null) GameManager.Banner(pm.Title, pm.TitleColor, 2.0f);
             }));

@@ -88,6 +88,8 @@ namespace NeonBreaker
             MainMenuUi.ResetStatics();
             PlaceManager.Inst = null;
             TutorialManager.Inst = null;
+            Merc.ResetStatics();
+            RimFoe.ResetStatics();
         }
 
         public static void Banner(string text, Color c, float dur = 3f)
@@ -107,6 +109,8 @@ namespace NeonBreaker
             // sang Scene đích nên người chơi kẹt ở bản đồ, M / ESC không đóng được.)
             BaseUi.ResetStatics();
             Interior.ResetStatics();
+            Merc.ResetStatics();
+            RimFoe.ResetStatics();
             if (!GameFlow.Carry)
             {
                 Inventory.ResetAll();

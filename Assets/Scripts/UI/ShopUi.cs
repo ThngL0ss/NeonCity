@@ -36,9 +36,13 @@ namespace NeonBreaker
 
         const int Visible = 9;
 
-        public static void Open(Kind k)
+        static int startCol;
+
+        /// <summary>startCol: 0 = mở ở cột MUA, 1 = mở ở cột BÁN.</summary>
+        public static void Open(Kind k, int startCol = 0)
         {
             kind = k;
+            ShopUi.startCol = startCol;
             BaseUi.Open(BaseMode.Shop);
         }
 
@@ -55,7 +59,7 @@ namespace NeonBreaker
 
         public static void ResetStatics() { buy.Clear(); sell.Clear(); msg = ""; msgT = 0f; col = 0; selBuy = selSell = 0; }
 
-        public static void OnOpen() { col = 0; selBuy = selSell = 0; msg = ""; msgT = 0f; Rebuild(); }
+        public static void OnOpen() { col = startCol; selBuy = selSell = 0; msg = ""; msgT = 0f; Rebuild(); }
 
         static bool InKind(ItemData it)
         {

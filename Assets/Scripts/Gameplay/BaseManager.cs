@@ -142,6 +142,23 @@ namespace NeonBreaker
                 lines.Add(new DlgLine("XbAst-013", Cfg.L("Hừ, đúng là lão già khó ưa.", "Hmph, what a cranky old man."), Cfg.Cyan));
             }
 
+            // Core-T06 thật (nhận ở ZenMonastery): Albert nói về Shengu rồi cất giữ lõi
+            if (Town.AlbertStory == Town.AlbertLocked && Town.Shengu == Town.ShenguDone) Town.AlbertStory = Town.AlbertPending;   // lưu cũ chưa có cờ
+            if (!first && Town.AlbertStory == Town.AlbertPending)
+            {
+                lines.Add(new DlgLine("ALBERT", Cfg.L("Ồ! Vậy là cậu đã gặp lão Shengu rồi sao.", "Oh! So you've met old Shengu."), a));
+                lines.Add(new DlgLine("ALBERT", Cfg.L("Lão là chủ trì của Phe Hòa hảo – ZenCity.", "He is the head of the Peace faction – ZenCity."), a));
+                lines.Add(new DlgLine("ALBERT", Cfg.L("Một lão già xảo quyệt! Chẳng phù hợp với chiếc áo hắn đang mặc gì cả.", "A cunning old man! He doesn't suit the robe he wears at all."), a));
+                var keep = new DlgLine("ALBERT", Cfg.L("Nhưng cũng thật tốt vì lão vẫn giữ lời và đưa cậu item SS.", "But it's good that he kept his word and gave you the SS item."), a);
+                keep.onShow = () =>
+                {
+                    if (QuestItems.Take(QuestItems.Core6))
+                        GameManager.Banner(Cfg.L("ALBERT ĐÃ CẤT GIỮ CORE-T06", "ALBERT KEEPS CORE-T06"), Cfg.Yellow, 3.5f);
+                    Town.AlbertStory = Town.AlbertDone;
+                };
+                lines.Add(keep);
+            }
+
             var claimed = first ? null : BaseMissions.TryClaim();
             if (claimed != null)
             {

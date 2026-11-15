@@ -156,6 +156,51 @@ namespace NeonBreaker
             Destroy(gameObject);
         }
 
+        // ------------------------------------------------------------ hiệu ứng từ lính đánh thuê (Merc)
+        bool weakened, freezing;
+        float freezeUntil;
+
+        /// <summary>Làm yếu: giảm frac (0..1) máu hiện tại và sát thương trong dur giây (Furra kỹ năng 1, kẻ thù bậc A).</summary>
+        public void Weaken(float dur, float frac)
+        {
+            if (dead || weakened) return;
+            weakened = true;
+            hp = Mathf.Max(1f, hp * (1f - frac));
+            StartCoroutine(WeakenRoutine(dur, frac));
+        }
+
+        System.Collections.IEnumerator WeakenRoutine(float dur, float frac)
+        {
+            float old = dmgMul;
+            dmgMul = old * (1f - frac);
+            float t = 0f;
+            while (t < dur && !dead) { t += Time.deltaTime; yield return null; }
+            dmgMul = old;
+            weakened = false;
+        }
+
+        /// <summary>Làm choáng: đứng im (tắt AI) trong dur giây. Vẫn bị đánh được.</summary>
+        public void Freeze(float dur)
+        {
+            if (dead || dur <= 0f) return;
+            freezeUntil = Mathf.Max(freezeUntil, Time.time + dur);
+            if (!freezing) StartCoroutine(FreezeRoutine());
+        }
+
+        System.Collections.IEnumerator FreezeRoutine()
+        {
+            freezing = true;
+            enabled = false;                                            // OnDisable gỡ khỏi danh sách => thêm lại để vẫn đánh được
+            if (!Hittable.All.Contains(this)) Hittable.All.Add(this);
+            if (!Live.Contains(this)) Live.Add(this);
+            var rb = GetComponent<Rigidbody2D>();
+            if (rb != null) rb.SetVel(Vector2.zero);
+            Fx.Text(Center + new Vector2(0f, 1.2f), Cfg.L("CHOÁNG!", "STUNNED!"), Cfg.Yellow, 1.0f);
+            while (Time.time < freezeUntil && !dead) yield return null;
+            freezing = false;
+            if (!dead) enabled = true;
+        }
+
         /// <summary>Xoá hết quái đang sống (không rơi đồ). Trả về số quái đã xoá.</summary>
         public static int BanishAll()
         {

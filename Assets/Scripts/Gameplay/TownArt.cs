@@ -12,6 +12,11 @@ namespace NeonBreaker
         public int hairStyle = 1;
         public int hat = -1, beard = -1, tie = -1;
         public bool shades, robe;
+        /// <summary>Khăn / mặt nạ che nửa mặt dưới (màu), -1 = không.</summary>
+        public int mask = -1;
+        /// <summary>Bịt mắt (dải đen), tay ngắn (để trần), mũ giáp kín (màu = hat), tỉ lệ cơ thể (trẻ em 0.65).</summary>
+        public bool blind, sleeveless, helmet;
+        public float scale = 1f;
         public Look(string id) { this.id = id; }
     }
 
@@ -88,8 +93,9 @@ namespace NeonBreaker
             }
             if (l.tie >= 0) { c.Rect(ox + 6, oy + 8, 2, 5, K(l.tie)); c.Rect(ox + 6, oy + 8, 2, 1, Sh(K(l.tie), 0.7f)); }
             int swing = frame == 1 ? 1 : frame == 2 ? -1 : 0;
-            c.Rect(ox + 2, oy + 8 + (swing > 0 ? 1 : 0), 1, 6, topD);
-            c.Rect(ox + 11, oy + 8 + (swing < 0 ? 1 : 0), 1, 6, topD);
+            Color32 armC = l.sleeveless ? skinD : topD;
+            c.Rect(ox + 2, oy + 8 + (swing > 0 ? 1 : 0), 1, 6, armC);
+            c.Rect(ox + 11, oy + 8 + (swing < 0 ? 1 : 0), 1, 6, armC);
             c.Rect(ox + 2, oy + 14 + (swing > 0 ? 1 : 0), 1, 1, skin);
             c.Rect(ox + 11, oy + 14 + (swing < 0 ? 1 : 0), 1, 1, skin);
 
@@ -125,6 +131,22 @@ namespace NeonBreaker
                 c.Set(ox + 8, oy + 3, Ink);
             }
             if (l.beard >= 0) c.Rect(ox + 4, oy + 5, 6, 2, K(l.beard));
+            if (l.blind) c.Rect(ox + 3, oy + 3, 8, 2, K(0x050508));
+            if (l.helmet)
+            {
+                Color32 hm = K(l.hat >= 0 ? l.hat : 0xE8E8F0);
+                c.Rect(ox + 3, oy + 0, 8, 4, hm);
+                c.Rect(ox + 3, oy + 4, 1, 2, hm);
+                c.Rect(ox + 10, oy + 4, 1, 2, hm);
+                c.Rect(ox + 3, oy + 0, 8, 1, Sh(hm, 1.1f));
+                c.Rect(ox + 4, oy + 3, 6, 1, K(0x14161F));               // khe nhìn
+            }
+            if (l.mask >= 0)
+            {
+                Color32 mk = K(l.mask);
+                c.Rect(ox + 4, oy + 4, 6, 3, mk);
+                c.Rect(ox + 3, oy + 6, 8, 2, Sh(mk, 0.82f));
+            }
             c.Outline(Ink);
             return c;
         }

@@ -8,11 +8,13 @@ namespace NeonBreaker
     ///  • Gear (quầy trái): mua / bán vật phẩm nhặt được (nguyên liệu, vật có giá trị) và trang bị;
     ///  • Supply (quầy phải): mua / bán vật phẩm tiêu hao và linh kiện (chỉ bậc B trở xuống).
     /// Cột trái = MUA (hàng bán sẵn, lấy từ ItemDatabase), cột phải = BÁN (đồ trong kho đồ). A / D đổi cột, W / S chọn, ENTER / F mua - bán 1 cái, ESC thoát.
-    /// Giá mua = 3 lần giá bán của vật phẩm (tối thiểu 10). Linh kiện: giá theo bậc, bán lại được một nửa.
+    /// MerShop (Rìa Phố Neon, phe Đánh thuê) dùng chung bảng này: Kind.Mer = mua trang bị + tiêu hao + linh kiện bậc C trở xuống + "rác" (nguyên liệu / vật thừa);
+    /// bán mọi vật phẩm trong kho (trừ vật phẩm nhiệm vụ).
+    /// Giá mua = 3 lần giá bán của vật phẩm (tối thiểu 10; "rác" = 2 lần, tối thiểu 5). Linh kiện: giá theo bậc, bán lại được một nửa.
     /// </summary>
     public static class ShopUi
     {
-        public enum Kind { Gear, Supply }
+        public enum Kind { Gear, Supply, Mer }
 
         class Row
         {
@@ -34,9 +36,13 @@ namespace NeonBreaker
 
         const int Visible = 9;
 
-        public static void Open(Kind k)
+        static int startCol;
+
+        /// <summary>startCol: 0 = mở ở cột MUA, 1 = mở ở cột BÁN.</summary>
+        public static void Open(Kind k, int startCol = 0)
         {
             kind = k;
+            ShopUi.startCol = startCol;
             BaseUi.Open(BaseMode.Shop);
         }
 
@@ -53,14 +59,17 @@ namespace NeonBreaker
 
         public static void ResetStatics() { buy.Clear(); sell.Clear(); msg = ""; msgT = 0f; col = 0; selBuy = selSell = 0; }
 
-        public static void OnOpen() { col = 0; selBuy = selSell = 0; msg = ""; msgT = 0f; Rebuild(); }
+        public static void OnOpen() { col = startCol; selBuy = selSell = 0; msg = ""; msgT = 0f; Rebuild(); }
 
         static bool InKind(ItemData it)
         {
             if (it == null || it.questItem) return false;
+            if (kind == Kind.Mer) return true;
             if (kind == Kind.Gear) return it.kind == ItemKind.Passive || it.kind == ItemKind.Material || it.kind == ItemKind.Valuable;
             return it.kind == ItemKind.Consumable;
         }
+
+        static bool IsJunk(ItemData it) { return it.kind == ItemKind.Valuable || it.kind == ItemKind.Material; }
 
         static void Rebuild()
         {
@@ -69,12 +78,14 @@ namespace NeonBreaker
             for (int i = 0; i < all.Count; i++)
             {
                 var it = all[i];
-                if (!InKind(it) || it.kind == ItemKind.Valuable) continue;      // vật có giá trị chỉ bán lại, không bán sẵn
-                buy.Add(new Row { item = it, price = Mathf.Max(10, it.sellValue * 3), name = it.DisplayName, color = it.color, icon = it.icon, have = Inventory.Count(it) });
+                if (!InKind(it)) continue;
+                if (kind != Kind.Mer && it.kind == ItemKind.Valuable) continue;      // vật có giá trị chỉ bán lại, không bán sẵn
+                int pr = kind == Kind.Mer && IsJunk(it) ? Mathf.Max(5, it.sellValue * 2) : Mathf.Max(10, it.sellValue * 3);
+                buy.Add(new Row { item = it, price = pr, name = it.DisplayName, color = it.color, icon = it.icon, have = Inventory.Count(it) });
             }
             buy.Sort((a, b) => a.item.kind != b.item.kind ? a.item.kind.CompareTo(b.item.kind) : a.price.CompareTo(b.price));
-            if (kind == Kind.Supply)
-                for (Rank r = Rank.F; r <= Rank.B; r++)
+            if (kind == Kind.Supply || kind == Kind.Mer)
+                for (Rank r = Rank.F; r <= (kind == Kind.Mer ? Rank.C : Rank.B); r++)
                     buy.Add(new Row { isPart = true, rank = r, price = PartPrice(r), name = Cfg.L("Linh kiện bậc ", "Part rank ") + r, color = PowerRules.RankColor(r), have = SkillSystem.Parts(r) });
 
             for (int i = 0; i < Inventory.Slots.Count; i++)
@@ -150,11 +161,12 @@ namespace NeonBreaker
             h.Dim(0.55f);
             Rect panel = h.R(110, 56, 1060, 608);
             h.Fill(panel, new Color(0.01f, 0.02f, 0.07f, 0.96f));
-            Color tc = kind == Kind.Gear ? Cfg.Cyan : Cfg.Lime;
+            Color tc = kind == Kind.Gear ? Cfg.Cyan : kind == Kind.Mer ? Cfg.Orange : Cfg.Lime;
             h.Outline(panel, tc, 3f);
-            h.Txt(h.R(136, 66, 700, 40), kind == Kind.Gear ? Cfg.L("QUẦY VẬT PHẨM & TRANG BỊ", "ITEMS & GEAR COUNTER") : Cfg.L("QUẦY TIÊU HAO & LINH KIỆN", "CONSUMABLES & PARTS COUNTER"), 28, tc, TextAnchor.MiddleLeft);
+            h.Txt(h.R(136, 66, 700, 40), kind == Kind.Gear ? Cfg.L("QUẦY VẬT PHẨM & TRANG BỊ", "ITEMS & GEAR COUNTER") : kind == Kind.Mer ? Cfg.L("MERSHOP — MUA BÁN", "MERSHOP — BUY & SELL") : Cfg.L("QUẦY TIÊU HAO & LINH KIỆN", "CONSUMABLES & PARTS COUNTER"), 28, tc, TextAnchor.MiddleLeft);
             h.Txt(h.R(850, 66, 290, 40), Cfg.L("Xu: ", "Coins: ") + Inventory.Coins, 26, Cfg.Yellow, TextAnchor.MiddleRight);
             if (kind == Kind.Supply) h.Txt(h.R(136, 104, 800, 22), Cfg.L("Linh kiện: chỉ nhận / bán bậc B trở xuống", "Parts: rank B and below only"), 14, Cfg.A(Color.white, 0.6f), TextAnchor.MiddleLeft, false);
+            if (kind == Kind.Mer) h.Txt(h.R(136, 104, 800, 22), Cfg.L("Linh kiện: chỉ có từ bậc C trở xuống · có cả “rác”", "Parts: rank C and below only · trash too"), 14, Cfg.A(Color.white, 0.6f), TextAnchor.MiddleLeft, false);
 
             bool moved = (Event.current.mousePosition - lastMouse).sqrMagnitude > 1f;
             DrawColumn(h, 0, 136, Cfg.L("MUA", "BUY"), buy, ref selBuy, moved);

@@ -68,6 +68,7 @@ namespace NeonBreaker
                 if (CameraRig.Inst != null) CameraRig.Inst.Snap();
             }
             StreetBuildings.Setup(placeId);            // lớp nhà 2 (làm tối) + lớp 3 (toà nhà vào được)
+            Merc.SpawnActive();                        // lính đánh thuê đang chọn đi cùng
             Scatter();
             if (GameManager.State == GameState.Playing) GameManager.Banner(Title, TitleColor, 3.5f);
         }

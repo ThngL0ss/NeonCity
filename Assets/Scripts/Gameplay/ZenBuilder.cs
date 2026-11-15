@@ -183,7 +183,16 @@ namespace NeonBreaker
             l.Add(S(who, "Này! Ta đọc được tâm can của cậu đó!!!", "Hey! I can read your heart, you know!!!"));
             l.Add(P("Thì?", "So?"));
             l.Add(P("Lão cũng chơi ta 1 vố còn gì", "You played a trick on me too, didn't you"));
-            DialogueUi.Begin(l, null);
+            DialogueUi.Begin(l, () =>
+            {
+                // đã nhận Core-T06 thật → mở khoá câu chuyện mới ở căn cứ (Albert sẽ nói chuyện, xem BaseManager.TalkToAlbert)
+                if (Town.Shengu == Town.ShenguDone && Town.AlbertStory == Town.AlbertLocked)
+                {
+                    Town.AlbertStory = Town.AlbertPending;
+                    GameManager.Banner(Cfg.L("MỞ KHÓA CÂU CHUYỆN MỚI", "NEW STORY UNLOCKED"), Cfg.Yellow, 4f);
+                    Sfx.Play("victory", 0.6f, 1.1f);
+                }
+            });
         }
     }
 }

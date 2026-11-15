@@ -98,6 +98,7 @@ namespace NeonBreaker
         {
             // rải thùng dầu + nguyên liệu dọc đường (cần ArtBank ▸ World Item Prefab)
             WorldItem.Scatter(scatterOilCans, scatterMaterials, Cfg.LevelMinX + 8f, Cfg.GateX - 8f);
+            Merc.SpawnActive();      // lính đánh thuê đang chọn đi cùng (chỉ khi đã thuê ở MerShop)
         }
 
         void OnDestroy() { if (Instance == this) Instance = null; }

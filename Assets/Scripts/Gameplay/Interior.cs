@@ -203,6 +203,7 @@ namespace NeonBreaker
             rooms.Clear();
             ArenaBuilder.ResetStatics();
             MerShopBuilder.ResetStatics();
+            RyberBuilder.ResetStatics();
         }
 
         public static Transform Root

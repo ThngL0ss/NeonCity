@@ -575,6 +575,22 @@ namespace NeonBreaker
             });
         }
 
+        /// <summary>Túi tiền cậu bé ôm (nhỏ, pivot giữa đáy).</summary>
+        public static Sprite CoinBag()
+        {
+            return Cached("coinbag", () =>
+            {
+                var c = new PxCanvas(10, 11);
+                c.Disc(5, 7, 3, K(0x8A6A3A));
+                c.Rect(3, 9, 5, 2, K(0x8A6A3A));
+                c.Rect(3, 3, 5, 1, K(0x5A3A1A));
+                c.Rect(4, 2, 3, 1, K(0xE8C040));
+                c.Set(4, 6, K(0xFFE45A)); c.Set(6, 7, K(0xFFE45A));
+                c.Outline(Ink);
+                return c;
+            });
+        }
+
         /// <summary>Quầy tiếp tân gỗ cũ vá víu (MerShop). Pivot giữa đáy.</summary>
         public static Sprite ShabbyCounter(int wpx)
         {

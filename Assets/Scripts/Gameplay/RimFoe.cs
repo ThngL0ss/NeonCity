@@ -26,6 +26,8 @@ namespace NeonBreaker
         public System.Action<RimFoe> onDied;
         public System.Action<RimFoe> onHurt;                  // bị người chơi / lính đánh thuê đánh trúng
         public bool aggro;
+        /// <summary>Đang chạy theo kịch bản (sự kiện cậu bé): AI tự động tắt, bên ngoài điều khiển bằng Run / Stand. Wake() sẽ tắt chế độ này.</summary>
+        public bool scripted;
 
         enum S { Idle, Chase, Windup, Recover, Retreat }
         S st = S.Idle;
@@ -96,8 +98,11 @@ namespace NeonBreaker
         }
 
         // ------------------------------------------------------------ điều khiển từ bên ngoài
-        public void Wake() { if (dead) return; aggro = true; if (st == S.Idle || st == S.Retreat) st = S.Chase; }
+        public void Wake() { if (dead) return; scripted = false; aggro = true; if (st == S.Idle || st == S.Retreat) st = S.Chase; }
         public void Retreat() { if (dead) return; aggro = false; st = S.Retreat; }
+        /// <summary>Chạy theo kịch bản: dịch dx và chạy hoạt ảnh bước.</summary>
+        public void Run(float dx) { if (dead) return; if (Mathf.Abs(dx) > 0.0001f) face = dx > 0f ? 1 : -1; Move(dx); Anim(true); }
+        public void Stand() { if (dead) return; Anim(false); }
         public bool AtHome { get { return Mathf.Abs(transform.position.x - homeX) < 0.4f; } }
 
         public void Stun(float dur)
@@ -168,6 +173,7 @@ namespace NeonBreaker
             sr.color = c;
 
             if (BaseUi.IsOpen || !GameManager.Active || Interior.Busy) return;
+            if (scripted) return;
             float dt = Time.deltaTime;
             if (stunT > 0f) { stunT -= dt; Anim(false); return; }
             if (Mathf.Abs(kb) > 0.05f) { Move(kb * dt); kb = Mathf.MoveTowards(kb, 0f, 26f * dt); }

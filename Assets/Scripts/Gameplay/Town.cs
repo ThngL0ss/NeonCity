@@ -16,11 +16,28 @@ namespace NeonBreaker
         public static bool ArenaInfoDone;       // thắng liền 3 trận → đã nhận thẻ đấu sĩ
         public static int FighterWins;          // số trận đã thắng ở chế độ "đấu sĩ"
 
+        // ---- Rìa Phố Neon
+        public static bool MerMet;              // đã nghe lễ tân MerShop chào lần đầu
+        public static int MerPaid;              // số lần đã đưa tiền cho lễ tân (3 = mở phòng Furra)
+        public static int MercOwned;            // bit i = đã thuê lính đánh thuê thứ i (xem MercDefs)
+        public static int MercActive = -1;      // lính đang đi cùng (-1 = không ai)
+        public static bool RyberOpen;           // cổng trại Ryber đã mở (sau sự kiện cậu bé)
+        public static int Rossie;               // 0 chưa gặp · 1 đã nói chuyện, từ chối · 2 đồng minh
+        public static bool RossieGift;          // đã nhận 100 xu khi nói chuyện lần đầu với Rossie
+        public static int Beggar;               // 0 chưa gặp · 1 đã đưa 30 xu · 2 không đưa
+        public static bool RobbersDone;         // đã hạ đám cướp ở bãi rác (đã nhận dao đỏ)
+        // Albert: 0 chưa mở · 1 mở khoá (đã nhận Core-T06 thật, chờ về căn cứ nói chuyện) · 2 đã nói chuyện (Core-T06 do Albert cất giữ)
+        public const int AlbertLocked = 0, AlbertPending = 1, AlbertDone = 2;
+        public static int AlbertStory;
+
         public static void ResetAll()
         {
             Shengu = ShenguNone;
             ArenaInfoDone = false;
             FighterWins = 0;
+            MerMet = false; MerPaid = 0; MercOwned = 0; MercActive = -1;
+            RyberOpen = false; Rossie = 0; RossieGift = false; Beggar = 0; RobbersDone = false;
+            AlbertStory = AlbertLocked;
             QuestItems.Reset();
             Interior.ResetStatics();
         }
@@ -30,6 +47,16 @@ namespace NeonBreaker
             SaveManager.SetFlag(d.flags, "t.shengu", Shengu);
             SaveManager.SetFlag(d.flags, "t.arenaInfo", ArenaInfoDone ? 1 : 0);
             SaveManager.SetFlag(d.flags, "t.fWins", FighterWins);
+            SaveManager.SetFlag(d.flags, "t.merMet", MerMet ? 1 : 0);
+            SaveManager.SetFlag(d.flags, "t.merPaid", MerPaid);
+            SaveManager.SetFlag(d.flags, "t.mercOwned", MercOwned);
+            SaveManager.SetFlag(d.flags, "t.mercActive", MercActive + 1);
+            SaveManager.SetFlag(d.flags, "t.ryberOpen", RyberOpen ? 1 : 0);
+            SaveManager.SetFlag(d.flags, "t.rossie", Rossie);
+            SaveManager.SetFlag(d.flags, "t.rossieGift", RossieGift ? 1 : 0);
+            SaveManager.SetFlag(d.flags, "t.beggar", Beggar);
+            SaveManager.SetFlag(d.flags, "t.robbers", RobbersDone ? 1 : 0);
+            SaveManager.SetFlag(d.flags, "t.albert", AlbertStory);
         }
 
         public static void Import(SaveData d)
@@ -37,6 +64,16 @@ namespace NeonBreaker
             Shengu = SaveManager.GetFlag(d.flags, "t.shengu");
             ArenaInfoDone = SaveManager.GetFlag(d.flags, "t.arenaInfo") != 0;
             FighterWins = SaveManager.GetFlag(d.flags, "t.fWins");
+            MerMet = SaveManager.GetFlag(d.flags, "t.merMet") != 0;
+            MerPaid = SaveManager.GetFlag(d.flags, "t.merPaid");
+            MercOwned = SaveManager.GetFlag(d.flags, "t.mercOwned");
+            MercActive = SaveManager.GetFlag(d.flags, "t.mercActive") - 1;
+            RyberOpen = SaveManager.GetFlag(d.flags, "t.ryberOpen") != 0;
+            Rossie = SaveManager.GetFlag(d.flags, "t.rossie");
+            RossieGift = SaveManager.GetFlag(d.flags, "t.rossieGift") != 0;
+            Beggar = SaveManager.GetFlag(d.flags, "t.beggar");
+            RobbersDone = SaveManager.GetFlag(d.flags, "t.robbers") != 0;
+            AlbertStory = SaveManager.GetFlag(d.flags, "t.albert");
         }
 
         /// <summary>Dòng nhiệm vụ phụ đang làm (null = không có).</summary>
@@ -75,7 +112,7 @@ namespace NeonBreaker
     /// </summary>
     public static class QuestItems
     {
-        public const string Core6Fake = "Quest_core_t06_fake", Core6 = "Quest_core_t06", BlackBox = "Quest_black_box", FighterCard = "Quest_fighter_card";
+        public const string Core6Fake = "Quest_core_t06_fake", Core6 = "Quest_core_t06", BlackBox = "Quest_black_box", FighterCard = "Quest_fighter_card", RedKnife = "Quest_red_knife";
         static readonly Dictionary<string, ItemData> map = new Dictionary<string, ItemData>();
 
         public static void Reset()
@@ -126,6 +163,13 @@ namespace NeonBreaker
                     it.descEn = "A fighter's membership card from ArenaCyber. A plain black card.";
                     it.color = new Color(1f, 0.25f, 0.35f, 1f);
                     it.icon = IconCard();
+                    break;
+                case RedKnife:
+                    it.nameVi = "Dao đỏ"; it.nameEn = "Red knife";
+                    it.descVi = "Con dao đỏ nhặt được từ đám cướp ở Bãi rác công nghệ. Không phải trang bị.";
+                    it.descEn = "A red knife taken from the robbers at the tech junkyard. Not equipment.";
+                    it.color = new Color(1f, 0.2f, 0.2f, 1f);
+                    it.icon = IconKnife();
                     break;
                 default:
                     Object.Destroy(it);
@@ -181,6 +225,15 @@ namespace NeonBreaker
             c.Rect(2, 12, 12, 2, PxCanvas.C(0x0A0A12));
             c.Text(6, 7, "?", PxCanvas.C(0xFF2A4A));
             c.Frame(2, 4, 12, 10, PxCanvas.C(0x565C70));
+            c.Outline(PxCanvas.C(0x0A0A16));
+            return c.Bake(0.5f, 0.5f);
+        }
+
+        static Sprite IconKnife()
+        {
+            var c = new PxCanvas(16, 16);
+            c.Line(3, 12, 11, 4, PxCanvas.C(0xE02828)); c.Line(4, 12, 12, 4, PxCanvas.C(0xFF5A5A)); c.Line(3, 11, 10, 4, PxCanvas.C(0xA01414));
+            c.Rect(2, 12, 3, 3, PxCanvas.C(0x3A2A1E)); c.Rect(4, 10, 2, 2, PxCanvas.C(0x9A9AA8));
             c.Outline(PxCanvas.C(0x0A0A16));
             return c.Bake(0.5f, 0.5f);
         }

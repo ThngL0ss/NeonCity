@@ -67,6 +67,8 @@ namespace NeonBreaker
 
         // ------------------------------------------------------------ state
         public float hp, maxHp;
+        /// <summary>Giáp tạm (do lính đánh thuê tạo): hấp thụ sát thương trước khi trừ máu.</summary>
+        public float shield;
         public int healCharges;
         public bool Dead;
         public int Facing = 1;
@@ -430,6 +432,9 @@ namespace NeonBreaker
             Sfx.Play("warn", 0.7f, 1.7f);
         }
 
+        /// <summary>Giải trừ mọi hiệu ứng khống chế (choáng).</summary>
+        public void ClearControl() { stunT = 0f; }
+
         /// <summary>Đẩy người chơi (không gây sát thương).</summary>
         public void Knock(Vector2 impulse)
         {
@@ -447,6 +452,19 @@ namespace NeonBreaker
             if (Dead || !GameManager.Active) return 0f;
             if (Invulnerable) return 0f;
             dmg *= Inventory.Mul(ItemStat.DamageTakenPct);
+            if (shield > 0f)
+            {
+                float ab = Mathf.Min(shield, dmg);
+                shield -= ab; dmg -= ab;
+                Fx.Text(Center + new Vector2(0f, 1.2f), "-" + Mathf.RoundToInt(ab), Cfg.Cyan, 1.1f);
+                if (dmg <= 0.001f)
+                {
+                    hurtT = hurtInvuln * 0.5f;
+                    Sfx.Play("hit", 0.6f, 1.4f);
+                    Fx.Sparks(Center, new Vector2(1f, 0.4f), Cfg.Cyan, 8, 10f, 60f);
+                    return 0.01f;
+                }
+            }
 
             hp -= dmg;
             hurtT = hurtInvuln;

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace NeonBreaker
 {
-    public enum BaseMode { None, Dialogue, Craft, Fusion, Map, Stash, Missions, Shop }
+    public enum BaseMode { None, Dialogue, Craft, Fusion, Map, Stash, Missions, Shop, Merc }
 
     /// <summary>
     /// Các bảng giao diện của căn cứ (và bản đồ): hội thoại, bàn chế tác, máy ghép linh kiện, bản đồ.
@@ -18,6 +18,7 @@ namespace NeonBreaker
             Mode = BaseMode.None;
             MapUi.ResetStatics();
             ShopUi.ResetStatics();
+            MercUi.ResetStatics();
             DialogueUi.Reset();
         }
 
@@ -35,6 +36,7 @@ namespace NeonBreaker
             else if (m == BaseMode.Map) MapUi.OnOpen();
             else if (m == BaseMode.Stash) StashUi.OnOpen();
             else if (m == BaseMode.Shop) ShopUi.OnOpen();
+            else if (m == BaseMode.Merc) MercUi.OnOpen();
         }
 
         public static void Close()
@@ -59,6 +61,7 @@ namespace NeonBreaker
                 case BaseMode.Stash: StashUi.UpdateInput(); break;
                 case BaseMode.Missions: MissionUi.UpdateInput(); break;
                 case BaseMode.Shop: ShopUi.UpdateInput(); break;
+                case BaseMode.Merc: MercUi.UpdateInput(); break;
             }
         }
 
@@ -73,6 +76,7 @@ namespace NeonBreaker
                 case BaseMode.Stash: StashUi.Draw(h); break;
                 case BaseMode.Missions: MissionUi.Draw(h); break;
                 case BaseMode.Shop: ShopUi.Draw(h); break;
+                case BaseMode.Merc: MercUi.Draw(h); break;
             }
         }
 

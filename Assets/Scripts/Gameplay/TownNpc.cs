@@ -43,6 +43,7 @@ namespace NeonBreaker
             n.sr = vis.AddComponent<SpriteRenderer>();
             n.sr.sharedMaterial = Art.DefMat;
             n.sr.sortingOrder = 14;
+            if (look.scale != 1f) vis.transform.localScale = new Vector3(look.scale, look.scale, 1f);
             n.sr.sprite = mode == Mode.Sit ? n.sit : n.idle;
             n.timer = Random.Range(0.2f, 2.5f);
             n.Face();

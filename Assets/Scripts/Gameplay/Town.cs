@@ -31,6 +31,44 @@ namespace NeonBreaker
         public const int AlbertLocked = 0, AlbertPending = 1, AlbertDone = 2;
         public static int AlbertStory;
 
+        // ---- Thám hiểm: bit i = đã tới / đã vào khu vực ExploreIds[i]. Thứ tự này được LƯU trong file lưu game — chỉ thêm vào cuối, đừng đổi chỗ.
+        //  • Toà vào được (CenterShop, RoboStore, ZenMonastery, ArenaCyber, MerShop, Lều trại) tính khi bước vào lần đầu;
+        //  • công trình không vào được (DesTown4, Phòng thí nghiệm, Bãi rác, Khu mỏ, ReWolrld) tính khi người chơi đi tới trước mặt (xem SiteExplorer).
+        public static readonly string[] ExploreIds =
+        {
+            CenterShopBuilder.Id, RoboStoreBuilder.Id, ZenBuilder.Id, DesTownBuilder.Id, ArenaBuilder.Id,
+            MerShopBuilder.Id, StreetBuildings.LabId, RyberBuilder.Id, StreetBuildings.JunkId, StreetBuildings.MineId, StreetBuildings.SlaveId,
+        };
+        public static int Explored;
+        // Albert kể về các phe: 0 chưa mở · 1 mở khoá (đã thám hiểm hết, chờ về căn cứ) · 2 đã kể
+        public const int FactionLocked = 0, FactionPending = 1, FactionDone = 2;
+        public static int FactionStory;
+
+        public static int ExploreIndex(string id) { return System.Array.IndexOf(ExploreIds, id); }
+        public static bool IsExplored(string id) { int i = ExploreIndex(id); return i >= 0 && (Explored & (1 << i)) != 0; }
+        public static bool AllExplored { get { int all = (1 << ExploreIds.Length) - 1; return (Explored & all) == all; } }
+
+        /// <summary>Đánh dấu đã thám hiểm một khu vực. Khi đủ tất cả: mở khoá phần Albert kể về các phe (thông báo hiện sau khi hiệu ứng vào nhà kết thúc).</summary>
+        public static void Explore(string id)
+        {
+            int i = ExploreIndex(id);
+            if (i < 0 || (Explored & (1 << i)) != 0) return;
+            Explored |= 1 << i;
+            if (FactionStory == FactionLocked && AllExplored)
+            {
+                FactionStory = FactionPending;
+                if (GameManager.Inst != null) GameManager.Inst.StartCoroutine(UnlockBanner());
+            }
+        }
+
+        static System.Collections.IEnumerator UnlockBanner()
+        {
+            yield return new WaitForSeconds(2.7f);              // đợi tên toà nhà (Interior) hiện xong
+            while (Interior.Busy) yield return null;
+            GameManager.Banner(Cfg.L("MỞ KHÓA CÂU CHUYỆN MỚI", "NEW STORY UNLOCKED"), Cfg.Yellow, 4f);
+            Sfx.Play("victory", 0.6f, 1.1f);
+        }
+
         public static void ResetAll()
         {
             Shengu = ShenguNone;
@@ -39,6 +77,7 @@ namespace NeonBreaker
             MerMet = false; MerPaid = 0; MercOwned = 0; MercActive = -1;
             RyberOpen = false; Rossie = 0; RossieGift = false; Beggar = 0; RobbersDone = false; KnifeTaken = false;
             AlbertStory = AlbertLocked;
+            Explored = 0; FactionStory = FactionLocked;
             QuestItems.Reset();
             Interior.ResetStatics();
         }
@@ -59,6 +98,8 @@ namespace NeonBreaker
             SaveManager.SetFlag(d.flags, "t.robbers", RobbersDone ? 1 : 0);
             SaveManager.SetFlag(d.flags, "t.knife", KnifeTaken ? 1 : 0);
             SaveManager.SetFlag(d.flags, "t.albert", AlbertStory);
+            SaveManager.SetFlag(d.flags, "t.explored", Explored);
+            SaveManager.SetFlag(d.flags, "t.faction", FactionStory);
         }
 
         public static void Import(SaveData d)
@@ -77,6 +118,8 @@ namespace NeonBreaker
             RobbersDone = SaveManager.GetFlag(d.flags, "t.robbers") != 0;
             KnifeTaken = SaveManager.GetFlag(d.flags, "t.knife") != 0;
             AlbertStory = SaveManager.GetFlag(d.flags, "t.albert");
+            Explored = SaveManager.GetFlag(d.flags, "t.explored");
+            FactionStory = SaveManager.GetFlag(d.flags, "t.faction");
         }
 
         /// <summary>Dòng nhiệm vụ phụ đang làm (null = không có).</summary>

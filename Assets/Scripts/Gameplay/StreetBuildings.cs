@@ -8,7 +8,7 @@ namespace NeonBreaker
     ///  • Lớp 1 (xa nhất, đi theo người chơi): có sẵn trong Scene (nhóm Background ▸ Far / Mid).
     ///  • Lớp 2 (nhà cố định gần người chơi, KHÔNG vào được, làm tối): các nhà có sẵn của Scene (nhóm Buildings) — được nhân màu tối đi; Rìa phố: dãy nhà đổ nát dựng thêm.
     ///  • Lớp 3 (nhà cố định gần người chơi, VÀO ĐƯỢC, sáng rõ nhất): 5 toà nhà mặt tiền mới (CenterShop, RoboStore, ZenMonastery, DesTown4, ArenaCyber) ở Phố Neon (nhóm TownLayers).
-    /// Rìa Phố Neon có cùng cách xếp lớp: lớp 3 = công trình mới (MerShop, Phòng thí nghiệm, Lều trại Ryber, Bãi rác công nghệ — xem RimDefs); lớp 2 = các lều (Shack_*) có sẵn của Scene bị làm tối + đẩy xuống sau, và dãy nhà đổ nát dựng thêm.
+    /// Rìa Phố Neon có cùng cách xếp lớp: lớp 3 = 6 công trình mới (MerShop, Phòng thí nghiệm, Lều trại Ryber, Bãi rác công nghệ, Khu mỏ bỏ hoang, ReWolrld — xem RimDefs); lớp 2 = các lều (Shack_*) có sẵn của Scene bị làm tối + đẩy xuống sau, và dãy nhà đổ nát dựng thêm.
     /// Mỗi toà có cửa chính ở giữa: đứng trước cửa bấm F để vào (xem Interior). DesTown4 chỉ có hai vệ sĩ chặn cửa (xem DesTownBuilder); ArenaCyber vào được (xem ArenaBuilder).
     /// </summary>
     public static class StreetBuildings
@@ -28,6 +28,9 @@ namespace NeonBreaker
 
         /// <summary>facade >= RimBase nghĩa là hình của RimArt (id - RimBase), ngược lại là của TownArt.</summary>
         public const int RimBase = 100;
+
+        /// <summary>Mã các công trình Rìa phố không vào được hoặc không có Builder riêng (cũng là mã dùng cho Town.ExploreIds).</summary>
+        public const string LabId = "DyberLab", JunkId = "TechJunkyard", MineId = "AbandonedMine", SlaveId = "ReWolrld";
 
         /// <summary>Danh sách toà nhà lớp 3 ở Phố Neon (x = tâm toà nhà = vị trí cửa).</summary>
         public static List<Def> Defs()
@@ -83,21 +86,24 @@ namespace NeonBreaker
                 var entry = d.entry;
                 string id = d.id;
                 float x = d.x + d.doorDx;
-                var hs = Hotspot.Make(g.transform, new Vector3(x, 0f, 0f), "VÀO " + d.vi, "ENTER " + d.en, () => Interior.Enter(id, x, entry), 2.2f);
+                var hs = Hotspot.Make(g.transform, new Vector3(x, 0f, 0f), "VÀO " + d.vi, "ENTER " + d.en, () => { Town.Explore(id); Interior.Enter(id, x, entry); }, 2.2f);
                 if (d.canEnter != null) hs.canUse = d.canEnter;
             }
+            else SiteExplorer.Add(g.transform, d.id, d.x + d.doorDx);     // không vào được: đi tới trước mặt là tính đã thám hiểm
             if (d.onPlace != null) d.onPlace(g.transform, d.x);
         }
 
         // ------------------------------------------------------------ Rìa Phố Neon
-        /// <summary>Các công trình lớp 3 của Rìa Phố Neon. Khu mỏ bỏ hoang và Trụ sở thứ 3 của Phe nô lệ chưa có thiết kế (tác giả chưa cung cấp) nên chưa dựng.</summary>
+        /// <summary>Các công trình lớp 3 của Rìa Phố Neon, từ trái sang phải (x = tâm mặt tiền; đường đi dài 0–200). Khu mỏ bỏ hoang và ReWolrld không vào được.</summary>
         public static List<Def> RimDefs()
         {
             var l = new List<Def>();
-            l.Add(new Def { id = MerShopBuilder.Id, vi = "MERSHOP", en = "MERSHOP", facade = RimBase + RimArt.FacadeMer, x = 26f, neon = new Color(1f, 0.6f, 0.2f), entry = MerShopBuilder.Shop });
-            l.Add(new Def { id = "DyberLab", vi = "PHÒNG THÍ NGHIỆM", en = "LABORATORY", facade = RimBase + RimArt.FacadeLab, x = 62f, neon = new Color(1f, 0.48f, 0.1f), enterable = false, onPlace = LabSite.Place });
-            l.Add(new Def { id = RyberBuilder.Id, vi = "LỀU TRẠI", en = "CAMP", facade = RimBase + RimArt.FacadeCamp, x = 108f, neon = new Color(1f, 0.5f, 0.15f), entry = RyberBuilder.Camp, canEnter = () => Town.RyberOpen, doorDx = RimArt.DoorDx(RimArt.FacadeCamp), onPlace = RyberBuilder.Place });
-            l.Add(new Def { id = "TechJunkyard", vi = "BÃI RÁC CÔNG NGHỆ", en = "TECH JUNKYARD", facade = RimBase + RimArt.FacadeJunk, x = 160f, neon = new Color(0.6f, 0.45f, 0.7f), enterable = false, onPlace = JunkSite.Place });
+            l.Add(new Def { id = MerShopBuilder.Id, vi = "MERSHOP", en = "MERSHOP", facade = RimBase + RimArt.FacadeMer, x = 21f, neon = new Color(1f, 0.6f, 0.2f), entry = MerShopBuilder.Shop });
+            l.Add(new Def { id = LabId, vi = "PHÒNG THÍ NGHIỆM", en = "LABORATORY", facade = RimBase + RimArt.FacadeLab, x = 50.5f, neon = new Color(1f, 0.48f, 0.1f), enterable = false, onPlace = LabSite.Place });
+            l.Add(new Def { id = RyberBuilder.Id, vi = "LỀU TRẠI", en = "CAMP", facade = RimBase + RimArt.FacadeCamp, x = 86.5f, neon = new Color(1f, 0.5f, 0.15f), entry = RyberBuilder.Camp, canEnter = () => Town.RyberOpen, doorDx = RimArt.DoorDx(RimArt.FacadeCamp), onPlace = RyberBuilder.Place });
+            l.Add(new Def { id = JunkId, vi = "BÃI RÁC CÔNG NGHỆ", en = "TECH JUNKYARD", facade = RimBase + RimArt.FacadeJunk, x = 128.5f, neon = new Color(0.6f, 0.45f, 0.7f), enterable = false, onPlace = JunkSite.Place });
+            l.Add(new Def { id = MineId, vi = "KHU MỎ BỎ HOANG", en = "ABANDONED MINE", facade = RimBase + RimArt.FacadeMine, x = 164f, neon = new Color(0.45f, 0.4f, 0.5f), enterable = false, onPlace = MineSite.Place });
+            l.Add(new Def { id = SlaveId, vi = RimArt.SlaveName, en = RimArt.SlaveName, facade = RimBase + RimArt.FacadeSlave, x = 187.5f, neon = new Color(1f, 0.78f, 0.4f), enterable = false, onPlace = SlaveHq.Place });
             return l;
         }
 

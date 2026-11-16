@@ -9,7 +9,10 @@ namespace NeonBreaker
     /// </summary>
     public static class RimArt
     {
-        public const int FacadeMer = 0, FacadeLab = 1, FacadeCamp = 2, FacadeJunk = 3;
+        public const int FacadeMer = 0, FacadeLab = 1, FacadeCamp = 2, FacadeJunk = 3, FacadeMine = 4, FacadeSlave = 5;
+
+        /// <summary>Tên trụ sở thứ 3 của Phe nô lệ, ghi đúng như tác giả viết (chữ trên biển được vẽ in hoa vì font 3x5 chỉ có chữ hoa).</summary>
+        public const string SlaveName = "ReWolrld";
 
         static readonly Dictionary<string, Sprite> cache = new Dictionary<string, Sprite>();
 
@@ -34,6 +37,8 @@ namespace NeonBreaker
                 case FacadeMer: return new Vector2Int(232, 128);
                 case FacadeLab: return new Vector2Int(544, 192);
                 case FacadeCamp: return new Vector2Int(448, 144);
+                case FacadeMine: return new Vector2Int(MineW, MineH);
+                case FacadeSlave: return new Vector2Int(SlaveW, SlaveH);
                 default: return new Vector2Int(736, 192);
             }
         }
@@ -50,6 +55,8 @@ namespace NeonBreaker
                     case FacadeMer: return FacadeMerShop();
                     case FacadeLab: return FacadeLab_();
                     case FacadeCamp: return FacadeCamp_();
+                    case FacadeMine: return FacadeMine_();
+                    case FacadeSlave: return FacadeSlave_();
                     default: return FacadeJunk_();
                 }
             });
@@ -225,6 +232,299 @@ namespace NeonBreaker
             // nền + dải cảnh báo
             c.Rect(0, 184, W, 8, K(0x2A3040));
             for (int x = 0; x < W; x += 16) c.Rect(x, 186, 8, 4, K(0xE8B020));
+            c.Outline(Ink);
+            return c;
+        }
+
+        // ================================================================ KHU MỎ BỎ HOANG (sườn núi đá, cửa hầm lớn, khung sắt niêm phong)
+        const int MineW = 352, MineH = 176;
+        const int MineX0 = 96, MineX1 = 256, MineBase = 168, MineCy = 92, MineCx = 176;      // miệng hầm: x từ 96 đến 256, vòm cao nhất ở y = 52
+
+        static int MineArchTop(int x)
+        {
+            float t = (x - MineCx) / 80f;
+            if (t <= -1f || t >= 1f) return MineCy;
+            return MineCy - Mathf.RoundToInt(40f * Mathf.Sqrt(1f - t * t));
+        }
+
+        /// <summary>Đèn cảnh báo đỏ trên xà cửa hầm: vị trí (đơn vị, so với tâm mặt tiền, đáy = 0) của hai đèn.</summary>
+        public static Vector2[] MineBeacons()
+        {
+            return new[] { new Vector2((118 - MineW / 2f) / 16f, (MineH - 53f) / 16f), new Vector2((234 - MineW / 2f) / 16f, (MineH - 53f) / 16f) };
+        }
+
+        /// <summary>Điểm trên vòm cửa hầm nơi bụi đá rơi xuống (đơn vị, so với tâm mặt tiền).</summary>
+        public static Vector2 MineDustPoint() { return new Vector2((MineCx - MineW / 2f) / 16f, (MineH - 56f) / 16f); }
+
+        static PxCanvas FacadeMine_()
+        {
+            int W = MineW, H = MineH;
+            var c = new PxCanvas(W, H);
+            var rnd = new System.Random(404);
+            Color32 rockL = K(0x5A5048), rockD = K(0x241E22), timber = K(0x5A3E26), dirt = K(0x2A2420);
+
+            // sườn núi đá: cao ở giữa, thấp dần ra hai bên
+            int[] top = new int[W];
+            for (int x = 0; x < W; x++)
+            {
+                float e = Mathf.Clamp01(Mathf.Min(x, W - 1 - x) / 70f);
+                e = e * e * (3f - 2f * e);
+                float wob = 5f * Mathf.Sin(x * 0.07f) + 3f * Mathf.Sin(x * 0.23f + 1f) + rnd.Next(0, 3);
+                top[x] = Mathf.Clamp(Mathf.RoundToInt(H - 26f - e * 128f + wob), 6, H - 10);
+            }
+            for (int x = 0; x < W; x++)
+            {
+                int span = Mathf.Max(1, H - 8 - top[x]);
+                for (int y = top[x]; y < H - 8; y++)
+                {
+                    Color32 col = PxCanvas.Mix(rockL, rockD, Mathf.Clamp01((y - top[x]) / (float)span * 0.9f));
+                    int n = rnd.Next(100);
+                    if (n < 7) col = Sh(col, 0.8f); else if (n > 94) col = Sh(col, 1.18f);
+                    c.Set(x, y, col);
+                }
+                c.Set(x, top[x], Sh(rockL, 1.35f));
+                c.Set(x, top[x] + 1, Sh(rockL, 1.15f));
+            }
+            // vết nứt + vỉa đá
+            for (int i = 0; i < 28; i++)
+            {
+                int x = rnd.Next(W), y = 30 + rnd.Next(120), len = 10 + rnd.Next(26);
+                int dx = i % 2 == 0 ? 1 : -1;
+                for (int k = 0; k < len; k++)
+                {
+                    if (x >= 0 && x < W && y > top[x] + 2 && y < H - 9) c.Set(x, y, Sh(rockD, 0.7f));
+                    x += rnd.Next(3) - 1 + dx; y += rnd.Next(2);
+                }
+            }
+            for (int i = 0; i < 36; i++)
+            {
+                int x = rnd.Next(W - 16), y = 36 + rnd.Next(120), len = 6 + rnd.Next(10);
+                for (int k = 0; k < len; k++)
+                    if (x + k < W && y > top[x + k] + 2 && y < H - 9) c.Set(x + k, y, Sh(rockL, 0.9f + (float)rnd.NextDouble() * 0.3f));
+            }
+
+            // nền đất + đường ray (dừng ở khung sắt)
+            c.Rect(0, H - 8, W, 8, dirt);
+            c.Rect(0, H - 8, W, 1, K(0x3A322A));
+            c.Rect(0, H - 5, MineX0 + 4, 1, K(0x7A6A62));
+            for (int x = 4; x < MineX0; x += 12) c.Rect(x, H - 4, 6, 3, K(0x3A2A1E));
+
+            // miệng hầm tối om + đường ray đi vào sâu trong hang
+            for (int x = MineX0; x < MineX1; x++)
+            {
+                int t0 = MineArchTop(x);
+                float centre = 1f - Mathf.Abs(x - MineCx) / 80f;
+                for (int y = t0; y < MineBase; y++)
+                    c.Set(x, y, PxCanvas.Mix(K(0x14121A), K(0x030306), Mathf.Clamp01(centre * 0.9f + (y - t0) / 160f)));
+            }
+            for (int k = 0; k < 6; k++)
+            {
+                float t = k / 5f;
+                int yy = Mathf.RoundToInt(Mathf.Lerp(MineBase - 6, 130, t * t));
+                int xl = Mathf.RoundToInt(Mathf.Lerp(132f, 170f, t * t)), xr = Mathf.RoundToInt(Mathf.Lerp(220f, 182f, t * t));
+                c.Line(xl - 3, yy, xr + 3, yy, K(0x2A2420));
+            }
+            c.Line(132, MineBase - 6, 170, 130, K(0x34343F));
+            c.Line(220, MineBase - 6, 182, 130, K(0x34343F));
+
+            // khung gỗ chống hầm: hai trụ + xà vòm
+            for (int x = MineX0 - 12; x < MineX1 + 12; x++)
+            {
+                bool inside = x >= MineX0 && x < MineX1;
+                int y0 = inside ? MineArchTop(x) - 7 : MineCy - 8;
+                int y1 = inside ? MineArchTop(x) : MineBase;
+                for (int y = y0; y < y1; y++)
+                {
+                    Color32 col = timber;
+                    if ((y + x / 3) % 6 == 0) col = Sh(timber, 0.75f);
+                    if (x % 20 == 0) col = Sh(timber, 0.6f);
+                    c.Set(x, y, col);
+                }
+            }
+            // sọc vàng đen ở chân hai trụ
+            for (int s = 0; s < 2; s++)
+            {
+                int x0 = s == 0 ? MineX0 - 12 : MineX1;
+                for (int x = x0; x < x0 + 12; x++)
+                    for (int y = MineBase - 24; y < MineBase; y++)
+                        c.Set(x, y, ((x + y) / 4) % 2 == 0 ? K(0xE8B020) : K(0x1A1A1A));
+            }
+
+            // các khung sắt niêm phong: 3 tấm ghép tạm (lệch nhau một chút), hai xà ngang, thanh chéo, ốc vít, rỉ sét
+            Color32[] tone = { K(0x4C4048), K(0x56463E), K(0x463C44) };
+            for (int i = 0; i < 4; i++)
+            {
+                int px = MineX0 + i * 52;
+                for (int x = px; x < px + 4; x++)
+                    for (int y = MineArchTop(x) + 1; y < MineBase; y++)
+                        c.Set(x, y, x == px ? Sh(tone[1], 1.3f) : tone[1]);
+            }
+            for (int p = 0; p < 3; p++)
+            {
+                int x0 = MineX0 + 4 + p * 52;
+                Color32 col = tone[p];
+                int off = p == 1 ? 3 : 0;
+                for (int k = 0; k < 6; k++)                                  // thanh đứng
+                {
+                    int bx = x0 + 3 + k * 8;
+                    for (int x = bx; x < bx + 2; x++)
+                        for (int y = MineArchTop(x) + 2; y < MineBase; y++)
+                            c.Set(x, y, x == bx ? Sh(col, 1.3f) : col);
+                }
+                c.Rect(x0, 108 + off, 48, 4, col); c.Rect(x0, 108 + off, 48, 1, Sh(col, 1.35f));       // xà ngang
+                c.Rect(x0, 140 - off, 48, 4, col); c.Rect(x0, 140 - off, 48, 1, Sh(col, 1.35f));
+                int ya = 112 + off, yb = 140 - off;
+                if (p != 1) { c.Line(x0, ya, x0 + 47, yb, col); c.Line(x0, ya + 1, x0 + 47, yb + 1, col); }
+                else { c.Line(x0, yb, x0 + 47, ya, col); c.Line(x0, yb + 1, x0 + 47, ya + 1, col); }
+                for (int k = 0; k < 40; k++)                                 // rỉ
+                {
+                    int rx = x0 + rnd.Next(48), ry = 60 + rnd.Next(108);
+                    if (ry > MineArchTop(rx) + 2 && c.Get(rx, ry).a > 0) c.Set(rx, ry, K(0x8A4A28));
+                }
+                c.Set(x0 + 2, 109 + off, K(0xB0A8A0)); c.Set(x0 + 45, 141 - off, K(0xB0A8A0));       // ốc vít
+            }
+            // xích + ổ khoá ngang cửa
+            for (int x = 118; x < 236; x += 4)
+            {
+                int sag = (x - MineCx) * (x - MineCx) / 1500;
+                c.Rect(x, 122 + sag, 3, 2, (x / 4) % 2 == 0 ? K(0x8A8A92) : K(0x5A5A62));
+            }
+            c.Rect(172, 127, 8, 7, K(0xB08A3A)); c.Frame(171, 126, 10, 9, K(0x3A2A10)); c.Rect(174, 123, 4, 4, K(0x6A5A44));
+
+            // biển cảnh báo
+            c.Rect(154, 76, 44, 14, K(0x7A1414)); c.Frame(154, 76, 44, 14, K(0xF2E8D0));
+            c.TextC(176, 81, "DANGER", K(0xF2E8D0), 1);
+            c.Rect(105, 118, 38, 12, K(0x1A1614)); c.Frame(105, 118, 38, 12, K(0xE8B020));
+            c.TextC(124, 121, "NO ENTRY", K(0xE8B020), 1);
+            c.Rect(152, 33, 48, 11, K(0x1A1614)); c.Frame(152, 33, 48, 11, K(0x6A5A44));
+            c.TextC(176, 36, "MINE", K(0xB08A4A), 1);
+            // đèn cảnh báo (ánh sáng đỏ chập chờn thêm lúc chạy)
+            for (int s = 0; s < 2; s++)
+            {
+                int bx = s == 0 ? 118 : 234;
+                c.Rect(bx - 3, 55, 7, 3, K(0x3A3A44));
+                c.Disc(bx, 53, 3, K(0xD83030)); c.Set(bx - 1, 52, K(0xFF9A9A));
+            }
+
+            // xe goòng gỉ bên trái
+            for (int y = 142; y < 162; y++)
+            {
+                int inset = (y - 142) / 4;
+                c.Rect(18 + inset, y, 46 - 2 * inset, 1, y % 5 == 0 ? K(0x5A3A2A) : K(0x6A4A38));
+            }
+            c.Rect(17, 141, 48, 2, K(0x7A6458));
+            for (int k = 0; k < 6; k++) c.Disc(24 + k * 7 + rnd.Next(3), 139, 3, k % 2 == 0 ? K(0x3A3A44) : K(0x4A4A56));
+            for (int k = 0; k < 22; k++) c.Set(20 + rnd.Next(42), 144 + rnd.Next(16), K(0x8A4A28));
+            c.Disc(28, 164, 4, K(0x2A2A30)); c.Disc(54, 164, 4, K(0x2A2A30)); c.Set(28, 164, K(0x8A8A92)); c.Set(54, 164, K(0x8A8A92));
+
+            // đá đổ bên phải
+            for (int i = 0; i < 16; i++)
+            {
+                int r = 3 + rnd.Next(7), rx = 264 + rnd.Next(76), ry = MineBase + 5 - r - (rx < 300 ? rnd.Next(5) : 0);
+                Color32 col = K(i % 3 == 0 ? 0x4A4048 : i % 3 == 1 ? 0x5A5048 : 0x3A3238);
+                c.Disc(rx, ry, r, col);
+                c.Disc(rx - r / 3, ry - r / 3, Mathf.Max(1, r / 3), Sh(col, 1.3f));
+            }
+            c.Outline(Ink);
+            return c;
+        }
+
+        // ================================================================ TRỤ SỞ THỨ 3 CỦA PHE NÔ LỆ — "ReWolrld" (nhà gỗ 3 tầng, mái chéo, cửa kín, cửa sổ sáng đèn)
+        const int SlaveW = 256, SlaveH = 240;
+        // cửa sổ vuông: x, y, w, h (px). Phần tử cuối là cửa sổ tròn trên đầu hồi.
+        static readonly int[][] SlaveWin =
+        {
+            new[] { 40, 68, 28, 32 }, new[] { 114, 68, 28, 32 }, new[] { 188, 68, 28, 32 },       // tầng 3
+            new[] { 40, 124, 28, 32 }, new[] { 188, 124, 28, 32 },                                  // tầng 2
+            new[] { 36, 182, 36, 28 }, new[] { 184, 182, 36, 28 },                                  // tầng 1
+            new[] { 119, 21, 18, 18 },                                                              // cửa sổ tròn ở mái
+        };
+        public static int SlaveWindowCount { get { return SlaveWin.Length; } }
+        /// <summary>Vị trí tâm cửa sổ i (so với tâm mặt tiền, đáy = 0, đơn vị) và độ rộng của nó (z, đơn vị) — dùng đặt quầng sáng hắt ra.</summary>
+        public static Vector3 SlaveWindowGlow(int i)
+        {
+            var w = SlaveWin[i];
+            return new Vector3((w[0] + w[2] * 0.5f - SlaveW / 2f) / 16f, (SlaveH - (w[1] + w[3] * 0.5f)) / 16f, w[2] / 16f);
+        }
+
+        static PxCanvas FacadeSlave_()
+        {
+            int W = SlaveW, H = SlaveH;
+            var c = new PxCanvas(W, H);
+            var rnd = new System.Random(36);
+            Color32 wood = K(0x7A5634), woodD = K(0x4E3520), trim = K(0xC8B48A), slate = K(0x3E4558), slateD = K(0x2A3040);
+            Color32 lit = K(0xFFE29A), litD = K(0xE8A44A);
+
+            // tường ván đứng + cột góc
+            for (int x = 14; x < 242; x++)
+            {
+                int plank = (x - 14) / 12;
+                Color32 col = Sh(wood, 0.9f + 0.05f * ((plank * 7) % 3));
+                c.Rect(x, 56, 1, 168, ((x - 14) % 12 == 0) ? Sh(woodD, 0.8f) : col);
+            }
+            for (int i = 0; i < 70; i++) c.Rect(14 + rnd.Next(226), 58 + rnd.Next(164), 1, 2 + rnd.Next(5), Sh(wood, 0.78f));
+            c.Rect(10, 56, 6, 168, woodD); c.Rect(240, 56, 6, 168, woodD);
+            // xà ngăn tầng
+            for (int k = 0; k < 2; k++)
+            {
+                int by = k == 0 ? 110 : 166;
+                c.Rect(8, by, 240, 5, trim); c.Rect(8, by + 5, 240, 2, Sh(woodD, 0.6f));
+            }
+
+            // mái chéo lợp ngói + đầu hồi
+            for (int y = 0; y < 57; y++)
+            {
+                int hw = Mathf.Min(127, 4 + Mathf.RoundToInt(y * 124f / 56f));
+                int row = y / 6;
+                for (int x = 128 - hw; x < 128 + hw; x++)
+                {
+                    bool a = ((x + (row % 2) * 5) / 10) % 2 == 0;
+                    c.Set(x, y, y % 6 == 0 ? Sh(a ? slate : slateD, 1.25f) : (a ? slate : slateD));
+                }
+                c.Set(128 - hw, y, trim); c.Set(128 - hw + 1, y, trim);
+                c.Set(128 + hw - 1, y, trim); c.Set(128 + hw - 2, y, trim);
+            }
+            c.Rect(0, 53, W, 4, trim); c.Rect(0, 57, W, 2, Sh(woodD, 0.5f));          // mái đua
+            c.Rect(184, 8, 16, 34, K(0x6A3A2E)); c.Rect(182, 6, 20, 4, K(0x4A2A22));  // ống khói
+            for (int y = 12; y < 40; y += 5) c.Rect(184, y, 16, 1, K(0x3A1E18));
+
+            // cửa sổ sáng đèn
+            for (int i = 0; i < SlaveWin.Length; i++)
+            {
+                var w = SlaveWin[i];
+                if (i == SlaveWin.Length - 1)
+                {
+                    c.Disc(w[0] + 9, w[1] + 9, 10, trim);
+                    c.Disc(w[0] + 9, w[1] + 9, 8, lit);
+                    c.Rect(w[0] + 1, w[1] + 9, 16, 1, K(0x6A4A2E)); c.Rect(w[0] + 9, w[1] + 1, 1, 16, K(0x6A4A2E));
+                    continue;
+                }
+                c.Rect(w[0] - 2, w[1] - 2, w[2] + 4, w[3] + 4, trim);
+                c.VGrad(w[0], w[1], w[2], w[3], lit, litD);
+                c.Rect(w[0] + w[2] / 2 - 1, w[1], 2, w[3], K(0x5A3E26));
+                c.Rect(w[0], w[1] + w[3] / 2 - 1, w[2], 2, K(0x5A3E26));
+                if (i % 2 == 0) { c.Rect(w[0], w[1], 4, w[3], K(0x7A3A2A)); c.Rect(w[0] + w[2] - 4, w[1], 4, w[3], K(0x7A3A2A)); }   // rèm
+                c.Rect(w[0] - 4, w[1] + w[3] + 2, w[2] + 8, 3, trim);
+            }
+
+            // biển tên treo giữa tầng 2
+            c.Line(96, 117, 96, 126, K(0x3A3A3A)); c.Line(160, 117, 160, 126, K(0x3A3A3A));
+            c.Rect(90, 126, 76, 22, K(0x2A1C12)); c.Frame(90, 126, 76, 22, trim); c.Frame(92, 128, 72, 18, Sh(trim, 0.55f));
+            c.TextC(128, 132, SlaveName, K(0xF2D8A0), 2);
+
+            // cửa chính đóng kín, ánh sáng lọt dưới khe cửa
+            c.Rect(111, 173, 34, 51, trim);
+            c.Rect(114, 176, 28, 48, K(0x3A2616));
+            for (int x = 114; x < 142; x += 7) c.Rect(x, 176, 1, 48, K(0x24160C));
+            c.Rect(114, 188, 28, 3, K(0x2A2A2E)); c.Rect(114, 210, 28, 3, K(0x2A2A2E));
+            c.Rect(135, 198, 3, 3, K(0xC8A040));
+            c.Rect(115, 223, 26, 1, lit);
+
+            // móng đá + bậc cửa
+            c.Rect(8, 224, 240, 16, K(0x4A4650));
+            for (int y = 224; y < 240; y += 8)
+                for (int x = 8 + ((y / 8) % 2) * 10; x < 248; x += 20) c.Rect(x, y, 1, 8, K(0x2E2A34));
+            c.Rect(8, 224, 240, 1, K(0x6A6672)); c.Rect(104, 230, 48, 10, K(0x5A5662)); c.Rect(104, 230, 48, 1, K(0x7A7682));
             c.Outline(Ink);
             return c;
         }

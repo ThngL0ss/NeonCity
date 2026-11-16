@@ -159,6 +159,9 @@ namespace NeonBreaker
                 lines.Add(keep);
             }
 
+            // đã thám hiểm xong mọi khu vực: Albert kể về các phe phái người chơi đã chạm mặt (xem AlbertFactions)
+            if (!first && AlbertFactions.Pending) AlbertFactions.AddLines(lines, a);
+
             var claimed = first ? null : BaseMissions.TryClaim();
             if (claimed != null)
             {

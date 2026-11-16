@@ -36,7 +36,7 @@ namespace NeonBreaker
         }
 
         /// <summary>Gắn LampFlicker (tắt object trước để Awake đọc đúng mảng targets).</summary>
-        static void Flicker(SpriteRenderer sr, float dip)
+        public static void Flicker(SpriteRenderer sr, float dip)
         {
             if (sr == null) return;
             var go = sr.gameObject;
